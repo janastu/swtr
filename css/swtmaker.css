@@ -1,0 +1,13 @@
+#swt-maker {
+  margin: 100px auto;
+  width: 800px;
+  height: 500px;
+}
+#img-annotation-wrapper {
+  margin-top: 30px;
+  border: 1px solid black;
+  height: 500px;
+  width: 800px
+}
+#annotatable-img {
+}
