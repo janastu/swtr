@@ -232,6 +232,8 @@
           if(jqxhr.status === 404) { //annotations don't exist for this image
             console.log('annotations don\'t exist for this image. Create one!');
           }
+          swtr.appView.$overlay.hide();
+          swtr.appView.helpview.step(2);
         }
       });
     },
