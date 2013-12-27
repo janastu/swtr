@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sweet Maker</title>
+
+    <meta name="description" content="Sweet Maker, Social, Semantic, Web, Decentralized, Makes Sweet">
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/annotorious.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
+  </head>
+  <body>
+
+    <div id="swt-maker" class="container">
+      <div id="helpview" class="alert alert-info"></div>
+      <div id="img-input">
+        <div class="form-group">
+          <input type="text" placeholder="Enter URL of the image"
+          id="img-url-input" class="form-control">
+        </div>
+        <button class="btn btn-default" id="img-url-submit">GO</button>
+        <button class="btn btn-default" id="sweet">Sweet</button>
+      </div>
+      <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
+        {% if url %}
+          <img src="{{ url }}" id="annotatable-img">
+        {% else %}
+          <img src="" id="annotatable-img">
+        {% endif %}
+      </div>
+      <div id="sweet-list-wrapper">
+        <ul id="sweet-list"></ul>
+        <div class="btn-grp">
+          <button class="btn btn-default" id="sweet-cancel">Cancel</button>
+          <button class="btn btn-primary" id="post-sweet">Sweet</button>
+        </div>
+      </div>
+    </div>
+    <div id="app-overlay"></div>
+
+    <script>
+      window.swtr = window.swtr || {};
+      swtr.swtstoreURL = function() { return '{{ conf.swtstoreURL }}'; }
+      swtr.endpoints = {'get': '/sweets/q', 'post': '/sweets'};
+      window.onload = function() {
+        swtr.init();
+      };
+    </script>
+    <script src="{{ url_for('static', filename='js/lib/jquery-1.10.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/underscore-1.5.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/backbone-1.0.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/annotorious.debug.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/swtmaker.js') }}"></script>
+
+    <script type="text/template" id="sweet-template">
+      <li class="sweet">
+        <a href="#">@<%= who %></a> <strong>#<%= what %></strong>
+        /<a href="<%= where %>"><%= where.substr(0, 30) + '...' %></a>
+        <%= how %>
+      </li>
+    </script>
+  </body>
+</html>

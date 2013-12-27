@@ -1,0 +1,26 @@
+Swtr
+====
+
+Swtr app is the Sweet Maker and Sweet Swagger app together.
+In other words, this the definitive client side application for sweets.
+
+Installing
+==========
+
+In this directory, run
+
+$ python setup.py install
+
+Running in Dev Mode
+===================
+
+Configure options in config file and
+
+$ python swtr/server.py
+
+then navigate to the URL in your browser
+
+Deployment
+==========
+
+See deploying flask apps
