@@ -289,7 +289,8 @@
         success: function(data) {
           swtr.appView.$overlay.hide();
           swtr.who = username;
-          $('#signinview').html('You are signed in.');
+          var text = 'You are signed in as <b>' + swtr.who+ '</b>';
+          $('#signinview').html(text);
         },
         error: function(jqxhr, status, error) {
           swtr.appView.$overlay.hide();
@@ -297,7 +298,7 @@
             $('#signin-msg').html('Error signing in. Please check your username and password. ');
           }
           else {
-            $('#signin-msg').html('Error signin in. Please try again.');
+            $('#signin-msg').html('Error signin in. Please try again. ');
           }
         }
       });
@@ -342,5 +343,31 @@
   // utilities and helper functions to go here
   swtr.utils = {};
 
-  swtr.AppView = AppView;
+  //swtr.AppView = AppView;
+
+  /*navigator.watch({
+    onlogin: function(assertion) {
+      $.ajax({
+        type: 'POST',
+        url: swtr.swtstoreURL() + swtr.endpoints.login,
+        data: {assertion: assertion},
+        success: function() {
+        },
+        error: function() {
+          navigator.id.logout();
+        }
+      });
+    },
+    onlogout: function() {
+      $.ajax({
+        type: 'POST',
+        url: swtr.swtstoreURL() + swtr.endpoints.logout,
+        success: function() {
+        },
+        error: function() {
+        }
+      });
+    }
+  });*/
+
 })(swtr);
