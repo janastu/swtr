@@ -149,7 +149,10 @@
           //TODO: move this to a annotation view or something
           anno.removeAll();
           _.each(swtr.sweets.models, function(swt) {
-            swt.get('how')['editable'] = false;
+            if(!_.has(swt.get('how'), 'editable')) {
+              swt.get('how')['editable'] = false;
+              swt.get('how').text += '\n - by ' + swt.get('who');
+            }
             anno.addAnnotation(swt.get('how'));
           });
           //console.log(swtr.sweets.toJSON());
@@ -161,9 +164,10 @@
         }
       });
       this.cleanUp();
+      return false;
     },
     cleanUp: function() {
-      console.log('cleaning up');
+      //console.log('cleaning up');
       $(this.el).hide();
     }
   });
@@ -172,7 +176,8 @@
     el: $('#swt-maker'),
     events: {
       'click #img-url-submit': 'setImage',
-      'click #sweet': 'sweet'
+      'click #sweet': 'sweet',
+      'click #signin-credentials': 'getSignInCredentials'
     },
     initialize: function() {
       //var allElements = $('body *');
@@ -213,7 +218,7 @@
     getExistingAnnotations: function() {
       this.helpview.step(0);
       this.$overlay.show();
-      console.log('getting existing annotations of ', this.imgURL);
+      //console.log('getting existing annotations of ', this.imgURL);
       swtr.sweets.getAll({
         where: this.imgURL,
         success: function(data) {
@@ -221,7 +226,7 @@
             swtr.sweets.add(data);
             _.each(data, function(swt) {
               swt.how['editable'] = false;
-              swt.how.text+= '\n - by ' + swt.who;
+              swt.how.text += '\n - by ' + swt.who;
               anno.addAnnotation(swt.how);
             });
             swtr.appView.$overlay.hide();
@@ -230,7 +235,7 @@
         },
         error: function(jqxhr, error, statusText) {
           if(jqxhr.status === 404) { //annotations don't exist for this image
-            console.log('annotations don\'t exist for this image. Create one!');
+            //console.log('annotations don\'t exist for this image. Create one!');
           }
           swtr.appView.$overlay.hide();
           swtr.appView.helpview.step(2);
@@ -261,6 +266,41 @@
       this.getSweets();
       this.showSweets();
       return false;
+    },
+    getSignInCredentials: function(event) {
+      event.preventDefault();
+      if(swtr.who === 'Guest' && !$('#username').length) {
+        var template = _.template($('#signin-credentials-template').html());
+        $('#signin-msg').html(template());
+      }
+      else if($('#username').length && $('#username').val()) {
+        var username = $('#username').val();
+        var password = $('#password').val();
+        this.signIn(username, password);
+      }
+      return false;
+    },
+    signIn: function(username, password) {
+      this.$overlay.show();
+      $.ajax({
+        url: swtr.swtstoreURL() + swtr.endpoints.auth,
+        type: 'POST',
+        data: {user: username, hash: password},
+        success: function(data) {
+          swtr.appView.$overlay.hide();
+          swtr.who = username;
+          $('#signinview').html('You are signed in.');
+        },
+        error: function(jqxhr, status, error) {
+          swtr.appView.$overlay.hide();
+          if(error === 'FORBIDDEN') {
+            $('#signin-msg').html('Error signing in. Please check your username and password. ');
+          }
+          else {
+            $('#signin-msg').html('Error signin in. Please try again.');
+          }
+        }
+      });
     }
   });
 
@@ -295,6 +335,7 @@
                 break;
       }
       $(this.el).html(text);
+      $(window).scrollTop(0, 0);
     }
   });
 

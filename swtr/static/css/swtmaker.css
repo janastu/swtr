@@ -1,5 +1,10 @@
 #swt-maker {
 }
+#signinview {
+  margin 0 20px;
+  padding: 10px;
+  text-align: center;
+}
 #img-annotation-wrapper {
   margin: 30px auto 0 auto;
   /*border: 1px solid black;*/

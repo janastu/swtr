@@ -16,6 +16,14 @@
 
     <div id="swt-maker" class="container">
       <div id="helpview" class="alert alert-info"></div>
+      <div class="row" id="signinview">
+        <form class="form-inline" role="form">
+          <span id="signin-msg">You are not signed in. </span>
+          <button class="btn btn-sm btn-primary" id="signin-credentials">
+            Sign In
+          </button>
+        </form>
+      </div>
       <div id="img-input">
         <div class="form-group">
           <input type="text" placeholder="Enter URL of the image"
@@ -44,7 +52,8 @@
     <script>
       window.swtr = window.swtr || {};
       swtr.swtstoreURL = function() { return '{{ conf.swtstoreURL }}'; }
-      swtr.endpoints = {'get': '/sweets/q', 'post': '/sweets'};
+      swtr.endpoints = {'get': '/sweets/q', 'post': '/sweets', 'auth':
+        '/authenticate'};
       window.onload = function() {
         swtr.init();
       };
@@ -62,6 +71,16 @@
         /<a href="<%= where %>"><%= where.substr(0, 30) + '...' %></a>
         <%= how %>
       </li>
+    </script>
+    <script type="text/template" id="signin-credentials-template">
+        <div class="form-group">
+          <label class="sr-only" for="username">Username</label>
+          <input type="text" class="form-control" id="username" placeholder="Enter username">
+        </div>
+        <div class="form-group">
+          <label class="sr-only" for="password">Password</label>
+          <input type="password" class="form-control" id="password" placeholder="Password">
+        </div>
     </script>
   </body>
 </html>
