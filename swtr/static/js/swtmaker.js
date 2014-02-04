@@ -7,6 +7,13 @@
     swtr.sweets = new ImgAnnoSwts();
     swtr.appView = new AppView();
     swtr.who = 'Guest';
+
+    $.ajaxSetup({
+      xhrFields: {
+        withCredentials: true
+      },
+      crossDomain: true
+    });
   };
 
   /* Model for Image Annotation Sweets */
@@ -269,7 +276,8 @@
     },
     getSignInCredentials: function(event) {
       event.preventDefault();
-      if(swtr.who === 'Guest' && !$('#username').length) {
+      navigator.id.request();
+      /*if(swtr.who === 'Guest' && !$('#username').length) {
         var template = _.template($('#signin-credentials-template').html());
         $('#signin-msg').html(template());
       }
@@ -277,7 +285,7 @@
         var username = $('#username').val();
         var password = $('#password').val();
         this.signIn(username, password);
-      }
+      }*/
       return false;
     },
     signIn: function(username, password) {
@@ -302,6 +310,15 @@
           }
         }
       });
+    },
+    userLoggedIn: function(userData) {
+      swtr.who = userData.username;
+      var text = 'You are signed in as <b>' + swtr.who+ '</b>';
+      $('#signinview').html(text);
+    },
+    userLoggedOut: function() {
+      swtr.who = 'Guest';
+      $('#signinview').html('Logged out');
     }
   });
 
@@ -345,29 +362,38 @@
 
   //swtr.AppView = AppView;
 
-  /*navigator.watch({
+  // Persona callbacks
+  navigator.id.watch({
+    //when an user logs in
     onlogin: function(assertion) {
+      //verify assertion and login the user
       $.ajax({
         type: 'POST',
         url: swtr.swtstoreURL() + swtr.endpoints.login,
         data: {assertion: assertion},
-        success: function() {
+        success: function(data) {
+          console.log('user logged in', data);
+          swtr.appView.userLoggedIn(data);
         },
         error: function() {
           navigator.id.logout();
         }
       });
     },
+    //when an user logs out
     onlogout: function() {
       $.ajax({
         type: 'POST',
+        //data: {email: swtr.who},
         url: swtr.swtstoreURL() + swtr.endpoints.logout,
         success: function() {
+          console.log('user logged out');
+          //swtr.appView.userLoggedOut();
         },
         error: function() {
         }
       });
     }
-  });*/
+  });
 
 })(swtr);
