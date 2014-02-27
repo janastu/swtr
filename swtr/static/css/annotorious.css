@@ -16,11 +16,11 @@
 }
 
 .annotorious-item-focus {
-  opacity:1.0;
+  opacity:0;
 }
 
 .annotorious-item-unfocus {
-  opacity:0.4;
+  opacity:0;
 }
 
 /** Hint/help popup **/

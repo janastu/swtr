@@ -185,6 +185,12 @@
       this.sweetsview = new SweetsView({collection: swtr.sweets});
       anno.addHandler('onAnnotationCreated', this.showSwtHelp);
       anno.addHandler('onAnnotationUpdated', this.showSwtHelp);
+      anno.addHandler('onSelectionStarted', function(annotation) {
+        anno.hideAnnotations();});
+      anno.addHandler('onSelectionCompleted', function(annotation) {
+        anno.showAnnotations(); });
+      anno.addHandler('onEditorShown', function(annotation) {
+        anno.hideAnnotations();} );
       this.$overlay = $('#app-overlay');
       this.$img = $('#annotatable-img');
       this.imgURL = this.$img.attr('src');
