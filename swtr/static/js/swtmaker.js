@@ -177,7 +177,8 @@
     events: {
       'click #img-url-submit': 'setImage',
       'click #sweet': 'sweet',
-      'click #signin-credentials': 'getSignInCredentials'
+      'click #signin-credentials': 'getSignInCredentials',
+      'click #setbox': 'showHide'
     },
     initialize: function() {
       //var allElements = $('body *');
@@ -189,8 +190,8 @@
         anno.hideAnnotations();});
       anno.addHandler('onSelectionCompleted', function(annotation) {
         anno.showAnnotations(); });
-      anno.addHandler('onEditorShown', function(annotation) {
-        anno.hideAnnotations();} );
+ 
+        
       this.$overlay = $('#app-overlay');
       this.$img = $('#annotatable-img');
       this.imgURL = this.$img.attr('src');
@@ -202,6 +203,16 @@
         this.helpview.step(1);
       }
     },
+    showHide: function() {
+      if($("input:checked").length) { 
+        $('.annotorious-item-unfocus').css("opacity",  "0.5");
+      }
+      else { 
+        $('.annotorious-item-unfocus').css("opacity", "0");
+      }
+                           
+    },
+
     setImage: function() {
       anno.reset();
       this.imgURL = $('#img-url-input').val();
