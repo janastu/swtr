@@ -284,6 +284,17 @@
       this.showSweets();
       return false;
     },
+    showHide: function() {
+      if($("input:checked").length) {
+        $("p").toggle();
+        $('.annotorious-item-unfocus').css("opacity",  "0.5");
+      }
+      else {
+        $("p").toggle();
+        $('.annotorious-item-unfocus').css("opacity", "0");
+      }
+                           
+    },
     getSignInCredentials: function(event) {
       event.preventDefault();
       if(swtr.who === 'Guest' && !$('#username').length) {
