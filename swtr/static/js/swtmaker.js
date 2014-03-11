@@ -203,15 +203,6 @@
         this.helpview.step(1);
       }
     },
-    showHide: function() {
-      if($("input:checked").length) { 
-        $('.annotorious-item-unfocus').css("opacity",  "0.5");
-      }
-      else { 
-        $('.annotorious-item-unfocus').css("opacity", "0");
-      }
-                           
-    },
 
     setImage: function() {
       anno.reset();
