@@ -15,7 +15,7 @@
   <body>
 
     <div id="swt-maker" class="container">
-      <div id="helpview" class="alert alert-info"></div>
+      <div id="helpview" class="alert alert-info col-md-8"></div>
       <div class="row" id="signinview">
         <form class="form-inline" role="form">
           <span id="signin-msg">You are not signed in. </span>
@@ -24,16 +24,21 @@
           </button>
         </form>
       </div>
-      <div id="img-input">
-        <div class="form-group">
+      <div id="img-input" class="row">
+        <div class="form-group col-md-8">
           <input type="text" placeholder="Enter URL of the image"
-          id="img-url-input" class="form-control">
+                 id="img-url-input" class="form-control">
         </div>
-        <button class="btn btn-default" id="img-url-submit">GO</button>
+        <div class="col-md-2">
+          <button class="btn btn-default" id="img-url-submit">GO</button>
+        </div>
+        <div class="col-md-8">
+        <button class="btn btn-default" id="img-url-load">Annotate</button>
         <button class="btn btn-default" id="sweet">Sweet</button>
         <input id="setbox" type="checkbox"/ > <label
-          id="setcontrol"><p>Show Box</p><p style="display: none">Hide
-          Box</p></label>
+          id="setcontrol"><p>Show annotated areas</p><p style="display: none">Hide
+            annotated areas</p></label>
+        </div>
       </div>
       <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
         {% if url %}
@@ -77,11 +82,11 @@
       </li>
     </script>
     <script type="text/template" id="signin-credentials-template">
-        <div class="form-group">
+        <div class="form-inline col-md-3">
           <label class="sr-only" for="username">Username</label>
           <input type="text" class="form-control" id="username" placeholder="Enter username">
         </div>
-        <div class="form-group">
+        <div class="form-inline col-md-3">
           <label class="sr-only" for="password">Password</label>
           <input type="password" class="form-control" id="password" placeholder="Password">
         </div>
