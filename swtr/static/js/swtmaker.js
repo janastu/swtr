@@ -10,10 +10,26 @@
 
     $.ajaxSetup({
       xhrFields: {
+        // we need this to send cookies to cross-domain requests
         withCredentials: true
       },
+      //some browsers won't make cross-domain ajax until it is explicitly set
       crossDomain: true
     });
+    swtr.handleOAuth();
+  };
+
+  swtr.handleOAuth = function() {
+    if(swtr.access_token) {
+      $('#signinview').html('Signing you in..');
+      $.ajax({
+        url: 'http://localhost:5001/api/users/me?access_token='+
+          swtr.access_token,
+        success: function(data) {
+          swtr.appView.userLoggedIn(data.username);
+        }
+      });
+    }
   };
 
   /* Model for Image Annotation Sweets */
@@ -51,10 +67,14 @@
         throw Error('"where" option must be passed to get sweets of a URI');
         return false;
       }
+      if(!swtr.access_token) {
+        throw new Error('Access Token required to get query that API');
+      }
       // setting up params
       var where = options.where,
           who = options.who || null;
-          url = swtr.swtstoreURL() + swtr.endpoints.get + '?where=' + where;
+          url = swtr.swtstoreURL() + swtr.endpoints.get + '?where=' +
+            encodeURIComponent(where) + '&access_token=' + swtr.access_token;
       if(who) {
         url += '&who=' + who;
       }
@@ -83,8 +103,16 @@
       var new_sweets = this.getNew();
       var dummy_collection = new Backbone.Collection(new_sweets);
 
+      if(!swtr.access_token) {
+        throw new Error('Access Token is required to sweet');
+        return;
+      }
+
+      var url = swtr.swtstoreURL() + swtr.endpoints.post +
+        '?access_token=' + swtr.access_token;
+
       this.sync('create', dummy_collection, {
-        url: swtr.swtstoreURL() + swtr.endpoints.post,
+        url: url,
         success: function() {
           if(typeof options.success === 'function') {
             options.success.apply(this, arguments);
@@ -166,8 +194,8 @@
           swtr.appView.$overlay.hide();
           swtr.appView.helpview.step(6);
         },
-        error: function(jqxhr, error) {
-          console.log(jqxhr, error);
+        error: function(jqxhr, error, text) {
+          console.log(jqxhr, error, text);
         }
       });
       this.cleanUp();
@@ -202,6 +230,14 @@
       else {
         this.helpview.step(1);
       }
+
+      this.oauth = new Oauth({
+        app_id: 'YrYc9oMO7fT0avRUAtbRO1cLvoOUUI08BAuqOAJc',
+        app_secret: 'r9BIYjYOPotMQUOoI98DmH7Eu1M4zg6cMeLay7LOlSsrF1KhKZ',
+        endpoint: 'http://localhost:5001/oauth/authorize',
+        redirect_uri: 'http://localhost:5000/',
+        scopes: 'email,sweet'
+      });
     },
     setImage: function() {
       anno.reset();
@@ -229,7 +265,9 @@
       swtr.sweets.getAll({
         where: this.imgURL,
         success: function(data) {
+          console.log(data);
           if(_.isArray(data)) {
+            console.log('data is array');
             swtr.sweets.add(data);
             _.each(data, function(swt) {
               swt.how['editable'] = false;
@@ -276,16 +314,7 @@
     },
     getSignInCredentials: function(event) {
       event.preventDefault();
-      navigator.id.request();
-      /*if(swtr.who === 'Guest' && !$('#username').length) {
-        var template = _.template($('#signin-credentials-template').html());
-        $('#signin-msg').html(template());
-      }
-      else if($('#username').length && $('#username').val()) {
-        var username = $('#username').val();
-        var password = $('#password').val();
-        this.signIn(username, password);
-      }*/
+      this.oauth.authorize();
       return false;
     },
     signIn: function(username, password) {
@@ -311,9 +340,9 @@
         }
       });
     },
-    userLoggedIn: function(userData) {
-      swtr.who = userData.username;
-      var text = 'You are signed in as <b>' + swtr.who+ '</b>';
+    userLoggedIn: function(token) {
+      swtr.who = token;
+      var text = 'You are signed in as <b>' + swtr.who + '</b>';
       $('#signinview').html(text);
     },
     userLoggedOut: function() {
@@ -363,7 +392,7 @@
   //swtr.AppView = AppView;
 
   // Persona callbacks
-  navigator.id.watch({
+  /*navigator.id.watch({
     //when an user logs in
     onlogin: function(assertion) {
       //verify assertion and login the user
@@ -394,6 +423,6 @@
         }
       });
     }
-  });
+  });*/
 
 })(swtr);
