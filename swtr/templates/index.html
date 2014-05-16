@@ -66,6 +66,8 @@
     <script src="{{ url_for('static', filename='js/lib/underscore-1.5.2.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/backbone-1.0.0.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/annotorious.debug.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/custom-fields-plugin.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/label.js') }}"></script>
     <!--script src="https://login.persona.org/include.js"></script-->
     <script src="{{ url_for('static', filename='js/swtmaker.js') }}"></script>
 
@@ -85,6 +87,18 @@
           <label class="sr-only" for="password">Password</label>
           <input type="password" class="form-control" id="password" placeholder="Password">
         </div>
-    </script>
+      </script>
+      <script type="text/template" id="button-template">
+        <div class="btn-group">
+          <button type="button" class="btn-default"
+            id="comment">Comment</button>
+          <button type="button" class="btn-default"
+            id="label">Label</button>
+          <button type="button" class="btn-default"
+            id="tags">Tags</button>
+          <button type="button" class="btn-default "
+            id="links">Links</button>
+        </div>
+      </script>
   </body>
 </html>
