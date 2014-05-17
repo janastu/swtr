@@ -277,12 +277,10 @@
       return false;
     },
     showHide: function() {
-      if($("input:checked").length) {
-        $("p").toggle();
+      if($("#setbox:checked").length) {
         $('.annotorious-item-unfocus').css("opacity",  "0.5");
       }
       else {
-        $("p").toggle();
         $('.annotorious-item-unfocus').css("opacity", "0");
       }
 
