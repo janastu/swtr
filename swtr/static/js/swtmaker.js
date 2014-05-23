@@ -176,6 +176,7 @@
   var AppView = Backbone.View.extend({
     el: $('#swt-maker'),
     events: {
+      'click #img-url-load': 'setImage',
       'click #img-url-submit': 'setImage',
       'click #sweet': 'sweet',
       'click #signin-credentials': 'getSignInCredentials',
@@ -196,6 +197,9 @@
       });
       anno.addPlugin('CustomFields', this.showSwtHelp); 
       anno.addHandler('onSelectionCompleted', this.setShape);  
+        anno.showAnnotations(); });
+
+
       this.$overlay = $('#app-overlay');
       this.$img = $('#annotatable-img');
       this.imgURL = this.$img.attr('src');
@@ -248,7 +252,7 @@
         },
         error: function(jqxhr, error, statusText) {
           if(jqxhr.status === 404) { //annotations don't exist for this image
-            //console.log('annotations don\'t exist for this image. Create one!');
+            console.log('annotations don\'t exist for this image. Create one!');
           }
           swtr.appView.$overlay.hide();
           swtr.appView.helpview.step(2);
@@ -290,7 +294,7 @@
         $("p").toggle();
         $('.annotorious-item-unfocus').css("opacity", "0");
       }
-                           
+
     },
 //annotorious editor widget - custom with options
 //to obtain shapes object, declaring annotation in global scope - TODO refactor
