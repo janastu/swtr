@@ -154,7 +154,7 @@
               swt.get('how').text += '\n - by ' + swt.get('who');
             }
             console.log(swt.get('how'));
-            anno.addAnnotation(newanno);
+            anno.addAnnotation(swt.get('how'));
           });
           //console.log(swtr.sweets.toJSON());
           swtr.appView.$overlay.hide();
@@ -197,9 +197,6 @@
       });
       anno.addPlugin('CustomFields', this.showSwtHelp); 
       anno.addHandler('onSelectionCompleted', this.setShape);  
-        anno.showAnnotations(); });
-
-
       this.$overlay = $('#app-overlay');
       this.$img = $('#annotatable-img');
       this.imgURL = this.$img.attr('src');
@@ -287,11 +284,11 @@
     },
     showHide: function() {
       if($("input:checked").length) {
-        $("p").toggle();
+        //$("p").toggle();
         $('.annotorious-item-unfocus').css("opacity",  "0.5");
       }
       else {
-        $("p").toggle();
+        //$("p").toggle();
         $('.annotorious-item-unfocus').css("opacity", "0");
       }
 
