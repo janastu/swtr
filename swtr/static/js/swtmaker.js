@@ -123,7 +123,7 @@
         $('#sweet-list').append(this.template({
           who: swt.get('who'),
           what: swt.get('what'),
-          where: swt.get('where'),
+          where: swt.get('where'), 
           how: JSON.stringify(swt.get('how').text)
         }));
       }, this);
@@ -154,7 +154,7 @@
               swt.get('how').text += '\n - by ' + swt.get('who');
             }
             console.log(swt.get('how'));
-            anno.addAnnotation(swt.get('how'));
+            anno.addAnnotation(newanno);
           });
           //console.log(swtr.sweets.toJSON());
           swtr.appView.$overlay.hide();
@@ -180,18 +180,20 @@
       'click #sweet': 'sweet',
       'click #signin-credentials': 'getSignInCredentials',
       'click #setbox': 'showHide',
-      'click #comment, #label, #tags, #links ': 'button_custom'
+      'change .form-control': 'button_custom',
+      'mouseup .annotorious-editor-button-save': 'add_new_anno'
     },
     initialize: function() {
       //var allElements = $('body *');
       this.helpview = new HelpView();
       this.sweetsview = new SweetsView({collection: swtr.sweets});
       anno.addHandler('onAnnotationCreated', this.showSwtHelp);
-      anno.addHandler('onAnnotationUpdated', this.showSwtHelp);
+      anno.addHandler('onannotationupdated', this.showswthelp);
       anno.addHandler('onSelectionStarted', function(annotation) {
         anno.hideAnnotations();});
       anno.addHandler('onSelectionCompleted', function(annotation) {
-        anno.showAnnotations(); });
+        anno.showAnnotations();
+      });
       anno.addPlugin('CustomFields', this.showSwtHelp); 
       anno.addHandler('onSelectionCompleted', this.setShape);  
       this.$overlay = $('#app-overlay');
@@ -205,9 +207,6 @@
         this.helpview.step(1);
       }
     },
-    setShape: function(annotation) {
-       window.annotation=annotation;
-      }, 
 
     setImage: function() {
       anno.reset();
@@ -241,6 +240,7 @@
               swt.how['editable'] = false;
               swt.how.text += '\n - by ' + swt.who;
               anno.addAnnotation(swt.how);
+              console.log('swt.how = ', swt.how);
             });
             swtr.appView.$overlay.hide();
             swtr.appView.helpview.step(2);
@@ -264,11 +264,12 @@
       var annos = _.filter(anno.getAnnotations(), function(anno) {
         return (!_.has(anno, 'editable') || anno.editable === true);
       });
+
       _.each(annos, function(anno) {
         swtr.sweets.add({
           who: swtr.who,
           where: anno.src,
-          how: anno
+          how: newanno  //mysterious link to create the sweet with new anno attributes, tags, links, labels
         });
       });
     },
@@ -291,29 +292,55 @@
       }
                            
     },
+//annotorious editor widget - custom with options
+//to obtain shapes object, declaring annotation in global scope - TODO refactor
+//code to find better way to do this.
 
-    /*build_txt: function(opt_array) {
-      var textarray = opt_array;
-      var newobj = [textarray];
-      console.log(newarray);
-
-    },*/
-    button_custom: function(event) {
+    setShape: function(annotation) {                  
+      $('.annotorious-editor-text').hide();
+      $('.annotorious-editor').css("width", "100%");
+       window.annotation=annotation;
+       annotation.text = [];
+      },
+//to create new annotation object
+    inputStore: function(opt) {
+      var temp = opt;
       var src = $('#img-url-input').val();
-      var newanno= {};
-      var tempinput = $('.annotorious-editor-text:first');
-     //type setting
-     // var type = $(tempinput).attr("placeholder").slice(5);
-      //console.log(type);
-      newanno.text = tempinput.val();
-      newanno.src = src;
-      $(tempinput).val("");
-      var placeHolder = "Add "+event.currentTarget.innerHTML;
-      $(tempinput).attr("placeholder", placeHolder);
-      newanno.shapes = [{'type':annotation.shape.type, 'geometry':{'x':annotation.shape.geometry.x, 'y':annotation.shape.geometry.y, 'width':annotation.shape.geometry.width, 'height':annotation.shape.geometry.height}}];
-      anno.addAnnotation(newanno);
-      //swtr.appView.ShowSwtHelp;
+      this.newanno = {'src':src, 'text':temp, 'shapes': [{'type':annotation.shape.type, 'geometry':{'x':annotation.shape.geometry.x, 'y':annotation.shape.geometry.y, 'width':annotation.shape.geometry.width, 'height':annotation.shape.geometry.height}},], 'context':window.location.origin};
+
     },
+
+//to add the final annotation
+
+//save button - event bind
+    add_new_anno: function(event){ 
+        var $selected = $('select option:selected');
+        var tempinput = $selected.text()+': '+$('.annotorious-editor textarea').val();
+        this.newanno.text.push(tempinput);
+        var newinput = this.newanno.text.toString();
+        this.newanno.text = newinput;
+        console.log('this.newanno = ', this.newanno);
+        //this.to_Add(this.newanno);
+        var newanno = this.newanno;
+        window.newanno = newanno;
+      },
+//dropdown event
+    button_custom: function(event) {
+      $('.annotorious-editor-text').show();
+      var $selected = $('select option:selected');
+      var tempinput = $selected.prev().text()+ ': '+$('.annotorious-editor-text').val();
+      if(tempinput === "Choose an Option: "){
+        console.log('');
+      }
+      else {
+      annotation.text.push(tempinput);
+      }
+      this.inputStore(annotation.text);
+      $('.annotorious-editor-text:first').val("");
+      $('.annotorious-editor-text:first').attr('placeholder', 'Add a '+$selected.text());
+    },
+
+
 
     getSignInCredentials: function(event) {
       event.preventDefault();
