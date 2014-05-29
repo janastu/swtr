@@ -2,17 +2,13 @@
 
 import flask
 from flask import session
-import conf
+import config
 import requests
 import json
 
 app = flask.Flask(__name__)
+app.config['SECRET_KEY'] = config.secret_key
 
-app.config['secret_key'] = "asdkasdiq2jedmaid0q2238uwadscksnc"
-app.secret_key = "asdkasdiq2jedmaid0q2238uwadscksnc"
-
-appID = 'YrYc9oMO7fT0avRUAtbRO1cLvoOUUI08BAuqOAJc'
-appSecret = 'r9BIYjYOPotMQUOoI98DmH7Eu1M4zg6cMeLay7LOlSsrF1KhKZ'
 
 @app.route('/', methods=['GET'])
 def index():
@@ -20,16 +16,19 @@ def index():
     if flask.request.args.get('code'):
         payload = {
             'scopes': 'email sweet',
-            'client_secret': appSecret,
+            'client_secret': config.app_secret,
             'code': flask.request.args.get('code'),
-            'redirect_uri': 'http://localhost:5000/',
+            'redirect_uri': config.redirect_uri,
             'grant_type': 'authorization_code',
-            'client_id': appID
+            'client_id': config.app_id
         }
-        resp = requests.post('http://localhost:5001/oauth/token', data=payload)
+        # token exchange endpoint
+        oauth_token_x_endpoint = config.swtstoreURL + '/oauth/token'
+        resp = requests.post(oauth_token_x_endpoint, data=payload)
         auth_tok = json.loads(resp.text)
         print auth_tok
-        if auth_tok.has_key('error'):
+
+        if 'error' in auth_tok:
             print auth_tok['error']
             return flask.make_response(auth_tok['error'], 200)
 
@@ -42,10 +41,13 @@ def index():
 
     print auth_tok
     return flask.render_template('index.html',
-                                     access_token=auth_tok['access_token'],
-                                     refresh_token=auth_tok['refresh_token'],
-                                     url=flask.request.args.get('where'),
-                                     conf=conf)
+                                 access_token=auth_tok['access_token'],
+                                 refresh_token=auth_tok['refresh_token'],
+                                 config=config,
+                                 url=flask.request.args.get('where'))
 
+
+# if the app is run directly from command-line
+# assume its being run locally in a dev environment
 if __name__ == '__main__':
-    app.run(debug=conf.debug, host=conf.HOST, port=conf.PORT)
+    app.run(debug=True, host='0.0.0.0', port=5000)

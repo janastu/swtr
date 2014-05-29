@@ -23,10 +23,14 @@
     if(swtr.access_token) {
       $('#signinview').html('Signing you in..');
       $.ajax({
-        url: 'http://localhost:5001/api/users/me?access_token='+
+        url: swtr.swtstoreURL()+'/api/users/me?access_token='+
           swtr.access_token,
         success: function(data) {
+          console.log(data.username);
           swtr.appView.userLoggedIn(data.username);
+        },
+        error: function() {
+          $('#signinview').html('Error signing in! Please try again');
         }
       });
     }
@@ -232,10 +236,10 @@
       }
 
       this.oauth = new Oauth({
-        app_id: 'YrYc9oMO7fT0avRUAtbRO1cLvoOUUI08BAuqOAJc',
-        app_secret: 'r9BIYjYOPotMQUOoI98DmH7Eu1M4zg6cMeLay7LOlSsrF1KhKZ',
-        endpoint: 'http://localhost:5001/oauth/authorize',
-        redirect_uri: 'http://localhost:5000/',
+        app_id: swtr.app_id,
+        app_secret: swtr.app_secret,
+        endpoint: swtr.swtstoreURL() + swtr.endpoints.auth,
+        redirect_uri: swtr.oauth_redirect_uri,
         scopes: 'email,sweet'
       });
     },
@@ -335,7 +339,6 @@
             $('#signin-msg').html('Error signing in. Please check your username and password. ');
           }
           else {
-            $('#signin-msg').html('Error signin in. Please try again. ');
           }
         }
       });

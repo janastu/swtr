@@ -51,11 +51,19 @@
 
     <script>
       window.swtr = window.swtr || {};
-      swtr.swtstoreURL = function() { return '{{ conf.swtstoreURL }}'; }
-      swtr.endpoints = {'get': '/api/sweets/q', 'post': '/api/sweets', 'auth':
-        '/authenticate', 'login': '/auth/login', 'logout': '/auth/logout'};
+      swtr.swtstoreURL = function() { return '{{ config.swtstoreURL }}'; }
+      swtr.endpoints = {
+        'get': '/api/sweets/q',
+        'post': '/api/sweets',
+        'auth': '/oauth/authorize',
+        'login': '/auth/login',
+        'logout': '/auth/logout'
+      };
       swtr.access_token = '{{ access_token }}';
       swtr.refresh_token = '{{ refresh_token }}';
+      swtr.app_id = '{{ config.app_id }}';
+      swtr.app_secret = '{{ config.app_secret }}';
+      swtr.oauth_redirect_uri = '{{ config.redirect_uri }}';
       window.onload = function() {
         swtr.init();
       };
