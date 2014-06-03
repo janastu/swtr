@@ -137,7 +137,7 @@
           new_models.push(model);
         }
       });
-      return new_models;
+      return new_models; 
     },
     // update part of the collection after a save on the server
     update: function() {
@@ -162,7 +162,7 @@
         $('#sweet-list').append(this.template({
           who: swt.get('who'),
           what: swt.get('what'),
-          where: swt.get('where'),
+          where: swt.get('where'), 
           how: JSON.stringify(swt.get('how').text)
         }));
       }, this);
@@ -183,7 +183,7 @@
       swtr.appView.$overlay.show();
       this.collection.post({
         success: function(collection, response) {
-          //console.log(collection, response);
+          console.log(collection, response);
           swtr.sweets.update(collection);
           //TODO: move this to a annotation view or something
           anno.removeAll();
@@ -192,6 +192,7 @@
               swt.get('how')['editable'] = false;
               swt.get('how').text += '\n - by ' + swt.get('who');
             }
+            console.log(swt.get('how'));
             anno.addAnnotation(swt.get('how'));
           });
           //console.log(swtr.sweets.toJSON());
@@ -214,16 +215,27 @@
   var AppView = Backbone.View.extend({
     el: $('#swt-maker'),
     events: {
+      'click #img-url-load': 'setImage',
       'click #img-url-submit': 'setImage',
       'click #sweet': 'sweet',
-      'click #signin-credentials': 'getSignInCredentials'
+      'click #signin-credentials': 'getSignInCredentials',
+      'click #setbox': 'showHide',
+      'change .form-control': 'button_custom',
+      'mouseup .annotorious-editor-button-save': 'add_new_anno'
     },
     initialize: function() {
       //var allElements = $('body *');
       this.helpview = new HelpView();
       this.sweetsview = new SweetsView({collection: swtr.sweets});
       anno.addHandler('onAnnotationCreated', this.showSwtHelp);
-      anno.addHandler('onAnnotationUpdated', this.showSwtHelp);
+      anno.addHandler('onannotationupdated', this.showswthelp);
+      anno.addHandler('onSelectionStarted', function(annotation) {
+        anno.hideAnnotations();});
+      anno.addHandler('onSelectionCompleted', function(annotation) {
+        anno.showAnnotations();
+      });
+      anno.addPlugin('CustomFields', this.showSwtHelp); 
+      anno.addHandler('onSelectionCompleted', this.setShape);  
       this.$overlay = $('#app-overlay');
       this.$img = $('#annotatable-img');
       this.imgURL = this.$img.attr('src');
@@ -243,6 +255,7 @@
         scopes: 'email,sweet'
       });
     },
+
     setImage: function() {
       anno.reset();
       this.imgURL = $('#img-url-input').val();
@@ -277,6 +290,7 @@
               swt.how['editable'] = false;
               swt.how.text += '\n - by ' + swt.who;
               anno.addAnnotation(swt.how);
+              console.log('swt.how = ', swt.how);
             });
             swtr.appView.$overlay.hide();
             swtr.appView.helpview.step(2);
@@ -284,7 +298,7 @@
         },
         error: function(jqxhr, error, statusText) {
           if(jqxhr.status === 404) { //annotations don't exist for this image
-            //console.log('annotations don\'t exist for this image. Create one!');
+            console.log('annotations don\'t exist for this image. Create one!');
           }
           swtr.appView.$overlay.hide();
           swtr.appView.helpview.step(2);
@@ -300,11 +314,12 @@
       var annos = _.filter(anno.getAnnotations(), function(anno) {
         return (!_.has(anno, 'editable') || anno.editable === true);
       });
+
       _.each(annos, function(anno) {
         swtr.sweets.add({
           who: swtr.who,
           where: anno.src,
-          how: anno
+          how: newanno  //mysterious link to create the sweet with new anno attributes, tags, links, labels
         });
       });
     },
@@ -316,6 +331,67 @@
       this.showSweets();
       return false;
     },
+    showHide: function() {
+      if($("input:checked").length) {
+        //$("p").toggle();
+        $('.annotorious-item-unfocus').css("opacity",  "0.5");
+      }
+      else {
+        //$("p").toggle();
+        $('.annotorious-item-unfocus').css("opacity", "0");
+      }
+
+    },
+//annotorious editor widget - custom with options
+//to obtain shapes object, declaring annotation in global scope - TODO refactor
+//code to find better way to do this.
+
+    setShape: function(annotation) {                  
+      $('.annotorious-editor-text').hide();
+      $('.annotorious-editor').css("width", "100%");
+       window.annotation=annotation;
+       annotation.text = [];
+      },
+//to create new annotation object
+    inputStore: function(opt) {
+      var temp = opt;
+      var src = $('#img-url-input').val();
+      this.newanno = {'src':src, 'text':temp, 'shapes': [{'type':annotation.shape.type, 'geometry':{'x':annotation.shape.geometry.x, 'y':annotation.shape.geometry.y, 'width':annotation.shape.geometry.width, 'height':annotation.shape.geometry.height}},], 'context':window.location.origin};
+
+    },
+
+//to add the final annotation
+
+//save button - event bind
+    add_new_anno: function(event){ 
+        var $selected = $('select option:selected');
+        var tempinput = $selected.text()+': '+$('.annotorious-editor textarea').val();
+        this.newanno.text.push(tempinput);
+        var newinput = this.newanno.text.toString();
+        this.newanno.text = newinput;
+        console.log('this.newanno = ', this.newanno);
+        //this.to_Add(this.newanno);
+        var newanno = this.newanno;
+        window.newanno = newanno;
+      },
+//dropdown event
+    button_custom: function(event) {
+      $('.annotorious-editor-text').show();
+      var $selected = $('select option:selected');
+      var tempinput = $selected.prev().text()+ ': '+$('.annotorious-editor-text').val();
+      if(tempinput === "Choose an Option: "){
+        console.log('');
+      }
+      else {
+      annotation.text.push(tempinput);
+      }
+      this.inputStore(annotation.text);
+      $('.annotorious-editor-text:first').val("");
+      $('.annotorious-editor-text:first').attr('placeholder', 'Add a '+$selected.text());
+    },
+
+
+
     getSignInCredentials: function(event) {
       event.preventDefault();
       this.oauth.authorize();
@@ -373,9 +449,9 @@
                 break;
         case 2: text = 'Annotate the image, or see other annotations';
                 break;
-        case 3: text = 'Now you can sweet this annotation.';
+        case 3: text = 'Now you can sweet this annotation, or add more annotations';
                 break;
-        case 4: text = 'Click button to sweet these sweet annotations';
+        case 4: text = 'Click Sweet button to publish these annotations to the Sweet Store';
                 break;
         case 5: text = 'Publishing your sweets';
                 break;
