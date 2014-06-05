@@ -112,17 +112,34 @@
         <%= how %>
       </li>
     </script>
-    <script type="text/template" id="button-template">
-      <select class="form-control">
+    <script type="text/template" id="dropdown-template">
+      <select class="form-control" id="custom-dropdown">
         <option id="">Choose an Option</option>
         <option id="comment" >Comment</option>
-        <option id="label" >Label</option>
+        <option id="title" >Title</option>
         <option id="tags">Tags</option>
         <option id="links">Links</option>
       </select>
     </script>
+    <!-- script type="text/template" id="dropdown-template">
+    <form class="form-control" id="custom-dropdown">
+      <textarea class="annotorious-editor-text goog-textarea"
+        placeholder="Add Label" id="label"></textarea>
+      <textarea class="annotorious-editor-text goog-textarea"
+        placeholder="Add Tags" id="tags"></textarea>
+      <textarea class="annotorious-editor-text goog-textarea"
+        placeholder="Add Links" id="links"></textarea>
+    </form>
+    </script-->
     <script type="text/template" id="popup-template">
-      <span class="annotorious-popup-text"> </span>
+      <span class="annotorious-popup-text">
+        <ul class="custom-style-popup">
+          <li class="custom-popup-line" ><span>Title: </span><%= Label %></li>
+          <li class="custom-popup-line"><span>Comment: </span><%= Comment %></li>
+          <li class="custom-popup-line"><span>Tags: </span><%= Tags %></li>
+          <li class="custom-popup-line"><span>Related Links: </span><%= Links %></li>
+        </ul>
+      </span>
     </script>
   </body>
 </html>
