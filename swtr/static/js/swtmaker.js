@@ -305,7 +305,16 @@
     inputStore: function(opt) {
       var temp = opt;
       var src = $('#img-url-input').val();
-      this.newanno = {'src':src, 'text':temp, 'shapes': [{'type':annotation.shape.type, 'geometry':{'x':annotation.shape.geometry.x, 'y':annotation.shape.geometry.y, 'width':annotation.shape.geometry.width, 'height':annotation.shape.geometry.height}},], 'context':window.location.origin};
+      this.newanno = {'src':src,
+                      'text':temp,
+                      'shapes': [
+                        {'type':annotation.shape.type,
+                         'geometry':{'x':annotation.shape.geometry.x,
+                                     'y':annotation.shape.geometry.y,
+                                     'width':annotation.shape.geometry.width,
+                                     'height':annotation.shape.geometry.height}
+                        }],
+                      'context':window.location.origin};
 
     },
 
@@ -314,7 +323,7 @@
 //save button - event bind
     add_new_anno: function(event){
         var $selected = $('select option:selected');
-        var tempinput = $selected.text()+': '+$('.annotorious-editor textarea').val();
+        var tempinput = $selected.text() + ': ' + $('.annotorious-editor textarea').val();
         this.newanno.text.push(tempinput);
         var newinput = this.newanno.text.toString();
         this.newanno.text = newinput;
