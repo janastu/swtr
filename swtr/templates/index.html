@@ -8,45 +8,64 @@
     <meta name="description" content="Sweet Maker, Social, Semantic, Web, Decentralized, Makes Sweet">
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/annotorious.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
   </head>
-  <body>
 
+  <body>
     <div id="swt-maker" class="container">
-      <div id="helpview" class="alert alert-info col-md-8"></div>
-      <div class="row" id="signinview">
-        <form class="form-inline" role="form">
-          <span id="signin-msg">You are not signed in. </span>
-          <button class="btn btn-sm btn-primary" id="signin-credentials">
-            Sign In
-          </button>
-        </form>
-      </div>
-      <div id="img-input" class="row">
-        <div class="form-group col-md-8">
-          <input type="text" placeholder="Enter URL of the image"
-                 id="img-url-input" class="form-control">
-        </div>
-        <div class="col-md-2">
-          <button class="btn btn-default" id="img-url-submit">Load</button>
-        </div>
+      <!-- first row: helpview and sign in button -->
+      <div class="row">
+        <!-- helpview column of width md-8 -->
         <div class="col-md-8">
-        <button class="btn btn-default" id="img-url-load">Annotate</button>
-        <button class="btn btn-default" id="sweet">Sweet</button>
-        <input id="setbox" type="checkbox"/ > <label
-          id="setcontrol"><p>Show annotated areas</p><p style="display: none">Hide
-            annotated areas</p></label>
+          <div id="helpview" class="alert alert-info"></div>
         </div>
-      </div>
-      <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
+        <!-- signin view column of width md-4 -->
+        <div class="col-md-4">
+          <div id="signinview">
+            <span id="signin-msg">You are not signed in.</span>
+            <button class="btn btn-sm btn-primary" id="sign-in">
+              Sign In
+            </button>
+          </div>
+        </div>
+      </div> <!-- end first row -->
+      <!-- second row: image URL input box and Load button -->
+      <div class="row">
+        <div class="col-md-8">
+          <form class="form-inline" role="form">
+            <div class="form-group col-md-11">
+              <label class="sr-only" for="img-url-input">Enter URL of the image</label>
+              <input class="form-control" type="text"
+                placeholder="Enter URL of the image" id="img-url-input">
+            </div>
+            <button type="submit" class="btn btn-primary" id="img-url-load">Load</button>
+          </form>
+        </div>
+        <div class="col-md-4">
+        </div>
+      </div> <!-- end second row -->
+      <!-- third row - control panel? -->
+      <div class="row">
+        <div class="col-md-3">
+          <input id="setbox" type="checkbox"/>
+          <label id="setcontrol" for="setbox">Show annotated areas</label>
+        </div>
+        <div class="col-md-1">
+          <button class="btn btn-default" id="sweet">Sweet</button>
+        </div>
+      </div> <!-- end third row -- >
+      <!-- fourth row: the image annotation window -->
+      <div class="row">
+        <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
         {% if url %}
-          <img src="{{ url }}" id="annotatable-img">
+          <img src="{{ url }}" id="annotatable-img" class="img-responsive">
         {% else %}
-          <img src="" id="annotatable-img">
+          <img src="" id="annotatable-img" class="img-responsive">
         {% endif %}
-      </div>
+        </div>
+      </div> <!-- end fourth row -->
+
       <div id="sweet-list-wrapper">
         <ul id="sweet-list"></ul>
         <div class="btn-grp">
@@ -83,9 +102,6 @@
     <script src="{{ url_for('static', filename='js/lib/annotorious.debug.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/custom-fields-plugin.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/label.js') }}"></script>
-    <!--script src="https://login.persona.org/include.js"></script-->
-    <!--script src="{{ url_for('static',
-    filename='js/lib/mozilla.persona.include.js') }}"></script-->
     <script src="{{ url_for('static', filename='js/oauth.js') }}"></script>
     <script src="{{ url_for('static', filename='js/swtmaker.js') }}"></script>
 
@@ -96,27 +112,17 @@
         <%= how %>
       </li>
     </script>
-    <script type="text/template" id="signin-credentials-template">
-        <div class="form-inline col-md-3">
-          <label class="sr-only" for="username">Username</label>
-          <input type="text" class="form-control" id="username" placeholder="Enter username">
-        </div>
-        <div class="form-inline col-md-3">
-          <label class="sr-only" for="password">Password</label>
-          <input type="password" class="form-control" id="password" placeholder="Password">
-        </div>
-      </script>
-      <script type="text/template" id="button-template">
-        <select class="form-control">
-          <option id="">Choose an Option</option>
-          <option id="comment" >Comment</option>
-          <option id="label" >Label</option>
-          <option id="tags">Tags</option>
-          <option id="links">Links</option>
-        </select>
-      </script>
-      <script type="text/template" id="popup-template">
-        <span class="annotorious-popup-text"> </span>
-      </script>
+    <script type="text/template" id="button-template">
+      <select class="form-control">
+        <option id="">Choose an Option</option>
+        <option id="comment" >Comment</option>
+        <option id="label" >Label</option>
+        <option id="tags">Tags</option>
+        <option id="links">Links</option>
+      </select>
+    </script>
+    <script type="text/template" id="popup-template">
+      <span class="annotorious-popup-text"> </span>
+    </script>
   </body>
 </html>

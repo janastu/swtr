@@ -26,7 +26,6 @@
         url: swtr.swtstoreURL()+'/api/users/me?access_token='+
           swtr.access_token,
         success: function(data) {
-          console.log(data.username);
           swtr.appView.userLoggedIn(data.username);
         },
         error: function() {
@@ -45,10 +44,6 @@
       'how': {}
     },
     initialize: function() {
-      if(!_.has(this, 'id')) {
-        // bad hack to have dates.. FIXIT
-        this.set('created', new Date().toUTCString().substr(0, 25));
-      }
     }
   });
 
@@ -71,9 +66,9 @@
         throw Error('"where" option must be passed to get sweets of a URI');
         return false;
       }
-      if(!swtr.access_token) {
+      /*if(!swtr.access_token) {
         throw new Error('Access Token required to get query that API');
-      }
+      }*/
       // setting up params
       var where = options.where,
           who = options.who || null;
@@ -137,7 +132,7 @@
           new_models.push(model);
         }
       });
-      return new_models; 
+      return new_models;
     },
     // update part of the collection after a save on the server
     update: function() {
@@ -162,7 +157,7 @@
         $('#sweet-list').append(this.template({
           who: swt.get('who'),
           what: swt.get('what'),
-          where: swt.get('where'), 
+          where: swt.get('where'),
           how: JSON.stringify(swt.get('how').text)
         }));
       }, this);
@@ -179,30 +174,38 @@
       this.collection.remove(notPosted);
     },
     postSweets: function() {
-      swtr.appView.helpview.step(5);
-      swtr.appView.$overlay.show();
-      this.collection.post({
-        success: function(collection, response) {
-          console.log(collection, response);
-          swtr.sweets.update(collection);
-          //TODO: move this to a annotation view or something
-          anno.removeAll();
-          _.each(swtr.sweets.models, function(swt) {
-            if(!_.has(swt.get('how'), 'editable')) {
-              swt.get('how')['editable'] = false;
-              swt.get('how').text += '\n - by ' + swt.get('who');
-            }
-            console.log(swt.get('how'));
-            anno.addAnnotation(swt.get('how'));
-          });
-          //console.log(swtr.sweets.toJSON());
-          swtr.appView.$overlay.hide();
-          swtr.appView.helpview.step(6);
-        },
-        error: function(jqxhr, error, text) {
-          console.log(jqxhr, error, text);
+      var appView = swtr.appView;
+      appView.helpview.step(5);
+      appView.$overlay.show();
+      try {
+        this.collection.post({
+          success: function(collection, response) {
+            console.log(collection, response);
+            swtr.sweets.update(collection);
+            //TODO: move this to a annotation view or something
+            anno.removeAll();
+            _.each(swtr.sweets.models, function(swt) {
+              if(!_.has(swt.get('how'), 'editable')) {
+                swt.get('how')['editable'] = false;
+                swt.get('how').text += '\n - by ' + swt.get('who');
+              }
+              console.log(swt.get('how'));
+              anno.addAnnotation(swt.get('how'));
+            });
+            //console.log(swtr.sweets.toJSON());
+            appView.overlay.hide();
+            appView.helpview.step(6);
+          },
+          error: function(jqxhr, error, text) {
+            console.log(jqxhr, error, text);
+          }
+        });
+      } catch(e) {
+        if(e.message == 'Access Token is required to sweet') {
+          appView.$overlay.hide();
+          appView.helpview.step(9);
         }
-      });
+      }
       this.cleanUp();
       return false;
     },
@@ -218,26 +221,36 @@
       'click #img-url-load': 'setImage',
       'click #img-url-submit': 'setImage',
       'click #sweet': 'sweet',
-      'click #signin-credentials': 'getSignInCredentials',
+      'click #sign-in': 'signIn',
       'click #setbox': 'showHide',
       'change .form-control': 'button_custom',
       'mouseup .annotorious-editor-button-save': 'add_new_anno'
     },
     initialize: function() {
-      //var allElements = $('body *');
+      // initialize components
       this.helpview = new HelpView();
       this.sweetsview = new SweetsView({collection: swtr.sweets});
+
+      //register handlers for annotorious events
       anno.addHandler('onAnnotationCreated', this.showSwtHelp);
-      anno.addHandler('onannotationupdated', this.showswthelp);
+      anno.addHandler('onAnnotationUpdated', this.showSwtHelp);
       anno.addHandler('onSelectionStarted', function(annotation) {
         anno.hideAnnotations();});
       anno.addHandler('onSelectionCompleted', function(annotation) {
         anno.showAnnotations();
       });
-      anno.addPlugin('CustomFields', this.showSwtHelp); 
-      anno.addHandler('onSelectionCompleted', this.setShape);  
+      anno.addPlugin('CustomFields', {});
+      anno.addHandler('onSelectionCompleted', this.setShape);
+
+      // cache jquery selected elements which are used frequently
       this.$overlay = $('#app-overlay');
       this.$img = $('#annotatable-img');
+
+      // attach a load event handler, whenever an image is loaded..
+      this.$img.on('load', this, this.imageLoaded);
+      this.$img.on('error', this, this.onImageLoadError);
+
+      // check if already an image is provided at load time..
       this.imgURL = this.$img.attr('src');
       if(this.imgURL) {
         this.initImageAnno();
@@ -247,6 +260,7 @@
         this.helpview.step(1);
       }
 
+      // initialize the oauth stuff
       this.oauth = new Oauth({
         app_id: swtr.app_id,
         app_secret: swtr.app_secret,
@@ -255,18 +269,32 @@
         scopes: 'email,sweet'
       });
     },
-
-    setImage: function() {
-      anno.reset();
+    setImage: function(event) {
+      event.preventDefault();
       this.imgURL = $('#img-url-input').val();
+      if(!this.imgURL) {
+        return false;
+      }
+      anno.reset();
+      var self = this;
       this.$overlay.show();
       this.helpview.step(7);
-      this.$img.attr('onload', function() {
-        swtr.appView.$overlay.hide();
-      });
       this.$img.attr('src', this.imgURL);
-      this.initImageAnno();
       return false;
+    },
+    imageLoaded: function(event) {
+      var self = event.data;
+      console.log('image loaded');
+      self.$overlay.hide();
+      self.initImageAnno();
+    },
+    // when image fails to load - could be because of broken URL or network
+    // issues
+    onImageLoadError: function(event) {
+      var self = event.data;
+      console.log('error while loading image');
+      self.$overlay.hide();
+      self.helpview.step(8);
     },
     initImageAnno: function() {
       // img is a jquery object which annotorious doesn't accept; instead it
@@ -276,6 +304,7 @@
       this.getExistingAnnotations();
     },
     getExistingAnnotations: function() {
+      var self = this;
       this.helpview.step(0);
       this.$overlay.show();
       //console.log('getting existing annotations of ', this.imgURL);
@@ -292,16 +321,16 @@
               anno.addAnnotation(swt.how);
               console.log('swt.how = ', swt.how);
             });
-            swtr.appView.$overlay.hide();
-            swtr.appView.helpview.step(2);
+            self.$overlay.hide();
+            self.helpview.step(2);
           }
         },
         error: function(jqxhr, error, statusText) {
           if(jqxhr.status === 404) { //annotations don't exist for this image
             console.log('annotations don\'t exist for this image. Create one!');
           }
-          swtr.appView.$overlay.hide();
-          swtr.appView.helpview.step(2);
+          self.$overlay.hide();
+          self.helpview.step(2);
         }
       });
     },
@@ -340,19 +369,17 @@
         //$("p").toggle();
         $('.annotorious-item-unfocus').css("opacity", "0");
       }
-
     },
-//annotorious editor widget - custom with options
-//to obtain shapes object, declaring annotation in global scope - TODO refactor
-//code to find better way to do this.
-
-    setShape: function(annotation) {                  
+    //annotorious editor widget - custom with options
+    //to obtain shapes object, declaring annotation in global scope - TODO refactor
+    //code to find better way to do this.
+    setShape: function(annotation) {
       $('.annotorious-editor-text').hide();
       $('.annotorious-editor').css("width", "100%");
-       window.annotation=annotation;
-       annotation.text = [];
-      },
-//to create new annotation object
+      window.annotation=annotation;
+      annotation.text = [];
+    },
+    //to create new annotation object
     inputStore: function(opt) {
       var temp = opt;
       var src = $('#img-url-input').val();
@@ -360,21 +387,21 @@
 
     },
 
-//to add the final annotation
+    //to add the final annotation
 
-//save button - event bind
-    add_new_anno: function(event){ 
-        var $selected = $('select option:selected');
-        var tempinput = $selected.text()+': '+$('.annotorious-editor textarea').val();
-        this.newanno.text.push(tempinput);
-        var newinput = this.newanno.text.toString();
-        this.newanno.text = newinput;
-        console.log('this.newanno = ', this.newanno);
-        //this.to_Add(this.newanno);
-        var newanno = this.newanno;
-        window.newanno = newanno;
-      },
-//dropdown event
+    //save button - event bind
+    add_new_anno: function(event) {
+      var $selected = $('select option:selected');
+      var tempinput = $selected.text()+': '+$('.annotorious-editor textarea').val();
+      this.newanno.text.push(tempinput);
+      var newinput = this.newanno.text.toString();
+      this.newanno.text = newinput;
+      console.log('this.newanno = ', this.newanno);
+      //this.to_Add(this.newanno);
+      var newanno = this.newanno;
+      window.newanno = newanno;
+    },
+    //dropdown event
     button_custom: function(event) {
       $('.annotorious-editor-text').show();
       var $selected = $('select option:selected');
@@ -389,38 +416,14 @@
       $('.annotorious-editor-text:first').val("");
       $('.annotorious-editor-text:first').attr('placeholder', 'Add a '+$selected.text());
     },
-
-
-
-    getSignInCredentials: function(event) {
+    // to sign in the user to swtstore..just make a call to the oauth endpoint
+    signIn: function(event) {
       event.preventDefault();
       this.oauth.authorize();
       return false;
     },
-    signIn: function(username, password) {
-      this.$overlay.show();
-      $.ajax({
-        url: swtr.swtstoreURL() + swtr.endpoints.auth,
-        type: 'POST',
-        data: {user: username, hash: password},
-        success: function(data) {
-          swtr.appView.$overlay.hide();
-          swtr.who = username;
-          var text = 'You are signed in as <b>' + swtr.who+ '</b>';
-          $('#signinview').html(text);
-        },
-        error: function(jqxhr, status, error) {
-          swtr.appView.$overlay.hide();
-          if(error === 'FORBIDDEN') {
-            $('#signin-msg').html('Error signing in. Please check your username and password. ');
-          }
-          else {
-          }
-        }
-      });
-    },
-    userLoggedIn: function(token) {
-      swtr.who = token;
+    userLoggedIn: function(username) {
+      swtr.who = username;
       var text = 'You are signed in as <b>' + swtr.who + '</b>';
       $('#signinview').html(text);
     },
@@ -459,6 +462,10 @@
                 break;
         case 7: text = 'Fetching your image..';
                 break;
+        case 8: text = 'Oops! Seems like the image URL is wrong! Or we couldn\'t fetch the image.';
+                break;
+        case 9: text = 'You have to be <i>signed in</i> to sweet store to post sweets';
+                break;
       }
       $(this.el).html(text);
       $(window).scrollTop(0, 0);
@@ -469,39 +476,5 @@
   swtr.utils = {};
 
   //swtr.AppView = AppView;
-
-  // Persona callbacks
-  /*navigator.id.watch({
-    //when an user logs in
-    onlogin: function(assertion) {
-      //verify assertion and login the user
-      $.ajax({
-        type: 'POST',
-        url: swtr.swtstoreURL() + swtr.endpoints.login,
-        data: {assertion: assertion},
-        success: function(data) {
-          console.log('user logged in', data);
-          swtr.appView.userLoggedIn(data);
-        },
-        error: function() {
-          navigator.id.logout();
-        }
-      });
-    },
-    //when an user logs out
-    onlogout: function() {
-      $.ajax({
-        type: 'POST',
-        //data: {email: swtr.who},
-        url: swtr.swtstoreURL() + swtr.endpoints.logout,
-        success: function() {
-          console.log('user logged out');
-          //swtr.appView.userLoggedOut();
-        },
-        error: function() {
-        }
-      });
-    }
-  });*/
 
 })(swtr);
