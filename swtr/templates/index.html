@@ -101,7 +101,6 @@
     <script src="{{ url_for('static', filename='js/lib/backbone-1.0.0.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/annotorious.debug.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/custom-fields-plugin.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/lib/label.js') }}"></script>
     <script src="{{ url_for('static', filename='js/oauth.js') }}"></script>
     <script src="{{ url_for('static', filename='js/swtmaker.js') }}"></script>
 
@@ -109,7 +108,7 @@
       <li class="sweet">
         <a href="#">@<%= who %></a> <strong>#<%= what %></strong>
         /<a href="<%= where %>"><%= where.substr(0, 30) + '...' %></a>
-        <%= how %>
+        <p><%= how %></p>
       </li>
     </script>
     <script type="text/template" id="dropdown-template">
@@ -118,7 +117,7 @@
         <option id="comment" >Comment</option>
         <option id="title" >Title</option>
         <option id="tags">Tags</option>
-        <option id="links">Links</option>
+        <option id="link">Link</option>
       </select>
     </script>
     <!-- script type="text/template" id="dropdown-template">

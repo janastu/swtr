@@ -4,9 +4,9 @@
   //Find a better way to do closure
   //Remove script code from the HTML page
   swtr.init = function() {
-    swtr.sweets = new ImgAnnoSwts();
-    swtr.appView = new AppView();
-    swtr.who = 'Guest';
+    this.sweets = new ImgAnnoSwts();
+    this.appView = new AppView();
+    this.who = 'Guest';
 
     $.ajaxSetup({
       xhrFields: {
@@ -16,7 +16,7 @@
       //some browsers won't make cross-domain ajax until it is explicitly set
       crossDomain: true
     });
-    swtr.handleOAuth();
+    this.handleOAuth();
   };
 
   swtr.handleOAuth = function() {
@@ -158,10 +158,26 @@
           who: swt.get('who'),
           what: swt.get('what'),
           where: swt.get('where'),
-          how: JSON.stringify(swt.get('how').text)
+          how: JSON.stringify(this.getHumanReadableParts(swt.get('how')))
         }));
       }, this);
       $(this.el).fadeIn(300);
+    },
+    getHumanReadableParts: function(how) {
+      var human_readable_json = {};
+      if(how.comment) {
+        human_readable_json['comment'] = how.comment;
+      }
+      if(how.title) {
+        human_readable_json['title'] = how.title;
+      }
+      if(how.tags) {
+        human_readable_json['tags'] = how.tags;
+      }
+      if(how.link) {
+        human_readable_json['link'] = how.link;
+      }
+      return human_readable_json;
     },
     cancelSweeting: function() {
       this.removeSwtsNotPosted();
@@ -188,14 +204,16 @@
               if(!_.has(swt.get('how'), 'editable')) {
                 swt.get('how')['editable'] = false;
                 //console.log(swt.get('how').text.Comment);
+                swt.get('how').text = appView.createPopupText(swt.get('how'));
+                //console.log(swt.get('how'));
                 swt.get('how').text += '\n - by ' + swt.get('who');
               }
               //console.log(swt.get('how'));
               anno.addAnnotation(swt.get('how'));
             });
             //console.log(swtr.sweets.toJSON());
-            appView.overlay.hide();
-            appView.helpview.step(6);
+            swtr.appView.$overlay.hide();
+            swtr.appView.helpview.step(6);
           },
           error: function(jqxhr, error, text) {
             console.log(jqxhr, error, text);
@@ -224,8 +242,8 @@
       'click #sweet': 'sweet',
       'click #sign-in': 'signIn',
       'click #setbox': 'showHide',
-      'change #custom-dropdown ': 'getFormValue',
-      'mouseup .annotorious-editor-button-save': 'addNewAnno'
+      'change #custom-dropdown ': 'getFormValue'
+      //'mouseup .annotorious-editor-button-save': 'addnew_anno'
     },
     initialize: function() {
       // initialize components
@@ -234,14 +252,16 @@
 
       //register handlers for annotorious events
       anno.addHandler('onAnnotationCreated', this.showSwtHelp);
+      anno.addHandler('onAnnotationCreated', this.updateNewAnno);
       anno.addHandler('onAnnotationUpdated', this.showSwtHelp);
       anno.addHandler('onSelectionStarted', function(annotation) {
-        anno.hideAnnotations();});
+        anno.hideAnnotations();
+      });
       anno.addHandler('onSelectionCompleted', function(annotation) {
         anno.showAnnotations();
       });
       anno.addPlugin('CustomFields', {});
-      anno.addHandler('onSelectionCompleted', this.getShape);
+      anno.addHandler('onSelectionCompleted', this.hideOriginalEditor);
 
       // cache jquery selected elements which are used frequently
       this.$overlay = $('#app-overlay');
@@ -275,6 +295,9 @@
       this.imgURL = $('#img-url-input').val();
       if(!this.imgURL) {
         return false;
+      }
+      if(this.$img.attr('src') === this.imgURL) {
+        return;
       }
       anno.reset();
       var self = this;
@@ -318,14 +341,16 @@
             swtr.sweets.add(data);
             _.each(data, function(swt) {
               swt.how['editable'] = false;
-              if(typeof swt.how.text === 'object') {
-              swt.how.text1 = swt.how.text;
-              swt.how.text =  '\n - by ' + swt.who;
+              /*if(typeof swt.how.text === 'object') {
+                swt.how.text1 = swt.how.text;
+                swt.how.text =  '\n - by ' + swt.who;
               } else {
                 swt.how.text1 = undefined;
                 swt.how.text += '\n -by ' + swt.who;
-              }
-
+              }*/
+              swt.how.text = self.createPopupText(swt.how);
+              swt.how.text += '\n - by ' + swt.who;
+              //console.log(swt.how);
               anno.addAnnotation(swt.how);
             });
             self.$overlay.hide();
@@ -355,7 +380,8 @@
         swtr.sweets.add({
           who: swtr.who,
           where: anno.src,
-          how: anno  //mysterious link to create the sweet with new anno attributes, tags, links, labels
+          // remove the text field; we don't want to store that in the sweets
+          how: _.omit(anno, 'text')
         });
       });
     },
@@ -375,68 +401,75 @@
         $('.annotorious-item-unfocus').css("opacity", "0");
       }
     },
-    //annotorious editor widget - custom with options
-    //to obtain shapes object, declaring annotation in global scope - TODO refactor
-    //code to find better way to do this.
-    getShape: function(annotation) {
-     $('.annotorious-editor-text').slideUp();
-     $('.annotorious-editor').css('width', '100%');
-     window.annotation=annotation; // to use annotation.shape in newanno
-     annotation.text = {}; // creating new text object - to contain comments, labels, links and tags
+    // hide the original editor window, when user has completed selecting part
+    // of the image to annotate..
+    hideOriginalEditor: function(annotation) {
+      console.log('hideOriginalEditor()');
+      var self = swtr.appView;
+      self.new_anno = {};
+      $('.annotorious-editor-text').hide();
+      //$('.annotorious-editor').css('width', '100%');
+      //window.annotation = annotation; // to use annotation.shape in new_anno
+      //annotation.text = {}; // creating new text object - to contain comments, labels, links and tags
     },
-    //to create new annotation object
-    annoTemplate: function(opt) {
-      var annoText = opt;
-      var src = $('#img-url-input').val();
-      this.newanno = {
-        'src': src,
-        'text': annoText,
-        'shapes': [{
-          'type': annotation.shape.type,
-          'geometry': {
-            'x':annotation.shape.geometry.x,
-            'y': annotation.shape.geometry.y,
-            'width': annotation.shape.geometry.width,
-            'height': annotation.shape.geometry.height
-          }
-        }],
-        'context': window.location.origin
-      };
+    //dropdown event
+    getFormValue: function(event) {
+      console.log('getFormValue()');
+      var self = swtr.appView;
+      // show the editor field to input text
+      var $anno_form = $('.annotorious-editor-text');
+      $anno_form.slideDown();
+      // get the previous item entered
+      var $selected = $('select option:selected');
+      var text_input = $anno_form.val();
+      if(text_input) {
+        var field = $selected.prev().text().toLowerCase();
+        // update it in our annotation object
+        self.new_anno[field] = text_input;
+      }
+      if($selected.text() === 'Tags') {
+        //TODO: open up the tag sprayer component
+      }
+      $anno_form.val('');
+      $anno_form.attr('placeholder', 'Add ' + $selected.text());
+      console.log(self.new_anno);
     },
     //to add the final annotation
     //save button - event bind
-    addNewAnno: function(event) {
-        var $selected = $('select option:selected').text();
-        var textInput = $('.annotorious-editor textarea').val();
-        this.newanno.text[$selected] = textInput;
-        var newanno = this.newanno;
-        anno.addAnnotation(newanno);
-    },
-    /*addNewAnno: function(event){ // function for form input UI
-        var tags = $('#tags').val();
-        var label = $('#label').val();
-        var link = $('#links').val();
-        var text = $('.annotorious-editor textarea').val();
-        var finalInput = ' Label: '+label+' Comment: '+text+' Tags: '+tags+' Links: '+link;
-        //this.annoTemplate(label, text, tags, link);
-      //  this.annoTemplate(label, text, tags, link);
-      var src = $('#img-url-input').val();
-      var newanno = {'src':src, 'text':finalInput, 'shapes': [{'type':annotation.shape.type, 'geometry':{'x':annotation.shape.geometry.x, 'y':annotation.shape.geometry.y, 'width':annotation.shape.geometry.width, 'height':annotation.shape.geometry.height}},], 'context':window.location.origin};
-      console.log(newanno);
-        anno.addAnnotation(newanno);
-      },*/
-    //dropdown event
-    getFormValue: function(event) {
-      var annoForm = $('.annotorious-editor-text');
-      annoForm.slideDown();
-      var $selected = $('select option:selected');
-      var textInput = annoForm.val();
-      if(textInput) {
-      annotation.text[$selected.prev().text()] = textInput;
+    updateNewAnno: function(annotation) {
+      console.log('updateNewAnno()');
+      var self = swtr.appView;
+      // get the final value/input from the editor
+      var selected = $('select option:selected').text().toLowerCase();
+      var text_input = $('.annotorious-editor-text').val();
+      // update it in our annotation object
+      self.new_anno[selected] = text_input;
+      // prepare the text field
+      self.new_anno.text = self.createPopupText(self.new_anno);
+      // update the annotorious annotation object with the new values
+      if(self.new_anno.comment) {
+        annotation.comment = self.new_anno.comment;
       }
-      this.annoTemplate(annotation.text);
-      annoForm.val('');
-      annoForm.attr('placeholder', 'Add '+$selected.text());
+      if(self.new_anno.link) {
+        annotation.link = self.new_anno.link;
+      }
+      if(self.new_anno.tags) {
+        annotation.tags= self.new_anno.tags;
+      }
+      if(self.new_anno.title) {
+        annotation.title = self.new_anno.title;
+      }
+      annotation.text = self.new_anno.text;
+      console.log(self.new_anno, annotation);
+    },
+    // create the text to displayed for each annotation from the other
+    // attributes of the sweet/annotation
+    createPopupText: function(annotation) {
+      var text = (annotation.title) ? '<h4>' + annotation.title + '</h4>' : '';
+      text += (annotation.comment) ? '<p>' + annotation.comment + '</p>' : '';
+      text += (annotation.link) ? '<p>' + annotation.link + '</p>' : '';
+      text += (annotation.tags) ? '<p>' + annotation.tags + '</p>' : '';
+      return text;
     },
     // to sign in the user to swtstore..just make a call to the oauth endpoint
     signIn: function(event) {

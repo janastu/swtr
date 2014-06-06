@@ -7,10 +7,9 @@
 }
 #img-annotation-wrapper {
   margin: 30px auto 0 auto;
-  /*border: 1px solid black;*/
-  /*min-height: 500px;*/
 }
 #annotatable-img {
+  margin: 0 auto;
 }
 #sweet-list-wrapper {
   width: 500px;
