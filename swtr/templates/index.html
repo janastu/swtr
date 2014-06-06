@@ -11,6 +11,7 @@
     <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/annotorious.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-tags.css') }}" type="text/css" media="screen" />
   </head>
   <body>
 
@@ -33,17 +34,17 @@
           <button class="btn btn-default" id="img-url-submit">Load</button>
         </div>
         <div class="col-md-8">
-        <button class="btn btn-default" id="img-url-load">Annotate</button>
-        <button class="btn btn-default" id="sweet">Sweet</button>
-        <input id="setbox" type="checkbox"/ > <label
-          id="setcontrol"><p>Show annotated areas</p></label>
+          <button class="btn btn-default" id="img-url-load">Annotate</button>
+          <button class="btn btn-default" id="sweet">Sweet</button>
+          <input id="setbox" type="checkbox"/ > <label
+                                                   id="setcontrol"><p>Show annotated areas</p></label>
         </div>
       </div>
       <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
         {% if url %}
-          <img src="{{ url }}" id="annotatable-img">
+        <img src="{{ url }}" id="annotatable-img">
         {% else %}
-          <img src="" id="annotatable-img">
+        <img src="" id="annotatable-img">
         {% endif %}
       </div>
       <div id="sweet-list-wrapper">
@@ -60,9 +61,9 @@
       window.swtr = window.swtr || {};
       swtr.swtstoreURL = function() { return '{{ conf.swtstoreURL }}'; }
       swtr.endpoints = {'get': '/sweets/q', 'post': '/sweets', 'auth':
-        '/authenticate'};
+      '/authenticate'};
       window.onload = function() {
-        swtr.init();
+      swtr.init();
       };
     </script>
     <script src="{{ url_for('static', filename='js/lib/jquery-1.10.2.min.js') }}"></script>
@@ -72,6 +73,7 @@
     <script src="{{ url_for('static', filename='js/lib/annotorious.debug.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/custom-fields-plugin.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/label.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/lib/bootstrap-tags.min.js') }}"></script>
     <!--script src="https://login.persona.org/include.js"></script-->
     <script src="{{ url_for('static', filename='js/swtmaker.js') }}"></script>
 
@@ -83,26 +85,45 @@
       </li>
     </script>
     <script type="text/template" id="signin-credentials-template">
-        <div class="form-inline col-md-3">
-          <label class="sr-only" for="username">Username</label>
-          <input type="text" class="form-control" id="username" placeholder="Enter username">
-        </div>
-        <div class="form-inline col-md-3">
-          <label class="sr-only" for="password">Password</label>
-          <input type="password" class="form-control" id="password" placeholder="Password">
-        </div>
-      </script>
-      <script type="text/template" id="button-template">
-        <select class="form-control">
-          <option id="">Choose an Option</option>
-          <option id="comment" >Comment</option>
-          <option id="label" >Label</option>
-          <option id="tags">Tags</option>
-          <option id="links">Links</option>
-        </select>
-      </script>
+      <div class="form-inline col-md-3">
+        <label class="sr-only" for="username">Username</label>
+        <input type="text" class="form-control" id="username" placeholder="Enter username">
+      </div>
+      <div class="form-inline col-md-3">
+        <label class="sr-only" for="password">Password</label>
+        <input type="password" class="form-control" id="password" placeholder="Password">
+      </div>
+    </script>
+    <script type="text/template" id="dropdown-template">
+      <div id="tagsInput">
+      </div>
+      <select class="form-control" id="custom-dropdown">
+        <option id="">Choose an Option</option>
+        <option id="comment" >Comment</option>
+        <option id="title" >Title</option>
+        <option id="tags">Tags</option>
+        <option id="links">Links</option>
+      </select>
+    </script>
+    <!-- script type="text/template" id="dropdown-template">
+         <form class="form-control" id="custom-dropdown">
+           <textarea class="annotorious-editor-text goog-textarea"
+                     placeholder="Add Label" id="label"></textarea>
+           <textarea class="annotorious-editor-text goog-textarea"
+                     placeholder="Add Tags" id="tags"></textarea>
+           <textarea class="annotorious-editor-text goog-textarea"
+                     placeholder="Add Links" id="links"></textarea>
+         </form>
+      </script-->
       <script type="text/template" id="popup-template">
-        <span class="annotorious-popup-text"> </span>
+        <span class="annotorious-popup-text">
+          <ul class="custom-style-popup">
+            <li class="custom-popup-line" ><span>Title: </span><%= Label %></li>
+            <li class="custom-popup-line"><span>Comment: </span><%= Comment %></li>
+            <li class="custom-popup-line"><span>Tags: </span><%= Tags[0] %></li>
+            <li class="custom-popup-line"><span>Related Links: </span><%= Links %></li>
+            </ul>
+          </span>
       </script>
   </body>
 </html>
