@@ -10,6 +10,7 @@
     <link href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/annotorious.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-tags.css') }}" type="text/css" media="screen" />
   </head>
 
   <body>
@@ -102,6 +103,7 @@
     <script src="{{ url_for('static', filename='js/lib/annotorious.debug.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/custom-fields-plugin.js') }}"></script>
     <script src="{{ url_for('static', filename='js/oauth.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/lib/bootstrap-tags.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/swtmaker.js') }}"></script>
 
     <script type="text/template" id="sweet-template">
@@ -112,6 +114,7 @@
       </li>
     </script>
     <script type="text/template" id="dropdown-template">
+      <div id="tagsInput"></div>
       <select class="form-control" id="custom-dropdown">
         <option id="">Choose an Option</option>
         <option id="comment" >Comment</option>
