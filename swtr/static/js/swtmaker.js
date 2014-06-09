@@ -413,35 +413,6 @@
       //annotation.text = {}; // creating new text object - to contain comments, labels, links and tags
     },
 
-    //to add the final annotation
-    //save button - event bind
-    addNewAnno: function(event){
-      var $selected = $('select option:selected').val();
-      var textInput = $('.annotorious-editor textarea').val();
-      if($('select option:selected').val() === "Tags") {
-        //this.newanno.text[$selected] = $("#tagsInput").tags().getTags();
-      }
-      else {
-        console.log($selected);
-        //this.newanno.text[$selected] = textInput;
-      }
-      // var newanno = this.newanno;
-      // anno.addAnnotation(newanno);
-    },
-    /*addNewAnno: function(event){ // function for form input UI
-     var tags = $('#tags').val();
-     var label = $('#label').val();
-     var link = $('#links').val();
-     var text = $('.annotorious-editor textarea').val();
-     var finalInput = ' Label: '+label+' Comment: '+text+' Tags: '+tags+' Links: '+link;
-     //this.annoTemplate(label, text, tags, link);
-     //  this.annoTemplate(label, text, tags, link);
-     var src = $('#img-url-input').val();
-     var newanno = {'src':src, 'text':finalInput, 'shapes': [{'type':annotation.shape.type, 'geometry':{'x':annotation.shape.geometry.x, 'y':annotation.shape.geometry.y, 'width':annotation.shape.geometry.width, 'height':annotation.shape.geometry.height}},], 'context':window.location.origin};
-     console.log(newanno);
-     anno.addAnnotation(newanno);
-     },*/
-
     //dropdown event
     getFormValue: function(event) {
       console.log('getFormValue()');
@@ -467,14 +438,6 @@
         field = $selected.text().toLowerCase();
         self.new_anno[field] = $("#tagsInput").tags().getTags();
         $("#tagsInput").show();
-      // if(textInput && !($($selected).val() === "Tags")) {
-      //   //annotation.text[$selected.prev().text()] = textInput;
-      //   annotation.text[$($selected).val()] = textInput; // Gets the current selection from
-      //   // the option menu for choosing comments, tags, etc.
-      // } else {
-      //   console.log("else tags");
-      //   console.log(textInput);
-      //   annotation.text[$($selected).val()] = '';
 
       } else {
         $("#tagsInput").hide();
