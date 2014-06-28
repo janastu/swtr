@@ -6,11 +6,11 @@
     <title>Sweet Maker</title>
 
     <meta name="description" content="Sweet Maker, Social, Semantic, Web, Decentralized, Makes Sweet">
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/annotorious.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-tags.css') }}" type="text/css" media="screen" />
+    <link href="{{ config.application_root_uri }}{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ config.application_root_uri }}{{ url_for('static', filename='css/bootstrap-theme.min.css') }}" rel="stylesheet">
+    <link href="{{ config.application_root_uri }}{{ url_for('static', filename='css/annotorious.css') }}" rel="stylesheet">
+    <link href="{{ config.application_root_uri }}{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ config.application_root_uri }}{{ url_for('static', filename='css/bootstrap-tags.css') }}" type="text/css" media="screen" />
   </head>
 
   <body>
@@ -96,15 +96,15 @@
         swtr.init();
       };
     </script>
-    <script src="{{ url_for('static', filename='js/lib/jquery-1.10.2.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/lib/bootstrap.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/lib/underscore-1.5.2.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/lib/backbone-1.0.0.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/lib/annotorious.debug.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/lib/custom-fields-plugin.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/oauth.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/lib/bootstrap-tags.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/swtmaker.js') }}"></script>
+    <script src="{{ config.application_root_uri }}{{ url_for('static', filename='js/lib/jquery-1.10.2.min.js') }}"></script>
+    <script src="{{ config.application_root_uri }}{{ url_for('static', filename='js/lib/bootstrap.min.js') }}"></script>
+    <script src="{{ config.application_root_uri }}{{ url_for('static', filename='js/lib/underscore-1.5.2.min.js') }}"></script>
+    <script src="{{ config.application_root_uri }}{{ url_for('static', filename='js/lib/backbone-1.0.0.min.js') }}"></script>
+    <script src="{{ config.application_root_uri }}{{ url_for('static', filename='js/lib/annotorious.debug.js') }}"></script>
+    <script src="{{ config.application_root_uri }}{{ url_for('static', filename='js/lib/custom-fields-plugin.js') }}"></script>
+    <script src="{{ config.application_root_uri }}{{ url_for('static', filename='js/oauth.js') }}"></script>
+    <script type="text/javascript" src="{{ config.application_root_uri }}{{ url_for('static', filename='js/lib/bootstrap-tags.min.js') }}"></script>
+    <script src="{{ config.application_root_uri }}{{ url_for('static', filename='js/swtmaker.js') }}"></script>
 
     <script type="text/template" id="sweet-template">
       <li class="sweet">
