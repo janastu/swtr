@@ -1,3 +1,16 @@
+body {
+  overflow-y: scroll;
+}
+/* styles modifying annotorious editor default styles */
+.annotorious-editor {
+  min-width: 250px;
+}
+.annotorious-editor-text {
+  font-size: 12px;
+  min-height: 35px;
+}
+
+
 #swt-maker {
 }
 #signinview {

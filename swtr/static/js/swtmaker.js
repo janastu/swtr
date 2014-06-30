@@ -217,6 +217,8 @@
           },
           error: function(jqxhr, error, text) {
             console.log(jqxhr, error, text);
+            swtr.appView.$overlay.hide();
+            swtr.appView.helpview.step(10);
           }
         });
       } catch(e) {
@@ -335,22 +337,12 @@
       swtr.sweets.getAll({
         where: this.imgURL,
         success: function(data) {
-          console.log(data);
           if(_.isArray(data)) {
-            console.log('data is array');
             swtr.sweets.add(data);
             _.each(data, function(swt) {
               swt.how['editable'] = false;
-              /*if(typeof swt.how.text === 'object') {
-                swt.how.text1 = swt.how.text;
-                swt.how.text =  '\n - by ' + swt.who;
-              } else {
-                swt.how.text1 = undefined;
-                swt.how.text += '\n -by ' + swt.who;
-              }*/
               swt.how.text = self.createPopupText(swt.how);
               swt.how.text += '\n - by ' + swt.who;
-              //console.log(swt.how);
               anno.addAnnotation(swt.how);
             });
             self.$overlay.hide();
@@ -407,40 +399,46 @@
       console.log('hideOriginalEditor()');
       var self = swtr.appView;
       self.new_anno = {};
-      $('.annotorious-editor-text').hide();
+      //$('.annotorious-editor-text').hide();
       //$('.annotorious-editor').css('width', '100%');
-      //window.annotation = annotation; // to use annotation.shape in new_anno
-      //annotation.text = {}; // creating new text object - to contain comments, labels, links and tags
     },
 
     //dropdown event
     getFormValue: function(event) {
       console.log('getFormValue()');
+
       var self = swtr.appView;
       // show the editor field to input text
       var $anno_form = $('.annotorious-editor-text');
-      $anno_form.slideDown();
+      //$anno_form.slideDown();
       // get the previous item entered
       var $selected = $('select option:selected');
       var text_input = $anno_form.val();
-      if(text_input && !($selected.prev().text() === "Tags")) {
+
+      // if there was a input and it was not tags..
+      if(text_input && $selected.prev().text() !== 'Tags') {
         var field = $selected.prev().text().toLowerCase();
         // update it in our annotation object
         self.new_anno[field] = text_input;
       }
+      // if it was tags..
+      else if ($selected.prev().text() === 'Tags') {
+        // directly save it..
+        self.new_anno['tags'] = $('#tags-input').tags().getTags();
+      }
+
+      // if the current selected is tags
       if($selected.text() === 'Tags') {
-        //TODO: open up the tag sprayer component
-
-        $("#tagsInput").tags({
-          tagData:["default", "tags"],
-          suggestions:["basic", "suggestions"]
+        $('#tags-input').tags({
+          tagData: ['foo', 'bar'],
+          //suggestions: ["basic", "suggestions"]
         });
-        field = $selected.text().toLowerCase();
-        self.new_anno[field] = $("#tagsInput").tags().getTags();
-        $("#tagsInput").show();
-
-      } else {
-        $("#tagsInput").hide();
+        $('#tags-input').show();
+        $('.annotorious-editor-text').hide();
+      }
+      else {
+        $('#tags-input').hide();
+        $('.annotorious-editor-text').show();
       }
       $anno_form.val('');
       $anno_form.attr('placeholder', 'Add ' + $selected.text());
@@ -455,8 +453,9 @@
       var selected = $('select option:selected').text().toLowerCase();
       var text_input = $('.annotorious-editor-text').val();
       if( selected === "tags") {
-        self.new_anno[selected] = $("#tagsInput").tags().getTags();
-      } else {
+        self.new_anno[selected] = $('#tags-input').tags().getTags();
+      }
+      else {
         // update it in our annotation object
         self.new_anno[selected] = text_input;
       }
@@ -485,6 +484,12 @@
       text += (annotation.comment) ? '<p>' + annotation.comment + '</p>' : '';
       text += (annotation.link) ? '<p>' + annotation.link + '</p>' : '';
       text += (annotation.tags) ? '<p>' + annotation.tags + '</p>' : '';
+
+      // if older annotation i.e w/o comment,title etc fields
+      // add text field as text
+      if(!text) {
+        text = annotation.text;
+      }
       return text;
     },
     // to sign in the user to swtstore..just make a call to the oauth endpoint
@@ -537,6 +542,8 @@
                 break;
         case 9: text = 'You have to be <i>signed in</i> to sweet store to post sweets';
                 break;
+        case 10: text = 'Oops! Something went wrong. We couldn\'t publish the sweets. Try again.'
+                 break;
       }
       $(this.el).html(text);
       $(window).scrollTop(0, 0);
