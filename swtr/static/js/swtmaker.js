@@ -399,10 +399,20 @@
       console.log('hideOriginalEditor()');
       var self = swtr.appView;
       self.new_anno = {};
+      self.getSuggestionsForTags();
       //$('.annotorious-editor-text').hide();
       //$('.annotorious-editor').css('width', '100%');
     },
-
+    // load the suggestions for the tag spraying..
+    getSuggestionsForTags: function() {
+      var self = swtr.appView;
+      $.ajax({
+        url: '/static/data/tags_suggestions.json',
+        success: function(data) {
+          self.tags_suggestions = data;
+        }
+      });
+    },
     //dropdown event
     getFormValue: function(event) {
       console.log('getFormValue()');
@@ -430,8 +440,10 @@
       // if the current selected is tags
       if($selected.text() === 'Tags') {
         $('#tags-input').tags({
-          tagData: ['foo', 'bar'],
-          //suggestions: ["basic", "suggestions"]
+          tagSize: 'md',
+          promptText: 'Type word (and press enter)..',
+          caseInsensitive: true,
+          suggestions: self.tags_suggestions
         });
         $('#tags-input').show();
         $('.annotorious-editor-text').hide();
