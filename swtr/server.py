@@ -2,9 +2,12 @@
 
 import flask
 from flask import session
+import lxml.html
 import config
 import requests
 import json
+import urllib2
+import imghdr
 
 app = flask.Flask(__name__)
 app.config['SECRET_KEY'] = config.secret_key
@@ -46,6 +49,57 @@ def index():
                                  config=config,
                                  url=flask.request.args.get('where'))
 
+
+@app.route('/annotate', methods=['GET'])
+def annotate():
+    print flask.request.args['where']
+    img = urllib2.urlopen(flask.request.args['where']).read()
+    if imghdr.what('ignore', img) is None:
+        root = lxml.html.parse(flask.request.args['where']).getroot()
+        root.make_links_absolute(flask.request.args['where'],
+                                 resolve_base_href=True)
+
+        jQuery = root.makeelement('script')
+        root.body.append(jQuery)
+        jQuery.set("src", "//code.jquery.com/jquery-1.11.0.min.js")
+        jQuery.set("type", "text/javascript")
+
+        annotatorScript = root.makeelement('script')
+        root.body.append(annotatorScript)
+        annotatorScript.set("src", flask.url_for('static',
+                                                 filename=
+                                                 "js/annotator-full.min.js"))
+        annotatorScript.set("type", "text/javascript")
+
+        annotatorCSS = root.makeelement('link')
+        root.body.append(annotatorCSS)
+        annotatorCSS.set("href", flask.url_for('static',
+                                               filename=
+                                               "css/annotator.min.css"))
+        annotatorCSS.set("rel", "stylesheet")
+        annotatorCSS.set("type", "text/css")
+
+        appScript = root.makeelement('script')
+        root.body.append(appScript)
+        appScript.set("src", flask.url_for('static',
+                                           filename="js/app.js"))
+        appScript.set("type", "text/javascript")
+
+        response = flask.make_response()
+        response.data = lxml.html.tostring(root)
+        return response
+
+    else:
+        if 'auth_tok' in session:
+            auth_tok = session['auth_tok']
+        else:
+            auth_tok = {'access_token': '', 'refresh_token': ''}
+
+        return flask.render_template('index.html',
+                                     access_token=auth_tok['access_token'],
+                                     refresh_token=auth_tok['refresh_token'],
+                                     config=config,
+                                     url=flask.request.args.get('where'))
 
 # if the app is run directly from command-line
 # assume its being run locally in a dev environment
