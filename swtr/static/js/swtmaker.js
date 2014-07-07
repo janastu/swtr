@@ -502,9 +502,18 @@
     // create the text to displayed for each annotation from the other
     // attributes of the sweet/annotation
     createPopupText: function(annotation) {
+      // title
       var text = (annotation.title) ? '<h4>' + annotation.title + '</h4>' : '';
+
+      // comment
       text += (annotation.comment) ? '<p>' + annotation.comment + '</p>' : '';
-      text += (annotation.link) ? '<p>' + annotation.link + '</p>' : '';
+
+      // link
+      text += (annotation.link) ? '<a target="blank" href="' +
+        swtr.utils.linkify(annotation.link) + '">' + annotation.link +
+        '</a>' : '';
+
+      // tags
       text += (annotation.tags) ? '<p>' + annotation.tags + '</p>' : '';
 
       // if older annotation i.e w/o comment,title etc fields
@@ -573,7 +582,16 @@
   });
 
   // utilities and helper functions to go here
-  swtr.utils = {};
+  swtr.utils = {
+    linkify: function(link) {
+      if(link.match('http')) {
+        return link;
+      }
+      else {
+        return 'http://' + link;
+      }
+    }
+  };
 
   //swtr.AppView = AppView;
 
