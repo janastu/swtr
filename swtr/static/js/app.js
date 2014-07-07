@@ -189,10 +189,14 @@ window.swtr = window.swtr || {};
       this.loadOverlayBar();
     },
     loadOverlayBar: function() {
-      var template = "<div id='overlayBar' class='navbar' style='background:grey;position:fixed; top:0px; left:0px;width:100%;'><div class='navbar-inner'><div class='container-fluid'>"+
-            "<a href='/' >Try a different website.</a>"+
-            "<button id='show-sweets' disabled='enabled' class='btn btn-default'>Sweets"+
-            "</button><button id='sign-in' class='btn btn-sm btn-primary'>Sign In</button><span id='signinview'></span></div></div></div>";
+      var template = "<div id='overlayBar' class='navbar'><a class='navbar-brand'>Swtr - Text Annotation</a>" +
+        "<div class='navbar-inner'><div class='container-fluid'>" +
+        "<button id='sign-in' class='btn btn-default navbar-btn pull-right'>Sign In</button>" +
+        "<button id='show-sweets' disabled='true' class='btn btn-primary navbar-btn'>Sweet</button>" +
+        "<a href='/' class='btn btn-default navbar-btn nav-btn'>Try a different website</a>"
+        "<span id='signinview' class='pull-right'></span>" +
+        "</div></div></div>";
+
       $(document.body).append(template);
     },
     signIn: function(e) {

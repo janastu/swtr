@@ -64,3 +64,20 @@ body {
   z-index: 10000;
   background-color: rgba(255, 255, 255, 0.7);
 }
+
+
+/* text-annotation styles */
+
+#overlayBar {
+  background: #fff;
+  border-bottom: 1px solid #ccc;
+  left: 0;
+  opacity: 0.95;
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+.nav-btn {
+  margin-left: 10px;
+}
