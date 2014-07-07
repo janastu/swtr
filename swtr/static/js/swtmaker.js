@@ -67,13 +67,13 @@
         return false;
       }
       /*if(!swtr.access_token) {
-        throw new Error('Access Token required to get query that API');
-      }*/
+       throw new Error('Access Token required to get query that API');
+       }*/
       // setting up params
       var where = options.where,
           who = options.who || null;
-          url = swtr.swtstoreURL() + swtr.endpoints.get + '?where=' +
-            encodeURIComponent(where) + '&access_token=' + swtr.access_token;
+      url = swtr.swtstoreURL() + swtr.endpoints.get + '?where=' +
+        encodeURIComponent(where) + '&access_token=' + swtr.access_token;
       if(who) {
         url += '&who=' + who;
       }
@@ -108,7 +108,7 @@
       }
 
       var url = swtr.swtstoreURL() + swtr.endpoints.post +
-        '?access_token=' + swtr.access_token;
+            '?access_token=' + swtr.access_token;
 
       this.sync('create', dummy_collection, {
         url: url,
@@ -294,19 +294,26 @@
     },
     setImage: function(event) {
       event.preventDefault();
-      this.imgURL = $('#img-url-input').val();
-      if(!this.imgURL) {
+      var url = $('#img-url-input').val();
+      if(url.contains('.jpg') || url.contains('.png') ||
+         url.contains('.gif') || url.contains('.jpeg')) {
+        this.imgURL = $('#img-url-input').val();
+        if(!this.imgURL) {
+          return false;
+        }
+        if(this.$img.attr('src') === this.imgURL) {
+          return;
+        }
+        anno.reset();
+        var self = this;
+        this.$overlay.show();
+        this.helpview.step(7);
+        this.$img.attr('src', this.imgURL);
         return false;
       }
-      if(this.$img.attr('src') === this.imgURL) {
-        return;
+      else {
+        window.location.href = '/annotate?where=' + url;
       }
-      anno.reset();
-      var self = this;
-      this.$overlay.show();
-      this.helpview.step(7);
-      this.$img.attr('src', this.imgURL);
-      return false;
     },
     imageLoaded: function(event) {
       var self = event.data;
@@ -534,28 +541,28 @@
     step: function(n) {
       var text = '';
       switch (n) {
-        case 0 : text = 'Getting annotations..';
-                 break;
-        case 1: text = 'Enter the URL of an image below, and start annotating!';
-                break;
-        case 2: text = 'Annotate the image, or see other annotations';
-                break;
-        case 3: text = 'Now you can sweet this annotation, or add more annotations';
-                break;
-        case 4: text = 'Click Sweet button to publish these annotations to the Sweet Store';
-                break;
-        case 5: text = 'Publishing your sweets';
-                break;
-        case 6: text = 'Sweets successfully posted';
-                break;
-        case 7: text = 'Fetching your image..';
-                break;
-        case 8: text = 'Oops! Seems like the image URL is wrong! Or we couldn\'t fetch the image.';
-                break;
-        case 9: text = 'You have to be <i>signed in</i> to sweet store to post sweets';
-                break;
-        case 10: text = 'Oops! Something went wrong. We couldn\'t publish the sweets. Try again.'
-                 break;
+      case 0 : text = 'Getting annotations..';
+        break;
+      case 1: text = 'Enter the URL of an image below, and start annotating!';
+        break;
+      case 2: text = 'Annotate the image, or see other annotations';
+        break;
+      case 3: text = 'Now you can sweet this annotation, or add more annotations';
+        break;
+      case 4: text = 'Click Sweet button to publish these annotations to the Sweet Store';
+        break;
+      case 5: text = 'Publishing your sweets';
+        break;
+      case 6: text = 'Sweets successfully posted';
+        break;
+      case 7: text = 'Fetching your image..';
+        break;
+      case 8: text = 'Oops! Seems like the image URL is wrong! Or we couldn\'t fetch the image.';
+        break;
+      case 9: text = 'You have to be <i>signed in</i> to sweet store to post sweets';
+        break;
+      case 10: text = 'Oops! Something went wrong. We couldn\'t publish the sweets. Try again.'
+        break;
       }
       $(this.el).html(text);
       $(window).scrollTop(0, 0);
