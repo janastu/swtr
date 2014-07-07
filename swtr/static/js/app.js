@@ -241,10 +241,10 @@ window.swtr = window.swtr || {};
         $("#sweet-list").html('');
         alert("Your SWeets are posted!!");
       },
-                             error: function(data) {
-                               alert("Failed to post your SWeets, please try again.");
-                             }
-                            });
+      error: function(data) {
+        alert("Failed to post your SWeets, please try again.");
+      }
+      });
     }
   });
   new AppView;

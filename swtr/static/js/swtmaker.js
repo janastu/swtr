@@ -546,7 +546,7 @@
       switch (n) {
       case 0 : text = 'Getting annotations..';
         break;
-      case 1: text = 'Enter the URL of an image below, and start annotating!';
+      case 1: text = 'Enter the URL of an image or web page below, and start annotating!';
         break;
       case 2: text = 'Annotate the image, or see other annotations';
         break;
