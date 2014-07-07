@@ -6,7 +6,7 @@ import lxml.html
 import config
 import requests
 import json
-import urllib2
+import StringIO
 import imghdr
 
 app = flask.Flask(__name__)
@@ -53,9 +53,11 @@ def index():
 @app.route('/annotate', methods=['GET'])
 def annotate():
     print flask.request.args['where']
-    img = urllib2.urlopen(flask.request.args['where']).read()
-    if imghdr.what('ignore', img) is None:
-        root = lxml.html.parse(flask.request.args['where']).getroot()
+    # img = urllib2.urlopen(flask.request.args['where']).read()
+    request = requests.get(flask.request.args['where'])
+    content = request.text
+    if imghdr.what('ignore', content) is None:
+        root = lxml.html.parse(StringIO.StringIO(content)).getroot()
         root.make_links_absolute(flask.request.args['where'],
                                  resolve_base_href=True)
 
@@ -78,6 +80,76 @@ def annotate():
                                                "css/annotator.min.css"))
         annotatorCSS.set("rel", "stylesheet")
         annotatorCSS.set("type", "text/css")
+
+        swtmakerCSS = root.makeelement('link')
+        root.body.append(swtmakerCSS)
+        swtmakerCSS.set("href", flask.url_for('static',
+                                              filename=
+                                              "css/swtmaker.css"))
+        swtmakerCSS.set("rel", "stylesheet")
+        swtmakerCSS.set("type", "text/css")
+
+        bootstrapCSS = root.makeelement('link')
+        root.body.append(bootstrapCSS)
+        bootstrapCSS.set("href", flask.url_for('static',
+                                               filename=
+                                               "css/bootstrap.min.css"))
+        bootstrapCSS.set("rel", "stylesheet")
+        bootstrapCSS.set("type", "text/css")
+
+        underscoreJS = root.makeelement('script')
+        root.body.append(underscoreJS)
+        underscoreJS.set("src", flask.url_for('static',
+                                              filename="js/lib/" +
+                                              "underscore-1.5.2.min.js"))
+        underscoreJS.set("type", "text/javascript")
+
+        backboneJS = root.makeelement('script')
+        root.body.append(backboneJS)
+        backboneJS.set("src", flask.url_for('static',
+                                            filename=
+                                            "js/lib/backbone-1.0.0.min.js"))
+        backboneJS.set("type", "text/javascript")
+
+        if 'auth_tok' in session:
+            auth_tok = session['auth_tok']
+        else:
+            auth_tok = {'access_token': '', 'refresh_token': ''}
+
+        configScript = root.makeelement('script')
+        root.body.append(configScript)
+        configScript.text = """window.swtr = window.swtr || {};
+        swtr.swtstoreURL = {}
+        swtr.endpoints = {}
+        'get': '/api/sweets/q',
+        'post': '/api/sweets',
+        'auth': '/oauth/authorize',
+        'login': '/auth/login',
+        'logout': '/auth/logout'
+        {};
+
+        swtr.access_token = '{}';
+        swtr.refresh_token = '{}';
+        swtr.app_id = '{}';swtr.app_secret = '{}';
+        swtr.oauth_redirect_uri = '{}';""".format(
+            '{}', 'function() {}return "{}"{}'.format('{',
+                                                      config.swtstoreURL, '};'),
+            '{', '}', auth_tok['access_token'], auth_tok['refresh_token'],
+            config.app_id, config.app_secret,
+            config.redirect_uri)
+        configScript.set("type", "text/javascript")
+
+        # swtmakerScript = root.makeelement('script')
+        # root.body.append(swtmakerScript)
+        # swtmakerScript.set("src", flask.url_for('static',
+        #                                         filename="js/swtmaker.js"))
+        # swtmakerScript.set("type", "text/javascript")
+
+        oAuthScript = root.makeelement('script')
+        root.body.append(oAuthScript)
+        oAuthScript.set("src", flask.url_for('static',
+                                             filename="js/oauth.js"))
+        oAuthScript.set("type", "text/javascript")
 
         appScript = root.makeelement('script')
         root.body.append(appScript)
