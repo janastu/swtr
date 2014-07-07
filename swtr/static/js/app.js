@@ -138,7 +138,9 @@ window.swtr = window.swtr || {};
       if(!(swtr.who)) {
         swtr.who = "Guest";
       }
-      swtr.TxtAnnoSwts.add(new TxtAnnoSwt({how: annotation,
+      // Removing the highlights key value pair from annotation object.
+      var tempAnnotation = _.omit(annotation, 'highlights');
+      swtr.TxtAnnoSwts.add(new TxtAnnoSwt({how: tempAnnotation,
                                            where: pageURL,
                                            who: swtr.who}));
       if($("#show-sweets").attr('disabled')) {
@@ -189,13 +191,17 @@ window.swtr = window.swtr || {};
       this.loadOverlayBar();
     },
     loadOverlayBar: function() {
-      var template = "<div id='overlayBar' class='navbar'><a class='navbar-brand'>Swtr - Text Annotation</a>" +
-        "<div class='navbar-inner'><div class='container-fluid'>" +
-        "<button id='sign-in' class='btn btn-default navbar-btn pull-right'>Sign In</button>" +
-        "<button id='show-sweets' disabled='true' class='btn btn-primary navbar-btn'>Sweet</button>" +
-        "<a href='/' class='btn btn-default navbar-btn nav-btn'>Try a different website</a>"
-        "<span id='signinview' class='pull-right'></span>" +
-        "</div></div></div>";
+      var template = "<div id='overlayBar' class='navbar'>"+
+            "<a class='navbar-brand'>Swtr - Text Annotation</a>" +
+            "<div class='navbar-inner'><div class='container-fluid'>" +
+            "<button id='sign-in' class='btn btn-default navbar-btn"+
+            " pull-right'>Sign In</button>" +
+            "<button id='show-sweets' disabled='true' class='btn "+
+            "btn-primary navbar-btn'>Sweet</button>" +
+            "<a href='/' class='btn btn-default navbar-btn nav-btn'>"+
+            "Try a different website</a>"+
+            "<span id='signinview' class='pull-right'></span>" +
+            "</div></div></div>";
 
       $(document.body).append(template);
     },
@@ -206,6 +212,7 @@ window.swtr = window.swtr || {};
     showSweets: function(e) {
       $("#sweet-list-wrapper").show();
       swtr.TxtAnnoSwts.each(function(model){
+        console.log(model, model.isNew());
         var templateStr ='<li class="sweet">'+
               '<a href="#">@<%= who %></a> <strong>#<%= what %></strong> '+
               '<a href="<%= where %>"><%= where.substr(0, 30) + "..." %></a> '+
@@ -229,7 +236,9 @@ window.swtr = window.swtr || {};
       $("#sweet-list").html('');
     },
     postSweet: function(e) {
-      swtr.TxtAnnoSwts.post({success: function(data) {
+      swtr.TxtAnnoSwts.post({success: function(collection, data) {
+        swtr.TxtAnnoSwts.set(collection);
+        $("#sweet-list").html('');
         alert("Your SWeets are posted!!");
       },
                              error: function(data) {

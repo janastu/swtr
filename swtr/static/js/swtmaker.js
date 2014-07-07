@@ -197,7 +197,7 @@
         this.collection.post({
           success: function(collection, response) {
             console.log(collection, response);
-            swtr.sweets.update(collection);
+            swtr.sweets.set(collection);
             //TODO: move this to a annotation view or something
             anno.removeAll();
             _.each(swtr.sweets.models, function(swt) {
@@ -312,6 +312,9 @@
         return false;
       }
       else {
+        if(!url) {
+          return false;
+        }
         window.location.href = '/annotate?where=' + url;
       }
     },
