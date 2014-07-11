@@ -295,8 +295,8 @@
     setImage: function(event) {
       event.preventDefault();
       var url = $('#img-url-input').val();
-      if(url.contains('.jpg') || url.contains('.png') ||
-         url.contains('.gif') || url.contains('.jpeg')) {
+      if(url.match(/.jpg|.jpeg|.png|.gif|.bmp|.svg/)) {
+
         this.imgURL = $('#img-url-input').val();
         if(!this.imgURL) {
           return false;
