@@ -12,3 +12,7 @@ app_secret = 'the app_secret or client_secret'
 # when you are deploying the app locally, by default this should be
 #redirect_uri = 'http://localhost:5000'
 redirect_uri = 'http://yourapplication.domain'
+# The root URL of the application. This allows us to host the application
+# in subdirectories of a hostname (optionally). Note that redirect_uri might be different
+# thus we need a seperate one.
+application_root_uri = 'http://yourapplication.domain/optionalsubdir'
