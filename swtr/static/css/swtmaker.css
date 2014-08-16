@@ -23,6 +23,7 @@ body {
 }
 #annotatable-img {
   margin: 0 auto;
+  max-width: 1125px;
 }
 #sweet-list-wrapper {
   width: 500px;
