@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 
 import flask
 from flask import session
@@ -202,6 +202,31 @@ def annotate():
                                      refresh_token=auth_tok['refresh_token'],
                                      config=config,
                                      url=flask.request.args.get('where'))
+
+
+@app.route("/search")
+def search():
+    if 'size' not in flask.request.args:
+        size = 10
+    else:
+        size = flask.request.args['size']
+    if 'from' not in flask.request.args:
+        fr = 0
+    else:
+        fr = flask.request.args['from']
+
+    results = requests.post("http://api.opencultuurdata.nl/v0/search",
+                            data=json.dumps({
+                                "query": flask.request.args['term'],
+                                "facets": {"collection": {},
+                                           "date": {"interval": "day"}},
+                                "filters": {"media_content_type":
+                                            {"terms": ["image/jpeg",
+                                                       "image/png"]}},
+                                "size": size,
+                                "from": fr}))
+    return flask.jsonify(results.json())
+
 
 # if the app is run directly from command-line
 # assume its being run locally in a dev environment
