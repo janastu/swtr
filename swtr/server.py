@@ -3,12 +3,13 @@
 import flask
 from flask import session
 import lxml.html
-import config
 import requests
 import json
 import StringIO
 import imghdr
 from datetime import datetime, timedelta
+
+import config
 
 
 app = flask.Flask(__name__)
@@ -80,9 +81,55 @@ def index():
                                  url=flask.request.args.get('where'))
 
 
+# endpoint to search the Open Cuultur Data APIs
+# takes in `query`, `size`, and `from` parameters in query string
+# returns a JSON response
+@app.route('/search/ocd', methods=['GET'])
+def search_ocd():
+    query = flask.request.args.get('query')
+    #collection = flask.request.args.get('collection')
+    size = flask.request.args.get('size') or 10
+    offset = flask.request.args.get('from') or 0
+
+    # if query parameter is not passed, return bad request.
+    if not query:
+        flask.abort(400)
+
+    payload = {
+        'query': query,
+        'facets': {
+            'collection': {},
+            'date': {'interval': 'day'}
+        },
+        'filters': {
+            'media_content_type': {'terms': ['image/jpeg', 'image/png']}
+        },
+        'size': size,
+        'from': offset
+    }
+    resp = requests.post('http://api.opencultuurdata.nl/v0/search',
+                         data=json.dumps(payload))
+
+    response = flask.make_response()
+    response.data = json.dumps(resp.json())
+    response.headers['Content-type'] = 'application/json'
+    return response
+
+
+# resolve OCD Media URLs: http://docs.opencultuurdata.nl/user/api.html#resolver
+@app.route('/resolve-ocd-media/<media_hash>', methods=['GET'])
+def resolve_ocd_media_urls(media_hash):
+
+    resp = requests.get('http://api.opencultuurdata.nl/v0/resolve/' +
+                        media_hash)
+
+    response = flask.make_response()
+    response.data = resp.url
+    return response
+
+
 @app.route('/annotate', methods=['GET'])
 def annotate():
-    print flask.request.args['where']
     # img = urllib2.urlopen(flask.request.args['where']).read()
     request = requests.get(flask.request.args['where'])
     content = request.text
@@ -140,6 +187,18 @@ def annotate():
                                             filename=
                                             "js/lib/backbone-1.0.0.min.js"))
         backboneJS.set("type", "text/javascript")
+
+        # annotorious plugin
+        annotoriousCSS = root.makeelement('link')
+        root.body.append(annotoriousCSS)
+        annotoriousCSS.set("href", flask.url_for('static',
+                                                 filename='css/annotorious.css'))
+        annotoriousCSS.set('rel', 'stylesheet')
+
+        annotoriousJS = root.makeelement('script')
+        root.body.append(annotoriousJS)
+        annotoriousJS.set('src', flask.url_for('static',
+                                               filename='js/annotorious.okfn.0.3.js'))
 
         if 'auth_tok' in session:
             auth_tok = session['auth_tok']
@@ -202,30 +261,6 @@ def annotate():
                                      refresh_token=auth_tok['refresh_token'],
                                      config=config,
                                      url=flask.request.args.get('where'))
-
-
-@app.route("/search")
-def search():
-    if 'size' not in flask.request.args:
-        size = 10
-    else:
-        size = flask.request.args['size']
-    if 'from' not in flask.request.args:
-        fr = 0
-    else:
-        fr = flask.request.args['from']
-
-    results = requests.post("http://api.opencultuurdata.nl/v0/search",
-                            data=json.dumps({
-                                "query": flask.request.args['term'],
-                                "facets": {"collection": {},
-                                           "date": {"interval": "day"}},
-                                "filters": {"media_content_type":
-                                            {"terms": ["image/jpeg",
-                                                       "image/png"]}},
-                                "size": size,
-                                "from": fr}))
-    return flask.jsonify(results.json())
 
 
 # if the app is run directly from command-line

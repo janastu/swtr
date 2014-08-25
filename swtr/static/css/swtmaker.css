@@ -10,21 +10,29 @@ body {
   min-height: 35px;
 }
 
-
 #swt-maker {
 }
+
+#control-panel {
+  margin-top: 10px;
+  margin-left: 0;
+}
+
 #signinview {
   margin 0 20px;
   padding: 10px;
   text-align: center;
 }
-#img-annotation-wrapper {
+
+#img-annotation-wrapper, #ocd-results {
   margin: 30px auto 0 auto;
 }
+
 #annotatable-img {
   margin: 0 auto;
   max-width: 1125px;
 }
+
 #sweet-list-wrapper {
   width: 500px;
   min-height: 300px;
@@ -38,17 +46,32 @@ body {
   padding: 30px;
   display: none;
 }
+
 #sweet-list {
   margin-bottom: 10px;
 }
-.btn-grp {
-  position: relative;
-  bottom: -10%;
-  right: -10%;
+
+.ocd-item {
+  padding-bottom: 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
 }
+
+.thumb-image {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: block;
+  height: 400px;
+  margin: 0 auto;
+}
+
 #sweet {
   display: none;
 }
+
 #helpview {
   font-weight: bold;
   font-size: 1.3em;

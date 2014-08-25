@@ -130,6 +130,7 @@ window.swtr = window.swtr || {};
       this.annotator = new Annotator(document.body);
       swtr.anno = this.annotator;
       this.annotator.addPlugin("Tags");
+      this.annotator.addPlugin("AnnotoriousImagePlugin");
       this.listenTo(this.collection, "add", this.loadAnno);
       this.annotator.subscribe("annotationCreated", this.storeAnno);
     },

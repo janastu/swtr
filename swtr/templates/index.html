@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>swtr - the default sweet web app</title>
+    <title> swtr - the canonical sweet web app </title>
 
-    <meta name="description" content="Sweet Maker, Social, Semantic, Web, Decentralized, Makes Sweet, Sweet Swagger">
+    <meta name="description" content="Sweet Maker, Social, Semantic, Web, Decentralized, Makes Sweet, Sweet Swagger, Swtr, swtr">
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/annotorious.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-tags.css') }}" type="text/css" media="screen" />
+    <link href="{{ url_for('static', filename='css/bootstrap-tags.css') }}"  rel="stylesheet">
   </head>
 
   <body>
@@ -36,25 +36,36 @@
         <div class="col-md-8">
           <form class="form-inline" role="form">
             <div class="form-group col-md-11">
-              <label class="sr-only" for="img-url-input">Enter URL of the image</label>
+              <label class="sr-only" for="user-input">Enter URL of an image or web page</label>
               <input class="form-control" type="text"
-                placeholder="Enter URL of the image or web page" id="img-url-input">
+                placeholder="Enter URL of an image or web page" id="user-input">
             </div>
-            <button type="submit" class="btn btn-primary" id="img-url-load">Load</button>
+            <button type="submit" class="btn btn-primary" id="user-input-submit">Load</button>
           </form>
         </div>
         <div class="col-md-4">
         </div>
       </div> <!-- end second row -->
       <!-- third row - control panel? -->
-      <div class="row">
-        <div class="col-md-3">
-          <input id="setbox" type="checkbox"/>
-          <label id="setcontrol" for="setbox">Show annotated areas</label>
+      <div class="row" id="control-panel">
+        <div class="col-md-8">
+          <form class="form-inline" role="form">
+            <div class="form-group">
+              <label class="checkbox-inline">
+                <input type="checkbox" id="setbox"> Show annotated areas
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="checkbox-inline">
+                <input type="checkbox" id="ocd-source"> Search in Open Cuultur Data
+              </label>
+            </div>
+            <div class="form-group">
+              <button class="btn btn-default" id="sweet">Sweet</button>
+            </div>
+          </form>
         </div>
-        <div class="col-md-1">
-          <button class="btn btn-default" id="sweet">Sweet</button>
-        </div>
+        <div class="col-md-4"></div>
       </div> <!-- end third row -- >
       <!-- fourth row: the image annotation window -->
       <div class="row">
@@ -65,6 +76,7 @@
           <img src="" id="annotatable-img" class="img-responsive">
         {% endif %}
         </div>
+        <div id="ocd-results"></div>
       </div> <!-- end fourth row -->
 
       <div id="sweet-list-wrapper">
@@ -122,16 +134,6 @@
         <option value="link">Link</option>
       </select>
     </script>
-    <!-- script type="text/template" id="dropdown-template">
-    <form class="form-control" id="custom-dropdown">
-      <textarea class="annotorious-editor-text goog-textarea"
-        placeholder="Add Label" id="label"></textarea>
-      <textarea class="annotorious-editor-text goog-textarea"
-        placeholder="Add Tags" id="tags"></textarea>
-      <textarea class="annotorious-editor-text goog-textarea"
-        placeholder="Add Links" id="links"></textarea>
-    </form>
-    </script-->
     <script type="text/template" id="popup-template">
       <span class="annotorious-popup-text">
         <ul class="custom-style-popup">
@@ -141,6 +143,17 @@
           <li class="custom-popup-line"><span>Related Links: </span><%= Links %></li>
         </ul>
       </span>
+    </script>
+    <script type="text/template" id="ocd-item-template">
+      <div class="col-sm-6 col-md-4 ocd-item">
+        <h4> <%= title %> </h4>
+        <div class="media">
+          <a href="<%= media_url %>">
+            <img src="" class="responsive thumb-image">
+          </a>
+        </div>
+        <div>Authors: <%= authors %> </div>
+      </div>
     </script>
   </body>
 </html>

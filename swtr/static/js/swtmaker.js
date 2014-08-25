@@ -233,22 +233,27 @@
     cleanUp: function() {
       //console.log('cleaning up');
       $(this.el).hide();
+      if(swtr.appView.source === 'ocd') {
+        $('#img-annotation-wrapper').hide();
+        $('#ocd-results').show();
+      }
     }
   });
 
   var AppView = Backbone.View.extend({
     el: $('#swt-maker'),
     events: {
-      'click #img-url-load': 'setImage',
-      'click #img-url-submit': 'setImage',
+      'click #user-input-submit': 'submitUserInput',
       'click #sweet': 'sweet',
       'click #sign-in': 'signIn',
       'click #setbox': 'showHide',
-      'change #custom-dropdown ': 'getFormValue'
+      'change #custom-dropdown ': 'getFormValue',
+      'click #ocd-source': 'sourceChanged'
       //'mouseup .annotorious-editor-button-save': 'addnew_anno'
     },
     initialize: function() {
       // initialize components
+      this.source = 'none';
       this.helpview = new HelpView();
       this.sweetsview = new SweetsView({collection: swtr.sweets});
 
@@ -277,7 +282,7 @@
       this.imgURL = this.$img.attr('src');
       if(this.imgURL) {
         this.initImageAnno();
-        $('#img-url-input').val(this.imgURL);
+        $('#user-input').val(this.imgURL);
       }
       else {
         this.helpview.step(1);
@@ -292,15 +297,27 @@
         scopes: 'email,sweet'
       });
     },
-    setImage: function(event) {
+    submitUserInput: function(event) {
       event.preventDefault();
-      var url = $('#img-url-input').val();
+      var input = $('#user-input').val();
+      if(this.source === 'ocd') {
+        this.loadOCDSearch(input);
+      }
+      else if (this.source === 'none') {
+        this.loadURL(input);
+      }
+    },
+    loadURL: function(url) {
+      $('#ocd-results').hide();
+      $('#img-annotation-wrapper').show();
+      if(!url) {
+        return false;
+      }
+      // if image url then load the image annotation
       if(url.match(/.jpg|.jpeg|.png|.gif|.bmp|.svg/)) {
 
-        this.imgURL = $('#img-url-input').val();
-        if(!this.imgURL) {
-          return false;
-        }
+        this.imgURL = url;
+
         if(this.$img.attr('src') === this.imgURL) {
           return;
         }
@@ -311,10 +328,8 @@
         this.$img.attr('src', this.imgURL);
         return false;
       }
+      // else load text annotation
       else {
-        if(!url) {
-          return false;
-        }
         window.location.href = '/annotate?where=' + url;
       }
     },
@@ -537,6 +552,95 @@
     userLoggedOut: function() {
       swtr.who = 'Guest';
       $('#signinview').html('Logged out');
+    },
+    changeURLInputPlaceholder: function(source) {
+      switch (source) {
+        case 'ocd'  : $('#user-input').attr('placeholder', 'Enter search query');
+                      break;
+        case 'none' : $('#user-input').attr('placeholder', 'Enter URL of image or web page');
+                      break;
+      }
+    },
+    // function to change the source in the application and update the UI
+    changeSource: function(source) {
+      switch (source) {
+        case 'ocd'  : this.source = 'ocd';
+                      this.helpview.step(11);
+                      this.changeURLInputPlaceholder('ocd');
+                      break;
+        case 'none' : this.source = 'none';
+                      this.helpview.step(1);
+                      this.changeURLInputPlaceholder('none');
+                      break;
+      }
+    },
+    // event handler to capture control panel UI change of source
+    sourceChanged: function(event) {
+      if($('#ocd-source').is(':checked')) {
+        this.changeSource('ocd');
+      }
+      else {
+        this.changeSource('none');
+      }
+    },
+    loadOCDSearch: function(input) {
+      var self = this;
+      $('#img-annotation-wrapper').hide();
+      $('#ocd-results').show();
+      $('#ocd-results').append('Loading..');
+      $.ajax({
+        type: 'GET',
+        url: '/search/ocd',
+        data: {query: input},
+        success: function(data) {
+          self.ocdView = new OCDView({model: data.hits.hits});
+        }
+      });
+    }
+  });
+
+  var OCDView = Backbone.View.extend({
+    el: $('#ocd-results'),
+    events: {
+      'click .ocd-item a': 'onClickImg'
+    },
+    initialize: function() {
+      this.item_template = _.template($('#ocd-item-template').html());
+      this.render();
+    },
+    render: function() {
+      var $row_el;
+      this.$el.html('');
+      _.each(this.model, function(item, idx) {
+        if(idx % 3 === 0) {
+          $row_el = $('<div class="row"></div>');
+          this.$el.append($row_el);
+        }
+        $row_el.append(this.item_template({
+          title: item._source.title,
+          media_url: item._source.media_urls[0].url,
+          authors: item._source.authors
+        }));
+      }, this);
+      this.resolve();
+    },
+    // resolve the OCD media URLs
+    resolve: function() {
+      var self = this;
+      $('.ocd-item').each(function(idx, elem) {
+        var temp_arr = self.model[idx]._source.media_urls[0].url.split('/');
+        var media_hash = temp_arr[temp_arr.length - 1];
+        $.get('/resolve-ocd-media/'+ media_hash, function(resp) {
+          $(elem).find('img').attr('src', resp);
+        });
+      });
+    },
+    onClickImg: function(event) {
+      event.preventDefault();
+      // TODO: init the image anno
+      var url = $(event.currentTarget).find('img').attr('src');
+      swtr.appView.loadURL(url);
+      return false;
     }
   });
 
@@ -574,6 +678,8 @@
       case 9: text = 'You have to be <i>signed in</i> to sweet store to post sweets';
         break;
       case 10: text = 'Oops! Something went wrong. We couldn\'t publish the sweets. Try again.'
+        break;
+      case 11: text = 'Search in <a href="http://www.opencultuurdata.nl/">Open Cuultur Data API</a>';
         break;
       }
       $(this.el).html(text);
