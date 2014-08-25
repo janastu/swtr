@@ -138,67 +138,23 @@ def annotate():
         root.make_links_absolute(flask.request.args['where'],
                                  resolve_base_href=True)
 
-        jQuery = root.makeelement('script')
-        root.body.append(jQuery)
-        jQuery.set("src", "//code.jquery.com/jquery-1.11.0.min.js")
-        jQuery.set("type", "text/javascript")
+        addScript("//code.jquery.com/jquery-1.11.0.min.js", root)
+        addScript(flask.url_for('static', filename="js/annotator-full.min.js"),
+                  root)
 
-        annotatorScript = root.makeelement('script')
-        root.body.append(annotatorScript)
-        annotatorScript.set("src", flask.url_for('static',
-                                                 filename=
-                                                 "js/annotator-full.min.js"))
-        annotatorScript.set("type", "text/javascript")
-
-        annotatorCSS = root.makeelement('link')
-        root.body.append(annotatorCSS)
-        annotatorCSS.set("href", flask.url_for('static',
-                                               filename=
-                                               "css/annotator.min.css"))
-        annotatorCSS.set("rel", "stylesheet")
-        annotatorCSS.set("type", "text/css")
-
-        swtmakerCSS = root.makeelement('link')
-        root.body.append(swtmakerCSS)
-        swtmakerCSS.set("href", flask.url_for('static',
-                                              filename=
-                                              "css/swtmaker.css"))
-        swtmakerCSS.set("rel", "stylesheet")
-        swtmakerCSS.set("type", "text/css")
-
-        bootstrapCSS = root.makeelement('link')
-        root.body.append(bootstrapCSS)
-        bootstrapCSS.set("href", flask.url_for('static',
-                                               filename=
-                                               "css/bootstrap.min.css"))
-        bootstrapCSS.set("rel", "stylesheet")
-        bootstrapCSS.set("type", "text/css")
-
-        underscoreJS = root.makeelement('script')
-        root.body.append(underscoreJS)
-        underscoreJS.set("src", flask.url_for('static',
-                                              filename="js/lib/" +
-                                              "underscore-1.5.2.min.js"))
-        underscoreJS.set("type", "text/javascript")
-
-        backboneJS = root.makeelement('script')
-        root.body.append(backboneJS)
-        backboneJS.set("src", flask.url_for('static',
-                                            filename=
-                                            "js/lib/backbone-1.0.0.min.js"))
-        backboneJS.set("type", "text/javascript")
-
-        # annotorious plugin
-        annotoriousCSS = root.makeelement('link')
-        root.body.append(annotoriousCSS)
-        annotoriousCSS.set("href", flask.url_for('static',
-                                                 filename='css/annotorious.css'))
-        annotoriousCSS.set('rel', 'stylesheet')
-
-        annotoriousJS = root.makeelement('script')
-        root.body.append(annotoriousJS)
-        annotoriousJS.set('src', flask.url_for('static',
-                                               filename='js/annotorious.okfn.0.3.js'))
+        addCSS(flask.url_for('static', filename='css/annotator.min.css'), root)
+        addCSS(flask.url_for('static', filename='css/swtmaker.css'), root)
+        addCSS(flask.url_for('static', filename='css/bootstrap.min.css'), root)
+        addScript(flask.url_for('static',
+                                filename="js/lib/underscore-1.5.2.min.js"),
+                  root)
+        addScript(flask.url_for('static',
+                                filename="js/lib/backbone-1.0.0.min.js"),
+                  root)
+        addCSS(flask.url_for('static', filename='css/annotorious.css'), root)
+        addScript(flask.url_for('static',
+                                filename="js/annotorious.okfn.0.3.js"),
+                  root)
 
         if 'auth_tok' in session:
             auth_tok = session['auth_tok']
@@ -228,23 +184,9 @@ def annotate():
             config.redirect_uri)
         configScript.set("type", "text/javascript")
 
-        # swtmakerScript = root.makeelement('script')
-        # root.body.append(swtmakerScript)
-        # swtmakerScript.set("src", flask.url_for('static',
-        #                                         filename="js/swtmaker.js"))
-        # swtmakerScript.set("type", "text/javascript")
+        addScript(flask.url_for('static', filename="js/oauth.js"), root)
 
-        oAuthScript = root.makeelement('script')
-        root.body.append(oAuthScript)
-        oAuthScript.set("src", flask.url_for('static',
-                                             filename="js/oauth.js"))
-        oAuthScript.set("type", "text/javascript")
-
-        appScript = root.makeelement('script')
-        root.body.append(appScript)
-        appScript.set("src", flask.url_for('static',
-                                           filename="js/app.js"))
-        appScript.set("type", "text/javascript")
+        addScript(flask.url_for('static', filename="js/app.js"), root)
 
         response = flask.make_response()
         response.data = lxml.html.tostring(root)
@@ -261,6 +203,21 @@ def annotate():
                                      refresh_token=auth_tok['refresh_token'],
                                      config=config,
                                      url=flask.request.args.get('where'))
+
+
+def addScript(src, el):
+    script = el.makeelement('script')
+    el.body.append(script)
+    script.set("src", src)
+    script.set("type", "text/javascript")
+
+
+def addCSS(src, el):
+    style = el.makeelement('link')
+    el.body.append(style)
+    style.set("href", src)
+    style.set("rel", "stylesheet")
+    style.set("type", "text/css")
 
 
 # if the app is run directly from command-line
