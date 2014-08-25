@@ -291,7 +291,6 @@
       // initialize the oauth stuff
       this.oauth = new Oauth({
         app_id: swtr.app_id,
-        app_secret: swtr.app_secret,
         endpoint: swtr.swtstoreURL() + swtr.endpoints.auth,
         redirect_uri: swtr.oauth_redirect_uri,
         scopes: 'email,sweet'

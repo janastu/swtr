@@ -2,11 +2,12 @@
 
   var Oauth = function(options) {
     // all necessary params provided?
-    if(!options.hasOwnProperty('app_id') || !options.hasOwnProperty('app_secret') ||
-       !options.hasOwnProperty('redirect_uri') || !options.hasOwnProperty('scopes') ||
+    if(!options.hasOwnProperty('app_id') ||
+       !options.hasOwnProperty('redirect_uri') ||
+       !options.hasOwnProperty('scopes') ||
        !options.hasOwnProperty('endpoint')) {
 
-      throw new Error('All of the - app_id, app_secret, redirect_uri, scopes'+
+      throw new Error('All of the - app_id, redirect_uri, scopes'+
                          ', endpoint - parameters must be provided');
       return;
     }
@@ -19,7 +20,6 @@
     }
 
     this.app_id = options.app_id;
-    this.app_secret = options.app_secret;
     this.redirect_uri = options.redirect_uri;
     this.scopes = options.scopes.split(',');
     this.endpoint = options.endpoint;
