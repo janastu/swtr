@@ -85,7 +85,7 @@ def index():
 # takes in `query`, `size`, and `from` parameters in query string
 # returns a JSON response
 @app.route('/search/ocd', methods=['GET'])
-def search_ocd():
+def searchOCD():
     query = flask.request.args.get('query')
     #collection = flask.request.args.get('collection')
     size = flask.request.args.get('size') or 10
@@ -117,15 +117,35 @@ def search_ocd():
 
 
 # resolve OCD Media URLs: http://docs.opencultuurdata.nl/user/api.html#resolver
-@app.route('/resolve-ocd-media/<media_hash>', methods=['GET'])
-def resolve_ocd_media_urls(media_hash):
+@app.route('/resolve-ocd-media', methods=['GET'])
+def resolveOCDMediaURLs():
+
+    media_hash = flask.request.args.get('hash') or None
+
+    if not media_hash:
+        flask.abort(400)
 
     resp = requests.get('http://api.opencultuurdata.nl/v0/resolve/' +
                         media_hash)
 
-    response = flask.make_response()
-    response.data = resp.url
-    return response
+    return flask.jsonify(url=resp.url)
+
+
+@app.route('/media-type', methods=['GET'])
+def getMediaType():
+
+    where = flask.request.args.get('where') or None
+
+    if not where:
+        flask.abort(400)
+
+    resp = requests.get(where)
+    content = resp.text
+
+    if imghdr.what('ignore', content) is None:
+        return flask.jsonify({'type': 'html'})
+    else:
+        return flask.jsonify({'type': 'image'})
 
 
 @app.route('/annotate', methods=['GET'])
@@ -219,15 +239,6 @@ def addCSS(src, el):
     style.set("rel", "stylesheet")
     style.set("type", "text/css")
 
-
-@app.route('/getMediaType')
-def getMediaType():
-    request = requests.get(flask.request.args['where'])
-    content = request.text
-    if imghdr.what('ignore', content) is None:
-        return flask.jsonify({'type': 'html'})
-    else:
-        return flask.jsonify({'type': 'image'})
 
 # if the app is run directly from command-line
 # assume its being run locally in a dev environment

@@ -306,31 +306,55 @@
         this.loadURL(input);
       }
     },
-    loadURL: function(url) {
-      $('#ocd-results').hide();
+    loadURL: function(url, type) {
+      console.log('loadURL()');
+      if(this.source !== 'ocd') {
+        $('#ocd-results').hide();
+      }
       $('#img-annotation-wrapper').show();
       if(!url) {
         return false;
       }
-      // if image url then load the image annotation
-      if(url.match(/.jpg|.jpeg|.png|.gif|.bmp|.svg/)) {
-
-        this.imgURL = url;
-
-        if(this.$img.attr('src') === this.imgURL) {
-          return;
-        }
-        anno.reset();
-        var self = this;
-        this.$overlay.show();
-        this.helpview.step(7);
-        this.$img.attr('src', this.imgURL);
+      // if type is given explicitly; we load it as such.
+      if(type === 'image') {
+        this.setImage(url);
         return false;
       }
-      // else load text annotation
-      else {
-        window.location.href = '/annotate?where=' + url;
+      // else try to find what resource is the URL..
+      // if url has an image extension then load the image annotation
+      if(url.match(/.jpg|.jpeg|.png|.gif|.bmp|.svg/)) {
+        this.setImage(url);
+        return false;
       }
+      // else check with our /media-type endpoint to see what type of resource
+      // it is
+      else {
+        this.helpview.step(12);
+        this.$overlay.show();
+        var self = this;
+        $.get('/media-type', {where: url}, function(response) {
+          //console.log(response);
+          self.$overlay.hide();
+          if(response.type === 'image') {
+            self.setImage(url);
+          }
+          else {
+            window.location.href = '/annotate?where=' + url;
+          }
+        });
+      }
+    },
+    setImage: function(url) {
+      this.imgURL = url;
+
+      if(this.$img.attr('src') === this.imgURL) {
+        return;
+      }
+      anno.reset();
+      var self = this;
+      this.$overlay.show();
+      this.helpview.step(7);
+      this.$img.attr('src', this.imgURL);
     },
     imageLoaded: function(event) {
       var self = event.data;
@@ -611,6 +635,7 @@
       var $row_el;
       this.$el.html('');
       _.each(this.model, function(item, idx) {
+        // put every 3 items in a row
         if(idx % 3 === 0) {
           $row_el = $('<div class="row"></div>');
           this.$el.append($row_el);
@@ -621,16 +646,16 @@
           authors: item._source.authors
         }));
       }, this);
-      this.resolve();
+      this.resolveOCDURLs();
     },
     // resolve the OCD media URLs
-    resolve: function() {
+    resolveOCDURLs: function() {
       var self = this;
       $('.ocd-item').each(function(idx, elem) {
         var temp_arr = self.model[idx]._source.media_urls[0].url.split('/');
         var media_hash = temp_arr[temp_arr.length - 1];
-        $.get('/resolve-ocd-media/'+ media_hash, function(resp) {
-          $(elem).find('img').attr('src', resp);
+        $.get('/resolve-ocd-media', {hash: media_hash}, function(resp) {
+          $(elem).find('img').attr('src', resp.url);
         });
       });
     },
@@ -638,7 +663,7 @@
       event.preventDefault();
       // TODO: init the image anno
       var url = $(event.currentTarget).find('img').attr('src');
-      swtr.appView.loadURL(url);
+      swtr.appView.loadURL(url, 'image');
       return false;
     }
   });
@@ -657,29 +682,31 @@
       var text = '';
       switch (n) {
       case 0 : text = 'Getting annotations..';
-        break;
+               break;
       case 1: text = 'Enter the URL of an image or web page below, and start annotating!';
-        break;
+              break;
       case 2: text = 'Annotate the image, or see other annotations';
-        break;
+              break;
       case 3: text = 'Now you can sweet this annotation, or add more annotations';
-        break;
+              break;
       case 4: text = 'Click Sweet button to publish these annotations to the Sweet Store';
-        break;
+              break;
       case 5: text = 'Publishing your sweets';
-        break;
+              break;
       case 6: text = 'Sweets successfully posted';
-        break;
+              break;
       case 7: text = 'Fetching your image..';
-        break;
+              break;
       case 8: text = 'Oops! Seems like the image URL is wrong! Or we couldn\'t fetch the image.';
-        break;
+              break;
       case 9: text = 'You have to be <i>signed in</i> to sweet store to post sweets';
-        break;
+              break;
       case 10: text = 'Oops! Something went wrong. We couldn\'t publish the sweets. Try again.'
-        break;
+               break;
       case 11: text = 'Search in <a href="http://www.opencultuurdata.nl/">Open Cuultur Data API</a>';
-        break;
+               break;
+      case 12: text = 'Analyzing the resource type..';
+               break;
       }
       $(this.el).html(text);
       $(window).scrollTop(0, 0);
