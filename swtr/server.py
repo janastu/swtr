@@ -220,6 +220,15 @@ def addCSS(src, el):
     style.set("type", "text/css")
 
 
+@app.route('/getMediaType')
+def getMediaType():
+    request = requests.get(flask.request.args['where'])
+    content = request.text
+    if imghdr.what('ignore', content) is None:
+        return flask.jsonify({'type': 'html'})
+    else:
+        return flask.jsonify({'type': 'image'})
+
 # if the app is run directly from command-line
 # assume its being run locally in a dev environment
 if __name__ == '__main__':
