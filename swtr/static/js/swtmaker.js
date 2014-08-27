@@ -66,9 +66,6 @@
         throw Error('"where" option must be passed to get sweets of a URI');
         return false;
       }
-      /*if(!swtr.access_token) {
-       throw new Error('Access Token required to get query that API');
-       }*/
       // setting up params
       var where = options.where,
           who = options.who || null;
@@ -233,10 +230,6 @@
     cleanUp: function() {
       //console.log('cleaning up');
       $(this.el).hide();
-      if(swtr.appView.source === 'ocd') {
-        $('#img-annotation-wrapper').hide();
-        $('#ocd-results').show();
-      }
     }
   });
 
@@ -306,13 +299,15 @@
         this.loadURL(input);
       }
     },
+    // load a URL for annotation (can be of image or html resource for now)
     loadURL: function(url, type) {
-      console.log('loadURL()');
+      //console.log('loadURL()');
       if(this.source !== 'ocd') {
         $('#ocd-results').hide();
       }
       $('#img-annotation-wrapper').show();
-      if(!url) {
+      if(!url || !url.match(/http/)) {
+        this.helpview.step(13);
         return false;
       }
       // if type is given explicitly; we load it as such.
@@ -610,35 +605,51 @@
       var self = this;
       $('#img-annotation-wrapper').hide();
       $('#ocd-results').show();
-      $('#ocd-results').append('Loading..');
+      $('#ocd-results').html('<h4 style="text-align: center;">Loading..</h4>');
       $.ajax({
         type: 'GET',
         url: '/search/ocd',
         data: {query: input},
         success: function(data) {
-          self.ocdView = new OCDView({model: data.hits.hits});
+          self.ocdView = new OCDView({
+            query: input,
+            data: data,
+            model: data.hits.hits
+          });
         }
       });
     }
   });
 
   var OCDView = Backbone.View.extend({
-    el: $('#ocd-results'),
+    el: $('#ocd-view'),
     events: {
-      'click .ocd-item a': 'onClickImg'
+      'click .ocd-item a': 'onImgClick',
+      'click .pager li': 'onPagerClick'
     },
-    initialize: function() {
+    initialize: function(opts) {
+      this.data = opts.data || {};
+      this.query = opts.query || '';
+      this.size = 9; // num of items per page
+      this.page = 0;
       this.item_template = _.template($('#ocd-item-template').html());
+      this.base_template = _.template($('#ocd-view-base-template').html());
       this.render();
     },
     render: function() {
       var $row_el;
       this.$el.html('');
+      if(!this.model.length) {
+        this.$el.html('No results could be found from your query.');
+        return;
+      }
+      this.$el.html(this.base_template());
+      var $el = $('#ocd-results');
       _.each(this.model, function(item, idx) {
         // put every 3 items in a row
         if(idx % 3 === 0) {
           $row_el = $('<div class="row"></div>');
-          this.$el.append($row_el);
+          $el.append($row_el);
         }
         $row_el.append(this.item_template({
           title: item._source.title,
@@ -647,6 +658,10 @@
         }));
       }, this);
       this.resolveOCDURLs();
+      this.appendTotal();
+    },
+    appendTotal: function() {
+      $('#ocd-total-results').html(this.data.hits.total + ' results found.');
     },
     // resolve the OCD media URLs
     resolveOCDURLs: function() {
@@ -659,12 +674,66 @@
         });
       });
     },
-    onClickImg: function(event) {
+    rerender: function(data) {
+      this.data = data;
+      this.model = data.hits.hits;
+      this.render();
+    },
+    onPagerClick: function(event) {
+      event.preventDefault();
+      var elem = $(event.currentTarget);
+      var self = this;
+      if(elem.hasClass('next')) {
+        if((this.page + 1) * this.size >= this.data.hits.total) {
+          console.log('no next page to go to');
+          return false;
+        }
+        console.log('clicked next');
+        this.search({
+          query: this.query,
+          from: (this.page + 1) * this.size
+        }, function(resp) {
+          console.log('reached next page');
+          self.page = self.page + 1;
+          self.rerender(resp);
+        });
+      }
+      else if (elem.hasClass('previous')) {
+        if(this.page <= 0) {
+          console.log('no prev page to go to');
+          return false;
+        }
+        console.log('clicked prev');
+        this.search({
+          query: this.query,
+          from: (this.page - 1) * this.size
+        }, function(resp) {
+          console.log('reached prev page');
+          self.page = self.page - 1;
+          self.rerender(resp);
+        });
+      }
+      return false;
+    },
+    onImgClick: function(event) {
       event.preventDefault();
       // TODO: init the image anno
       var url = $(event.currentTarget).find('img').attr('src');
       swtr.appView.loadURL(url, 'image');
       return false;
+    },
+    search: function(data, cb) {
+      swtr.appView.$overlay.show();
+      var self = this;
+      $.ajax({
+        type: 'GET',
+        url: '/search/ocd',
+        data: data,
+        success: function(resp) {
+          swtr.appView.$overlay.hide();
+          cb(resp);
+        }
+      });
     }
   });
 
@@ -683,7 +752,7 @@
       switch (n) {
       case 0 : text = 'Getting annotations..';
                break;
-      case 1: text = 'Enter the URL of an image or web page below, and start annotating!';
+      case 1: text = 'Enter URL of an image or web page below, and start annotating!';
               break;
       case 2: text = 'Annotate the image, or see other annotations';
               break;
@@ -706,6 +775,8 @@
       case 11: text = 'Search in <a href="http://www.opencultuurdata.nl/">Open Cuultur Data API</a>';
                break;
       case 12: text = 'Analyzing the resource type..';
+               break;
+      case 13: text = 'This does not seem to be a URL. Please enter a valid URL.';
                break;
       }
       $(this.el).html(text);

@@ -76,7 +76,7 @@
           <img src="" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
         {% endif %}
         </div>
-        <div id="ocd-results"></div>
+        <div id="ocd-view"></div>
       </div> <!-- end fourth row -->
 
       <div id="sweet-list-wrapper">
@@ -142,6 +142,16 @@
           <li class="custom-popup-line"><span>Related Links: </span><%= Links %></li>
         </ul>
       </span>
+    </script>
+    <script type="text/template" id="ocd-view-base-template">
+      <div id="ocd-hud">
+        <span id="ocd-total-results"></span>
+      </div>
+      <div id="ocd-results"></div>
+      <ul class="pager">
+        <li class="previous"> <a href="#">&laquo; Previous </a></li>
+        <li class="next"> <a href="#"> Next &raquo; </a></li>
+      </ul>
     </script>
     <script type="text/template" id="ocd-item-template">
       <div class="col-sm-6 col-md-4 ocd-item">
