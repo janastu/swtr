@@ -78,6 +78,16 @@
         </div>
         <div id="ocd-view"></div>
       </div> <!-- end fourth row -->
+      <!-- fifth row: options for filter -->
+      <div id="filter-div" class="row">
+        <div id="filter-user-div">
+          <p><span>SWeeTs by</span></p>
+        </div>
+        <div id="filter-tags-div">
+          <p><span>Tags</span></p>
+        </div>
+      </div> <!-- end fifth row -->
+
 
       <div id="sweet-list-wrapper">
         <ul id="sweet-list"></ul>
@@ -164,5 +174,18 @@
         <div>Authors: <%= authors %> </div>
       </div>
     </script>
+    <script type="text/template" id="filter-users">
+      <ul>
+        <input type="checkbox" name=<%= who %> checked="checked">
+        <label><%= who %></label>
+      </ul>
+    </script>
+    <script type="text/template" id="filter-tags">
+      <ul>
+        <input type="checkbox" checked="checked" name=<%= tag %>>
+        <label><%= tag %></label>
+      </ul>
+    </script>
+
   </body>
 </html>
