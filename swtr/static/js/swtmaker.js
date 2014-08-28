@@ -453,7 +453,7 @@
   });
 
   var AppView = Backbone.View.extend({
-    el: $('#swt-maker'),
+    el: $('#swtr-root'),
     events: {
       'click #user-input-submit': 'submitUserInput',
       'click #sweet': 'sweet',
@@ -948,6 +948,7 @@
     events: {
     },
     initialize: function() {
+      this.$text_el = $('#helpview-text');
     },
     //TODO: move from number based steps to something else. number based steps
     //implicitly imply sequential processing..which does not happen in this
@@ -985,7 +986,7 @@
       case 13: text = 'This does not seem to be a URL. Please enter a valid URL.';
                break;
       }
-      $(this.el).html(text);
+      $(this.$text_el).html(text);
       $(window).scrollTop(0, 0);
     }
   });

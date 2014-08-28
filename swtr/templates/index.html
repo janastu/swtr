@@ -14,12 +14,53 @@
   </head>
 
   <body>
-    <div id="swt-maker" class="container">
+    <!-- navigation and branding of the app -->
+    <header id="header" class="navbar navbar-inverse" role="navigation">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse"
+            data-target="#swtr-navbar-collapse">
+
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#/home">swtr - the canonical swt web app</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="swtr-navbar-collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li class="active"> <a href="#/home" title="Home">
+              <span class="glyphicon glyphicon-home"></span>
+            </a></li>
+            <li> <a href="#/play" title="My Playarea">
+              <span class="glyphicon glyphicon-wrench"></span>
+            </a></li>
+            <li> <a href="#/linked-data" title="Linked Data">
+              <span class="glyphicon glyphicon-globe"></span>
+            </a></li>
+            <li> <a href="#/search-external" title="Search External Sources">
+              <span class="glyphicon glyphicon-search"></span>
+            </a></li>
+            <li> <a href="#/user" title="">
+              <span class="glyphicon glyphicon-user"></span>
+            </a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <div id="swtr-root" class="container">
       <!-- first row: helpview and sign in button -->
       <div class="row">
         <!-- helpview column of width md-8 -->
         <div class="col-md-8">
-          <div id="helpview" class="alert alert-info"></div>
+          <div id="helpview" class="bg-info">
+            <span class="label label-default">Heads Up</span>
+            <span id="helpview-text"></span>
+          </div>
         </div>
         <!-- signin view column of width md-4 -->
         <div class="col-md-4">
@@ -32,7 +73,7 @@
         </div>
       </div> <!-- end first row -->
       <!-- second row: image URL input box and Load button -->
-      <div class="row">
+      <div class="row" id="user-input-row">
         <div class="col-md-8">
           <form class="form-inline" role="form">
             <div class="form-group col-md-11">
@@ -70,6 +111,15 @@
       <!-- fourth row: the image annotation window -->
       <div class="row">
         <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
+          <div id="img-anno-controls">
+            <form class="form-inline" role="form">
+              <div class="form-group">
+                <label class="checkbox-inline">
+                  <input type="checkbox" id="setbox"> Show annotated areas
+                </label>
+              </div>
+            </form>
+          </div>
         {% if url %}
           <img src="{{ url }}" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
         {% else %}
