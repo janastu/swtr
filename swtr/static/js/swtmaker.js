@@ -234,35 +234,95 @@
   });
 
   var FilterView = Backbone.View.extend({
-    el: $("#filter-div"),
+    el: $('#filter-div'),
     events: {
-      "click #filter-user-div input": "filterSweet",
-      "click #filter-tags-div input": "filterSweet"
+      'click #filter-user-div input': 'filter',
+      'click #filter-tags-div input': 'filter'
     },
     initialize: function() {
+      this.filter_users_template = _.template($('#filter-users').html());
+      this.filter_tags_template = _.template($('#filter-tags').html());
       this.render();
     },
     render: function() {
-      // console.log(this.collection);
-      var template = _.template($("#filter-users").html());
-      var tags_template = _.template($("#filter-tags").html());
+      //console.log(this.collection);
       // pluck uniq authors of sweets
-
       var authors = _.uniq(this.collection.pluck('who'));
+      // render them as filter controls
       _.each(authors, function(author) {
-        $("#filter-user-div").append(template({who: author}));
+        $('#filter-user-div').append(this.filter_users_template({
+          who: author
+        }));
+      }, this);
+
+      // pluck uniq tags of sweets
+      var tags = _.chain(this.collection.pluck('how')).pluck('tags').uniq().
+        value();
+      // render them as filter controls
+      _.each(tags, function(tag) {
+        if(tag) {
+          $('#filter-tags-div').append(this.filter_tags_template({
+            tag: tag
+          }));
+        }
+      }, this);
+
+      //this.delegateEvents();
+    },
+    filter: function(event) {
+      // get id of div - parent to parent to the clicked input
+      var target_id = $(event.currentTarget).parent().parent().attr('id');
+      // find out user/tag div
+      var which = target_id.split('-')[1];
+
+      var selected = [];
+      $('#'+target_id + ' input:checked').each(function() {
+        selected.push($(this).attr('name'));
       });
-      this.collection.each(function(model) {
-        if(model.get('how').tags) {
-          _.each(model.get('how').tags, function(tag) {
-            $("#filter-tags-div").append(tags_template({tag:tag}));
-          });
+
+      if(which === 'user') {
+        this.filterUsers(selected);
+      }
+      else if(which === 'tags') {
+        this.filterTags(selected);
+      }
+    },
+    filterUsers: function(users) {
+      if(!users.length) {
+        return;
+      }
+      var filtered_swts = this.collection.filter(function(model) {
+        if(_.indexOf(users, model.get('who')) > -1) {
+          return model;
         }
       });
-      // this.delegateEvents();
+      if(filtered_swts.length) {
+        anno.removeAll();
+        _.each(filtered_swts, function(swt) {
+          anno.addAnnotation(swt.get('how'));
+        });
+      }
+    },
+    filterTags: function(tags) {
+      if(!tags.length) {
+        return;
+      }
+      var filtered_swts = this.collection.filter(function(model) {
+        _.each(model.get('how').tags, function(tag) {
+          if(_.indexOf(tags, tag) > -1) {
+            return model;
+          }
+        });
+      });
+      if(filtered_swts.length) {
+        anno.removeAll();
+        _.each(filtered_swts, function(swt) {
+          anno.addAnnotation(swt.get('how'));
+        });
+      }
     },
     filterSweet: function(event) {
-      if(!event.currentTarget.checked) {
+      /*if(!event.currentTarget.checked) {
         var results = this.collection.filter(function(model) {
           if(model.get('who') != event.currentTarget.name)
             return model;
@@ -290,7 +350,7 @@
       //   anno.removeAll();
       // }
       // swtr.annoView.collection = results;
-      // swtr.annoView.renderWith();
+      // swtr.annoView.renderWith();*/
     }
   });
 
@@ -589,7 +649,7 @@
         success: function(data) {
           if(_.isArray(data)) {
             swtr.sweets.add(data);
-            new FilterView({collection: swtr.sweets});
+            swtr.filterview = new FilterView({collection: swtr.sweets});
             // _.each(data, function(swt) {
             //   swt.how['editable'] = false;
             //   swt.how.text = swtr.annoView.createPopupText(swt.how);
