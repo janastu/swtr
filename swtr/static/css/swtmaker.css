@@ -78,6 +78,7 @@ body {
   padding: 8px;
   box-shadow: 1px 1px 3px #ccc;
   color: #444;
+  margin-bottom: 20px;
 }
 #helpview-text {
   text-align: center;
