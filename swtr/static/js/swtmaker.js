@@ -8,6 +8,10 @@
     this.appView = new AppView();
     this.who = 'Guest';
 
+    this.app_router = new AppRouter();
+    Backbone.history.start();
+    this.app_router.navigate('home');
+
     $.ajaxSetup({
       xhrFields: {
         // we need this to send cookies to cross-domain requests
@@ -361,7 +365,7 @@
   });
 
   var AppView = Backbone.View.extend({
-    el: $('#swtr-root'),
+    el: $('body'),
     events: {
       'click #user-input-submit': 'submitUserInput',
       'click #sweet': 'sweet',
@@ -492,7 +496,7 @@
     },
     userLoggedIn: function(username) {
       swtr.who = username;
-      var text = 'You are signed in as <b>' + swtr.who + '</b>';
+      var text = 'Signed in as <b>' + swtr.who + '</b>';
       $('#signinview').html(text);
     },
     userLoggedOut: function() {
@@ -732,18 +736,37 @@
       'home': 'home',
       'linked-data': 'linkedData',
       'play': 'play',
-      'search-external': 'search'
+      'search': 'search'
     },
     home: function() {
+      this.hideAll();
+      this.show('home-page');
     },
     linkedData: function() {
+      this.hideAll();
+      this.show('linked-data-page');
     },
     play: function() {
-
+      this.hideAll();
+      this.show('play-page');
     },
     search: function() {
+      this.hideAll();
+      this.show('search-page');
+    },
+    hideAll: function() {
+      $('.page').hide();
+    },
+    show: function(id) {
+      $('#' + id).show();
+      this.highlight(id);
+    },
+    highlight: function(id) {
+      $('#swtr-navbar-collapse li').removeClass('active');
+      var href = id.split('-page')[0];
+      var selector = '#swtr-navbar-collapse a[href="#/' + href + '"]';
+      $(selector).parent('li').addClass('active');
     }
   });
-  new AppRouter();
-  Backbone.history.start();
+
 })(swtr);

@@ -41,11 +41,12 @@
             <li> <a href="#/linked-data" title="Linked Data">
               <span class="glyphicon glyphicon-globe"></span>
             </a></li>
-            <li> <a href="#/search-external" title="Search External Sources">
+            <li> <a href="#/search" title="Search External Sources">
               <span class="glyphicon glyphicon-search"></span>
             </a></li>
-            <li> <a href="#/user" title="">
+            <li> <a id="sign-in" href="#" title="">
               <span class="glyphicon glyphicon-user"></span>
+              <span id="signinview"> Sign In </span>
             </a></li>
           </ul>
         </div>
@@ -53,99 +54,102 @@
     </header>
 
     <div id="swtr-root" class="container">
-      <!-- first row: helpview and sign in button -->
-      <div class="row">
-        <!-- helpview column of width md-8 -->
-        <div class="col-md-8">
-          <div id="helpview" class="bg-info">
-            <span class="label label-default">Heads Up</span>
-            <span id="helpview-text"></span>
+      <div id="home-page" class="page">
+        Lorem Ipsum
+      </div>
+
+      <div id="play-page" class="page">
+        <!-- first row: helpview and sign in button -->
+        <div class="row">
+          <!-- helpview column of width md-8 -->
+          <div class="col-md-8">
+            <div id="helpview" class="bg-info">
+              <span class="label label-default">Heads Up</span>
+              <span id="helpview-text"></span>
+            </div>
           </div>
-        </div>
-        <!-- signin view column of width md-4 -->
-        <div class="col-md-4">
-          <div id="signinview">
-            <span id="signin-msg">You are not signed in.</span>
-            <button class="btn btn-sm btn-primary" id="sign-in">
-              Sign In
-            </button>
+          <!-- signin view column of width md-4 -->
+          <div class="col-md-4"></div>
+        </div> <!-- end first row -->
+        <!-- second row: image URL input box and Load button -->
+        <div class="row" id="user-input-row">
+          <div class="col-md-8">
+            <form class="form-inline" role="form">
+              <div class="form-group col-md-11">
+                <label class="sr-only" for="user-input">Enter URL of an image or web page</label>
+                <input class="form-control" type="text"
+                  placeholder="Enter URL of an image or web page" id="user-input">
+              </div>
+              <button type="submit" class="btn btn-primary" id="user-input-submit">Load</button>
+            </form>
           </div>
-        </div>
-      </div> <!-- end first row -->
-      <!-- second row: image URL input box and Load button -->
-      <div class="row" id="user-input-row">
-        <div class="col-md-8">
-          <form class="form-inline" role="form">
-            <div class="form-group col-md-11">
-              <label class="sr-only" for="user-input">Enter URL of an image or web page</label>
-              <input class="form-control" type="text"
-                placeholder="Enter URL of an image or web page" id="user-input">
-            </div>
-            <button type="submit" class="btn btn-primary" id="user-input-submit">Load</button>
-          </form>
-        </div>
-        <div class="col-md-4">
-        </div>
-      </div> <!-- end second row -->
-      <!-- third row - control panel? -->
-      <div class="row" id="control-panel">
-        <div class="col-md-8">
-          <form class="form-inline" role="form">
-            <div class="form-group">
-              <label class="checkbox-inline">
-                <input type="checkbox" id="setbox"> Show annotated areas
-              </label>
-            </div>
-            <div class="form-group">
-              <label class="checkbox-inline">
-                <input type="checkbox" id="ocd-source"> Search in Open Cuultur Data
-              </label>
-            </div>
-            <div class="form-group">
-              <button class="btn btn-default" id="sweet">Sweet</button>
-            </div>
-          </form>
-        </div>
-        <div class="col-md-4"></div>
-      </div> <!-- end third row -- >
-      <!-- fourth row: the image annotation window -->
-      <div class="row">
-        <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
-          <div id="img-anno-controls">
+          <div class="col-md-4">
+          </div>
+        </div> <!-- end second row -->
+        <!-- third row - control panel? -->
+        <div class="row" id="control-panel">
+          <div class="col-md-8">
             <form class="form-inline" role="form">
               <div class="form-group">
                 <label class="checkbox-inline">
                   <input type="checkbox" id="setbox"> Show annotated areas
                 </label>
               </div>
+              <div class="form-group">
+                <label class="checkbox-inline">
+                  <input type="checkbox" id="ocd-source"> Search in Open Cuultur Data
+                </label>
+              </div>
+              <div class="form-group">
+                <button class="btn btn-default" id="sweet">Sweet</button>
+              </div>
             </form>
           </div>
-        {% if url %}
-          <img src="{{ url }}" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
-        {% else %}
-          <img src="" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
-        {% endif %}
-        </div>
-        <div id="ocd-view"></div>
-      </div> <!-- end fourth row -->
-      <!-- <\!-- fifth row: options for filter -\-> -->
-      <!-- <div id="filter-div" class="row"> -->
-      <!--   <div id="filter-user-div"> -->
-      <!--     <p><span>SWeeTs by</span></p> -->
-      <!--   </div> -->
-      <!--   <div id="filter-tags-div"> -->
-      <!--     <p><span>Tags</span></p> -->
-      <!--   </div> -->
-      <!-- </div> <\!-- end fifth row -\-> -->
+          <div class="col-md-4"></div>
+        </div> <!-- end third row -- >
+        <!-- fourth row: the image annotation window -->
+        <div class="row">
+          <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
+            <div id="img-anno-controls">
+              <form class="form-inline" role="form">
+                <div class="form-group">
+                  <label class="checkbox-inline">
+                    <input type="checkbox" id="setbox"> Show annotated areas
+                  </label>
+                </div>
+              </form>
+            </div>
+          {% if url %}
+            <img src="{{ url }}" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
+          {% else %}
+            <img src="" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
+          {% endif %}
+          </div>
+          <div id="ocd-view"></div>
+        </div> <!-- end fourth row -->
+        <!-- <\!-- fifth row: options for filter -\-> -->
+        <!-- <div id="filter-div" class="row"> -->
+        <!--   <div id="filter-user-div"> -->
+        <!--     <p><span>SWeeTs by</span></p> -->
+        <!--   </div> -->
+        <!--   <div id="filter-tags-div"> -->
+        <!--     <p><span>Tags</span></p> -->
+        <!--   </div> -->
+        <!-- </div> <\!-- end fifth row -\-> -->
 
-
-      <div id="sweet-list-wrapper">
-        <ul id="sweet-list"></ul>
-        <div class="btn-grp">
-          <button class="btn btn-default" id="sweet-cancel">Cancel</button>
-          <button class="btn btn-primary" id="post-sweet">Sweet</button>
+        <div id="sweet-list-wrapper">
+          <ul id="sweet-list"></ul>
+          <div class="btn-grp">
+            <button class="btn btn-default" id="sweet-cancel">Cancel</button>
+            <button class="btn btn-primary" id="post-sweet">Sweet</button>
+          </div>
         </div>
+
       </div>
+
+      <div id="linked-data-page" class="page"></div>
+      <div id="search-page" class="page"></div>
+
     </div>
     <div id="app-overlay"></div>
 
