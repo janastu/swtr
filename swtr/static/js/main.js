@@ -4,13 +4,13 @@
   //Find a better way to do closure
   //Remove script code from the HTML page
   swtr.init = function() {
-    this.sweets = new ImgAnnoSwts();
+    this.sweets = new swtr.ImgAnnoSwts();
     this.appView = new AppView();
     this.who = 'Guest';
 
     this.app_router = new AppRouter();
     Backbone.history.start();
-    this.app_router.navigate('home');
+    this.app_router.start();
 
     $.ajaxSetup({
       xhrFields: {
@@ -38,107 +38,6 @@
       });
     }
   };
-
-  /* Model for Image Annotation Sweets */
-  var ImgAnnoSwt = Backbone.Model.extend({
-    defaults: {
-      'who': '',
-      'what': 'img-anno',
-      'where': '',
-      'how': {}
-    },
-    initialize: function() {
-    }
-  });
-
-  /* Collection to hold all multiple ImgAnnoSwt */
-  var ImgAnnoSwts = Backbone.Collection.extend({
-    model: ImgAnnoSwt,
-    url: function() {
-      return swtr.swtstoreURL() + '/sweets';
-    },
-    // get all sweets/annotations of type #img-anno for a particular URI
-    // (where)
-    // @options is a javascript object,
-    // @options.where : URI of the resource for which swts to be fetched
-    // @options.who: optional username to filter sweets
-    // @options.success: success callback to call
-    // @options.error: error callback to call
-    getAll: function(options) {
-      // error checking
-      if(!options.where) {
-        throw Error('"where" option must be passed to get sweets of a URI');
-        return false;
-      }
-      // setting up params
-      var where = options.where,
-          who = options.who || null;
-      url = swtr.swtstoreURL() + swtr.endpoints.get + '?where=' +
-        encodeURIComponent(where) + '&access_token=' + swtr.access_token;
-      if(who) {
-        url += '&who=' + who;
-      }
-      // get them!
-      this.sync('read', this, {
-        url: url,
-        success: function() {
-          if(typeof options.success === 'function') {
-            options.success.apply(this, arguments);
-          }
-        },
-        error: function() {
-          if(typeof options.error === 'function') {
-            options.error.apply(this, arguments);
-          }
-        }
-      });
-    },
-    // post newly created sweets to a sweet store
-    // @options is a javascript object,
-    // @options.where : URI of the resource for which swts to be fetched
-    // @options.who: optional username to filter sweets
-    // @options.success: success callback to call
-    // @options.error: error callback to call,
-    post: function(options) {
-      var new_sweets = this.getNew();
-      var dummy_collection = new Backbone.Collection(new_sweets);
-
-      if(!swtr.access_token) {
-        throw new Error('Access Token is required to sweet');
-        return;
-      }
-
-      var url = swtr.swtstoreURL() + swtr.endpoints.post +
-            '?access_token=' + swtr.access_token;
-
-      this.sync('create', dummy_collection, {
-        url: url,
-        success: function() {
-          if(typeof options.success === 'function') {
-            options.success.apply(this, arguments);
-          }
-        },
-        error: function() {
-          if(typeof options.error === 'function') {
-            options.error.apply(this, arguments);
-          }
-        }
-      });
-    },
-    // return newly created models from the collection
-    getNew: function() {
-      var new_models = [];
-      this.each(function(model) {
-        if(model.isNew()) {
-          new_models.push(model);
-        }
-      });
-      return new_models;
-    },
-    // update part of the collection after a save on the server
-    update: function() {
-    }
-  });
 
   var SweetsView = Backbone.View.extend({
     el: $('#sweet-list-wrapper'),
@@ -370,20 +269,19 @@
       'click #user-input-submit': 'submitUserInput',
       'click #sweet': 'sweet',
       'click #sign-in': 'signIn',
-      'click #ocd-source': 'sourceChanged'
       //'mouseup .annotorious-editor-button-save': 'addnew_anno'
     },
     initialize: function() {
       // initialize components
       this.source = 'none';
-      this.helpview = new HelpView();
+      //this.helpview = new HelpView();
       this.sweetsview = new SweetsView({collection: swtr.sweets});
 
       // cache jquery selected elements which are used frequently
       this.$overlay = $('#app-overlay');
       this.$img = $('#annotatable-img');
 
-      this.helpview.step(1);
+      //this.helpview.step(1);
       // initialize the oauth stuff
       this.oauth = new Oauth({
         app_id: swtr.app_id,
@@ -419,10 +317,12 @@
           swtr.imgAnnoView.setImage(url);
         }
         else {
-          swtr.imgAnnoView = new swtr.ImgAnnoView({collection:swtr.sweets,
-                                                   img: this.$img[0],
-                                                   $img: this.$img,
-                                                   url: url});
+          swtr.imgAnnoView = new swtr.ImgAnnoView({
+            collection:swtr.sweets,
+            img: this.$img[0],
+            $img: this.$img,
+            url: url
+          });
         }
         return false;
       }
@@ -496,61 +396,70 @@
     },
     userLoggedIn: function(username) {
       swtr.who = username;
-      var text = 'Signed in as <b>' + swtr.who + '</b>';
+      var text = 'Signed in as <b><u>' + swtr.who + '</u></b>';
       $('#signinview').html(text);
     },
     userLoggedOut: function() {
       swtr.who = 'Guest';
       $('#signinview').html('Logged out');
+    }
+  });
+
+
+  var PlayAreaView = Backbone.View.extend({
+    el: $('#play-page'),
+    events: {
     },
-    changeURLInputPlaceholder: function(source) {
-      switch (source) {
-        case 'ocd'  : $('#user-input').attr('placeholder', 'Enter search query');
-                      break;
-        case 'none' : $('#user-input').attr('placeholder', 'Enter URL of image or web page');
-                      break;
-      }
+    initialize: function() {
+      this.render();
     },
-    // function to change the source in the application and update the UI
-    changeSource: function(source) {
-      switch (source) {
-        case 'ocd'  : this.source = 'ocd';
-                      this.helpview.step(11);
-                      this.changeURLInputPlaceholder('ocd');
-                      break;
-        case 'none' : this.source = 'none';
-                      this.helpview.step(1);
-                      this.changeURLInputPlaceholder('none');
-                      break;
-      }
+    render: function() {
+    }
+  });
+
+  var SearchView = Backbone.View.extend({
+    id: 'search-page-container',
+    events: {
+      'click #search-user-input-submit': 'userInputSubmit'
     },
-    // event handler to capture control panel UI change of source
-    sourceChanged: function(event) {
-      if($('#ocd-source').is(':checked')) {
-        this.changeSource('ocd');
-      }
-      else {
-        this.changeSource('none');
-      }
+    initialize: function() {
+      this.template = _.template($('#search-page-template').html());
+      this.helpview = new HelpView();
+      this.render();
+      this.helpview.step(11);
     },
-    loadOCDSearch: function(input) {
+    render: function() {
+      this.$el.html(this.template());
+      $('#search-page').html(this.$el);
+    },
+    userInputSubmit: function(event) {
+      event.preventDefault();
+      var input = $('#search-user-input').val();
+      this.loadSearch(input);
+      return false;
+    },
+    loadSearch: function(input) {
       var self = this;
-      $('#img-annotation-wrapper').hide();
-      $('#ocd-results').show();
-      $('#ocd-results').html('<h4 style="text-align: center;">Loading..</h4>');
+      this.$el.append('<div id="ocd-view"></div>');
+      $('#ocd-view').html('<h4 style="text-align: center;">Loading..</h4>');
       $.ajax({
         type: 'GET',
         url: '/search/ocd',
         data: {query: input},
         success: function(data) {
-          self.ocdView = new OCDView({
+          self.ocd_view = new OCDView({
+            el: $('#ocd-view'),
             query: input,
             data: data,
             model: data.hits.hits
           });
         }
       });
-    }
+    },
+    destroy: function() {
+      this.helpview.remove();
+      this.remove();
+    },
   });
 
   var OCDView = Backbone.View.extend({
@@ -651,7 +560,7 @@
       event.preventDefault();
       // TODO: init the image anno
       var url = $(event.currentTarget).find('img').attr('src');
-      swtr.appView.loadURL(url, 'image');
+      //swtr.appView.loadURL(url, 'image');
       return false;
     },
     search: function(data, cb) {
@@ -670,11 +579,17 @@
   });
 
   var HelpView = Backbone.View.extend({
-    el: $('#helpview'),
+    id: 'helpview-wrapper',
     events: {
     },
     initialize: function() {
+      this.template = _.template($('#helpview-template').html());
+      this.render();
       this.$text_el = $('#helpview-text');
+    },
+    render: function() {
+      $('#helpview-container').html(this.$el);
+      this.$el.html(this.template({}));
     },
     //TODO: move from number based steps to something else. number based steps
     //implicitly imply sequential processing..which does not happen in this
@@ -712,8 +627,21 @@
       case 13: text = 'This does not seem to be a URL. Please enter a valid URL.';
                break;
       }
-      $(this.$text_el).html(text);
+      this.$text_el.html(text);
       $(window).scrollTop(0, 0);
+    }
+  });
+
+  var DummyView = Backbone.View.extend({
+    intialize: function() {
+      this.render();
+    },
+    render: function() {
+      $('#swtr-root').append('dummy view');
+    },
+    destroy: function() {
+      this.remove();
+      this.undelegateEvents();
     }
   });
 
@@ -760,26 +688,37 @@
   });
 
   var LDView = Backbone.View.extend({
+    id: 'linked-data-container',
     initialize: function() {
+      var self = this;
       swtr.LDs = new LDSwts();
       swtr.LDs.getAll({what: 'img-anno',
                        success: function(data) {
                          swtr.LDs.add(data);
-                         new TagCloudView({collection: swtr.LDs});
+                         this.tagCloudView = new TagCloudView({collection: swtr.LDs});
                        }});
     },
-    render: function() {
+    destroy: function() {
+      this.remove();
 
+      // $('#user-tag-cloud').html('');
+      // $('#tags-tag-cloud').html('');
     }
   });
 
   var TagCloudView = Backbone.View.extend({
     el: $('#tag-cloud'),
+    events: {
+      "click g": "test"
+    },
     initialize: function() {
       this.user_tag_el = $('#user-tag-cloud');
       this.tags_tag_el = $('#tags-tag-cloud');
       this.render();
 
+    },
+    test: function(e) {
+      console.log(e);
     },
     render: function() {
       this.renderUserTagCloud();
@@ -871,6 +810,11 @@
       'play': 'play',
       'search': 'search'
     },
+    components: {
+      'linked-data': LDView,
+      'play': DummyView,
+      'search': SearchView
+    },
     home: function() {
       this.hideAll();
       this.show('home-page');
@@ -878,7 +822,6 @@
     linkedData: function() {
       this.hideAll();
       this.show('linked-data-page');
-      new LDView();
     },
     play: function() {
       this.hideAll();
@@ -892,6 +835,13 @@
       $('.page').hide();
     },
     show: function(id) {
+      if(this.mounted_component) {
+        this.mounted_component.destroy();
+      }
+      if(id !== 'home-page') {
+        var component = id.split('-page')[0];
+        this.mounted_component = new this.components[component];
+      }
       $('#' + id).show();
       this.highlight(id);
     },
@@ -900,6 +850,17 @@
       var href = id.split('-page')[0];
       var selector = '#swtr-navbar-collapse a[href="#/' + href + '"]';
       $(selector).parent('li').addClass('active');
+    },
+    start: function() {
+      var fragment = window.location.hash.split('#')[1];
+      if(!fragment) {
+        this.navigate('home');
+        return;
+      }
+      var route = fragment.split('/')[1];
+      if(_.indexOf(_.keys(this.routes), route) > -1) {
+        this.navigate(fragment);
+      }
     }
   });
 

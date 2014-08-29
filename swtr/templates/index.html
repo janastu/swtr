@@ -56,6 +56,8 @@
     </header>
 
     <div id="swtr-root" class="container">
+      <div id="helpview-container"></div>
+
       <div id="home-page" class="page">
         <div class="jumbotron">
           <h1> CLink: Community Linked Open Cultuur Data </h1>
@@ -85,19 +87,6 @@
       </div>
 
       <div id="play-page" class="page">
-        <!-- first row: helpview and sign in button -->
-        <div class="row">
-          <!-- helpview column of width md-8 -->
-          <div class="col-md-8">
-            <div id="helpview" class="bg-info">
-              <span class="label label-primary">Heads Up</span>
-              <span id="helpview-text"></span>
-              <a class="close">&times;</a>
-            </div>
-          </div>
-          <!-- signin view column of width md-4 -->
-          <div class="col-md-4"></div>
-        </div> <!-- end first row -->
         <!-- second row: image URL input box and Load button -->
         <div class="row" id="user-input-row">
           <div class="col-md-8">
@@ -142,17 +131,7 @@
             <img src="" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
           {% endif %}
           </div>
-          <div id="ocd-view"></div>
         </div> <!-- end fourth row -->
-        <!-- <\!-- fifth row: options for filter -\-> -->
-        <!-- <div id="filter-div" class="row"> -->
-        <!--   <div id="filter-user-div"> -->
-        <!--     <p><span>SWeeTs by</span></p> -->
-        <!--   </div> -->
-        <!--   <div id="filter-tags-div"> -->
-        <!--     <p><span>Tags</span></p> -->
-        <!--   </div> -->
-        <!-- </div> <\!-- end fifth row -\-> -->
 
         <div id="sweet-list-wrapper">
           <ul id="sweet-list"></ul>
@@ -163,14 +142,16 @@
         </div>
 
       </div>
-
       <div id="linked-data-page" class="page">
         <div id="tag-cloud">
           <div id="user-tag-cloud" class="row"></div>
           <div id="tags-tag-cloud" class="row"></div>
         </div>
       </div>
+      <!-- the search page -->
       <div id="search-page" class="page"></div>
+
+      <div id="linked-data-page" class="page"></div>
 
     </div>
     <div id="app-overlay"></div>
@@ -202,10 +183,23 @@
     <script src="{{ url_for('static', filename='js/lib/annotorious.debug.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/custom-fields-plugin.js') }}"></script>
     <script src="{{ url_for('static', filename='js/oauth.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/lib/bootstrap-tags.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/bootstrap-tags.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/img_swtr.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
+    <!-- underscore.js templates -->
+    <script type="text/template" id="helpview-template">
+      <div class="row">
+        <div class="col-md-8">
+          <div id="helpview" class="bg-info">
+            <span class="label label-primary">Heads Up</span>
+            <span id="helpview-text"></span>
+            <a class="close">&times;</a>
+          </div>
+        </div>
+        <div class="col-md-4"></div>
+      </div>
+    </script>
     <script type="text/template" id="sweet-template">
       <li class="sweet">
         <a href="#">@<%= who %></a> <strong>#<%= what %></strong>
@@ -232,6 +226,24 @@
         </ul>
       </span>
     </script>
+    <script type="text/template" id="search-page-template">
+      <div class="row" id="search-user-input-row">
+        <div class="col-md-8">
+          <form class="form-inline" role="form">
+            <div class="form-group col-md-11">
+              <label class="sr-only" for="search-user-input">Enter search query</label>
+              <input class="form-control" type="text"
+                placeholder="Enter search query" id="search-user-input">
+            </div>
+            <button type="submit" class="btn btn-info" id="search-user-input-submit">
+              Go
+            </button>
+          </form>
+        </div>
+        <div class="col-md-4">
+        </div>
+      </div>
+    </script>
     <script type="text/template" id="ocd-view-base-template">
       <div id="ocd-hud">
         <span id="ocd-total-results"></span>
@@ -255,8 +267,10 @@
     </script>
     <script type="text/template" id="filter-users">
       <ul>
-        <input type="checkbox" name=<%= who %> checked="checked">
-        <label><%= who %></label>
+        <label>
+          <input type="checkbox" name="<%= who %>" checked="checked">
+          <%= who %>
+        </label>
       </ul>
     </script>
     <script type="text/template" id="filter-tags">
