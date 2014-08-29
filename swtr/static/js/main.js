@@ -238,7 +238,7 @@
     }
   });
 
-  var FilterView = Backbone.View.extend({
+  swtr.FilterView = Backbone.View.extend({
     el: $('#filter-div'),
     events: {
       'click #filter-user-div input': 'filter',
@@ -279,7 +279,6 @@
       var target_id = $(event.currentTarget).parent().parent().attr('id');
       // find out user/tag div
       var which = target_id.split('-')[1];
-
       var selected = [];
       $('#'+target_id + ' input:checked').each(function() {
         selected.push($(this).attr('name'));

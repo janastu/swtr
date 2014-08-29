@@ -205,6 +205,7 @@
             swtr.sweets.add(data);
             swtr.appView.$overlay.hide();
             swtr.appView.helpview.step(2);
+            swtr.FV = new swtr.FilterView({collection: swtr.sweets});
           }
         },
         error: function(jqxhr, error, statusText) {
