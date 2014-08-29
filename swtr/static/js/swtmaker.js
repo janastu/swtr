@@ -720,7 +720,25 @@
       }
     }
   };
-
   //swtr.AppView = AppView;
 
+  var AppRouter = Backbone.Router.extend({
+    routes: {
+      'home': 'home',
+      'linked-data': 'linkedData',
+      'play': 'play',
+      'search-external': 'search'
+    },
+    home: function() {
+    },
+    linkedData: function() {
+    },
+    play: function() {
+
+    },
+    search: function() {
+    }
+  });
+  new AppRouter();
+  Backbone.history.start();
 })(swtr);
