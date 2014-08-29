@@ -730,6 +730,139 @@
     }
   };
   //swtr.AppView = AppView;
+  var LDSwts = Backbone.Collection.extend({
+    getAll: function(options) {
+      //get all sweets of ocd-anno type
+      // error checking
+      if(!options.what) {
+        throw Error('"what" option must be passed to get sweets of a URI');
+        return false;
+      }
+      // setting up params
+      var what = options.what;
+      url = swtr.swtstoreURL() + swtr.endpoints.get + '?what=' +
+        encodeURIComponent(what) + '&access_token=' + swtr.access_token;
+      // get them!
+      this.sync('read', this, {
+        url: url,
+        success: function() {
+          if(typeof options.success === 'function') {
+            options.success.apply(this, arguments);
+          }
+        },
+        error: function() {
+          if(typeof options.error === 'function') {
+            options.error.apply(this, arguments);
+          }
+        }
+      });
+    }
+  });
+
+  var LDView = Backbone.View.extend({
+    initialize: function() {
+      swtr.LDs = new LDSwts();
+      swtr.LDs.getAll({what: 'img-anno',
+                       success: function(data) {
+                         swtr.LDs.add(data);
+                         new TagCloudView({collection: swtr.LDs});
+                       }});
+    },
+    render: function() {
+
+    }
+  });
+
+  var TagCloudView = Backbone.View.extend({
+    el: $('#tag-cloud'),
+    initialize: function() {
+      this.user_tag_el = $('#user-tag-cloud');
+      this.tags_tag_el = $('#tags-tag-cloud');
+      this.render();
+
+    },
+    render: function() {
+      this.renderUserTagCloud();
+      this.renderTagsTagCloud();
+    },
+    renderUserTagCloud: function() {
+      var fill = d3.scale.category20();
+      var words = _.uniq(swtr.LDs.pluck('who'));
+      var weight = swtr.LDs.countBy('who');
+      d3.layout.cloud().size([300, 300])
+        .words(words.map(function(d) {
+          return {text: d, size: weight[d]};
+        }))
+        .padding(5)
+        .rotate(function() { return ~~(Math.random() * 2) * 90; })
+        .font("Impact")
+        .fontSize(function(d) { return d.size; })
+        .on("end", this.draw)
+        .start();
+
+    },
+    draw: function (words) {
+      d3.select("#user-tag-cloud").append("svg")
+        .attr("width", 300)
+        .attr("height", 300)
+        .append("g")
+        .attr("transform", "translate(150,150)")
+        .selectAll("text")
+        .data(words)
+        .enter().append("text")
+        .style("font-size", function(d) { return "16px"; })
+        .style("font-family", "Impact")
+        .style("fill", function(d, i) {console.log(i); return 'red'; })
+        .attr("text-anchor", "middle")
+        .attr("transform", function(d) {
+          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+        })
+        .text(function(d) {console.log(d); return d.text; });
+    },
+    renderTagsTagCloud: function() {
+      var fill = d3.scale.category20();
+      var sweetsWithTags = swtr.LDs.filter(function(k) {
+        if(k.get('how').tags) {
+          return k;
+        }
+      });
+      var tags = [];
+      _.each(sweetsWithTags, function(sweet) {
+        tags.push(sweet.get('how').tags);
+      });
+      tags = _.flatten(tags);
+      d3.layout.cloud().size([300, 300])
+        .words(tags.map(function(d) {
+          return {text: d, size: 10};
+        }))
+        .padding(5)
+        .rotate(function() { return ~~(Math.random() * 2) * 90; })
+        .font("Impact")
+        .fontSize(function(d) { return d.size; })
+        .on("end", this.drawTags)
+        .start();
+
+    },
+    drawTags: function(words) {
+        d3.select("#tags-tag-cloud").append("svg")
+        .attr("width", 300)
+        .attr("height", 300)
+        .append("g")
+        .attr("transform", "translate(150,150)")
+        .selectAll("text")
+        .data(words)
+        .enter().append("text")
+        .style("font-size", function(d) { return "16px"; })
+        .style("font-family", "Impact")
+        .style("fill", function(d, i) {console.log(i); return 'red'; })
+        .attr("text-anchor", "middle")
+        .attr("transform", function(d) {
+          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+        })
+        .text(function(d) {console.log(d); return d.text; });
+    }
+
+  });
 
   var AppRouter = Backbone.Router.extend({
     routes: {
@@ -745,6 +878,7 @@
     linkedData: function() {
       this.hideAll();
       this.show('linked-data-page');
+      new LDView();
     },
     play: function() {
       this.hideAll();

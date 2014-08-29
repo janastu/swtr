@@ -164,7 +164,12 @@
 
       </div>
 
-      <div id="linked-data-page" class="page"></div>
+      <div id="linked-data-page" class="page">
+        <div id="tag-cloud">
+          <div id="user-tag-cloud" class="row"></div>
+          <div id="tags-tag-cloud" class="row"></div>
+        </div>
+      </div>
       <div id="search-page" class="page"></div>
 
     </div>
@@ -189,6 +194,8 @@
       };
     </script>
     <script src="{{ url_for('static', filename='js/lib/jquery-1.10.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/d3.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/d3.layout.cloud.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/underscore-1.5.2.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/backbone-1.0.0.min.js') }}"></script>
