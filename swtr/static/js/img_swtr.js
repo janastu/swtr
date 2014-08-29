@@ -1,4 +1,105 @@
 (function(swtr) {
+
+  /* Model for Image Annotation Sweets */
+  var ImgAnnoSwt = Backbone.Model.extend({
+    defaults: {
+      'who': '',
+      'what': 'img-anno',
+      'where': '',
+      'how': {}
+    },
+    initialize: function() {
+    }
+  });
+
+  /* Collection to hold all multiple ImgAnnoSwt */
+  swtr.ImgAnnoSwts = Backbone.Collection.extend({
+    model: ImgAnnoSwt,
+    url: function() {
+      return swtr.swtstoreURL() + '/sweets';
+    },
+    // get all sweets/annotations of type #img-anno for a particular URI
+    // (where)
+    // @options is a javascript object,
+    // @options.where : URI of the resource for which swts to be fetched
+    // @options.who: optional username to filter sweets
+    // @options.success: success callback to call
+    // @options.error: error callback to call
+    getAll: function(options) {
+      // error checking
+      if(!options.where) {
+        throw Error('"where" option must be passed to get sweets of a URI');
+        return false;
+      }
+      // setting up params
+      var where = options.where,
+    who = options.who || null;
+      url = swtr.swtstoreURL() + swtr.endpoints.get + '?where=' +
+        encodeURIComponent(where) + '&access_token=' + swtr.access_token;
+      if(who) {
+        url += '&who=' + who;
+      }
+      // get them!
+      this.sync('read', this, {
+        url: url,
+        success: function() {
+          if(typeof options.success === 'function') {
+            options.success.apply(this, arguments);
+          }
+        },
+        error: function() {
+          if(typeof options.error === 'function') {
+            options.error.apply(this, arguments);
+          }
+        }
+      });
+    },
+    // post newly created sweets to a sweet store
+    // @options is a javascript object,
+    // @options.where : URI of the resource for which swts to be fetched
+    // @options.who: optional username to filter sweets
+    // @options.success: success callback to call
+    // @options.error: error callback to call,
+    post: function(options) {
+      var new_sweets = this.getNew();
+      var dummy_collection = new Backbone.Collection(new_sweets);
+
+      if(!swtr.access_token) {
+        throw new Error('Access Token is required to sweet');
+        return;
+      }
+
+      var url = swtr.swtstoreURL() + swtr.endpoints.post +
+        '?access_token=' + swtr.access_token;
+
+      this.sync('create', dummy_collection, {
+        url: url,
+        success: function() {
+          if(typeof options.success === 'function') {
+            options.success.apply(this, arguments);
+          }
+        },
+        error: function() {
+          if(typeof options.error === 'function') {
+            options.error.apply(this, arguments);
+          }
+        }
+      });
+    },
+    // return newly created models from the collection
+    getNew: function() {
+      var new_models = [];
+      this.each(function(model) {
+        if(model.isNew()) {
+          new_models.push(model);
+        }
+      });
+      return new_models;
+    },
+    // update part of the collection after a save on the server
+    update: function() {
+    }
+  });
   swtr.ImgAnnoView = Backbone.View.extend({
     el: $("#img-annotation-wrapper"),
     events: {
