@@ -48,6 +48,11 @@ body {
   display: none;
 }
 
+.jumbotron h1 {
+  font-size: 50px;
+  margin-bottom: 25px;
+}
+
 #sweet-list {
   margin-bottom: 10px;
 }

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> swtr - the canonical sweet web app </title>
+    <title> CLink: Community Linked Open Cultuur Data </title>
 
     <meta name="description" content="Sweet Maker, Social, Semantic, Web, Decentralized, Makes Sweet, Sweet Swagger, Swtr, swtr">
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
@@ -27,7 +27,9 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#/home">swtr - the canonical swt web app</a>
+          <a class="navbar-brand" href="#/home">
+            CLink: Community Linked Open Cultuur Data
+          </a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="swtr-navbar-collapse">
@@ -38,11 +40,11 @@
             <li> <a href="#/play" title="My Playarea">
               <span class="glyphicon glyphicon-wrench"></span>
             </a></li>
-            <li> <a href="#/linked-data" title="Linked Data">
-              <span class="glyphicon glyphicon-globe"></span>
-            </a></li>
             <li> <a href="#/search" title="Search External Sources">
               <span class="glyphicon glyphicon-search"></span>
+            </a></li>
+            <li> <a href="#/linked-data" title="Linked Data">
+              <span class="glyphicon glyphicon-globe"></span>
             </a></li>
             <li> <a id="sign-in" href="#" title="">
               <span class="glyphicon glyphicon-user"></span>
@@ -55,7 +57,31 @@
 
     <div id="swtr-root" class="container">
       <div id="home-page" class="page">
-        
+        <div class="jumbotron">
+          <h1> CLink: Community Linked Open Cultuur Data </h1>
+          <p>
+            There are over 30 data sets in <a href="http://www.opencultuurdata.nl">
+            Open Cultuur Data.</a> Using CLink, one can
+            bookmark, annotate, tag and discover the social enrichment of the data
+            by a community of interest.
+          </p>
+          <p>
+            CLink provides annotation and tagging of images that are searchable in
+            the <a href="http://www.opencultuurdata.nl">OCD</a> dataset and also
+            tagging and connecting to images that are outside the dataset.
+            The annotations/tags of a person are announced and made available for
+            other users who can further filter the users of interest and tags or
+            datasets of interest.
+          </p>
+          <p>
+            <a class="btn btn-info btn-lg" href="#/search">Start Searching and Tagging</a>
+          </p>
+        </div>
+        <footer>
+          <p>This app is part of the <a href="http://www.opencultuurdata.nl/challenge-english/">
+            Open Cuultur Data challenge</a>
+          </p>
+        </footer>
       </div>
 
       <div id="play-page" class="page">
