@@ -187,6 +187,7 @@
       this.collection.remove(notPosted);
     },
     postSweets: function() {
+      console.log("postSWr");
       var appView = swtr.appView;
       appView.helpview.step(5);
       appView.$overlay.show();
@@ -196,18 +197,18 @@
             console.log(collection, response);
             swtr.sweets.set(collection);
             //TODO: move this to a annotation view or something
-            anno.removeAll();
-            _.each(swtr.sweets.models, function(swt) {
-              if(!_.has(swt.get('how'), 'editable')) {
-                swt.get('how')['editable'] = false;
-                //console.log(swt.get('how').text.Comment);
-                swt.get('how').text = swtr.annoView.createPopupText(swt.get('how'));
-                //console.log(swt.get('how'));
-                swt.get('how').text += '\n - by ' + swt.get('who');
-              }
-              //console.log(swt.get('how'));
-              anno.addAnnotation(swt.get('how'));
-            });
+//            anno.removeAll();
+            // _.each(swtr.sweets.models, function(swt) {
+            //   if(!_.has(swt.get('how'), 'editable')) {
+            //     swt.get('how')['editable'] = false;
+            //     //console.log(swt.get('how').text.Comment);
+            //     swt.get('how').text = swtr.imgAnnoView.createPopupText(swt.get('how'));
+            //     //console.log(swt.get('how'));
+            //     swt.get('how').text += '\n - by ' + swt.get('who');
+            //   }
+            //   //console.log(swt.get('how'));
+            //   anno.addAnnotation(swt.get('how'));
+            // });
             //console.log(swtr.sweets.toJSON());
             swtr.appView.$overlay.hide();
             swtr.appView.helpview.step(6);
@@ -359,171 +360,12 @@
     }
   });
 
-  var ImgAnnoView = Backbone.View.extend({
-    el: $("#img-annotation-wrapper"),
-    events: {
-      'change #custom-dropdown ': 'getFormValue'
-    },
-    initialize: function(options) {
-      // attach event handlers to the anno object
-      anno.addHandler('onAnnotationCreated', this.showSwtHelp);
-      anno.addHandler('onAnnotationCreated', this.updateNewAnno);
-      anno.addHandler('onAnnotationUpdated', this.showSwtHelp);
-      anno.addHandler('onSelectionStarted', function(annotation) {
-        anno.hideAnnotations();
-      });
-      anno.addHandler('onSelectionCompleted', function(annotation) {
-        anno.showAnnotations();
-      });
-      anno.addPlugin('CustomFields', {});
-      anno.addHandler('onSelectionCompleted', this.hideOriginalEditor);
-      // this.set('img', options.img);
-      if(options.img) {
-        anno.makeAnnotatable(options.img);
-      }
-      this.listenTo(this.collection, 'add', this.render);
-      this.helpview = new HelpView();
-      // this.render();
-    },
-    render: function(model) {
-      var swt = model.toJSON();
-      swt.how['editable'] = false;
-      swt.how.text = swtr.annoView.createPopupText(swt.how);
-      swt.how.text += '\n - by ' + swt.who;
-      anno.addAnnotation(swt.how);
-    },
-    renderWith: function() {
-      _.each(this.collection, this.render);
-    },
-    showSwtHelp: function(annotation) {
-      var self = swtr.annoView;//TODO: figure out how we can bind the scope when this func is called as a callback
-      self.helpview.step(3);
-      $('#sweet').show();
-    },
-    updateNewAnno: function(annotation) {
-      console.log('updateNewAnno()');
-      var self = swtr.annoView;
-      // get the final value/input from the editor
-      var selected = $('select option:selected').text().toLowerCase();
-      var text_input = $('.annotorious-editor-text').val();
-      if( selected === "tags") {
-        self.new_anno[selected] = $('#tags-input').tags().getTags();
-      }
-      else {
-        // update it in our annotation object
-        self.new_anno[selected] = text_input;
-      }
-      // prepare the text field
-      self.new_anno.text = self.createPopupText(self.new_anno);
-      // update the annotorious annotation object with the new values
-      if(self.new_anno.comment) {
-        annotation.comment = self.new_anno.comment;
-      }
-      if(self.new_anno.link) {
-        annotation.link = self.new_anno.link;
-      }
-      if(self.new_anno.tags) {
-        annotation.tags = self.new_anno.tags;
-      }
-      if(self.new_anno.title) {
-        annotation.title = self.new_anno.title;
-      }
-      annotation.text = self.new_anno.text;
-      console.log(self.new_anno, annotation);
-    },
-    // hide the original editor window, when user has completed selecting part
-    // of the image to annotate..
-    hideOriginalEditor: function(annotation) {
-      console.log('hideOriginalEditor()');
-      var self = swtr.annoView;
-      self.new_anno = {};
-      self.getSuggestionsForTags();
-      //$('.annotorious-editor-text').hide();
-      //$('.annotorious-editor').css('width', '100%');
-    },
-    getFormValue: function(event) {
-      console.log('getFormValue()');
-
-      var self = swtr.annoView;
-      // show the editor field to input text
-      var $anno_form = $('.annotorious-editor-text');
-      //$anno_form.slideDown();
-      // get the previous item entered
-      var $selected = $('select option:selected');
-      var text_input = $anno_form.val();
-
-      // if there was a input and it was not tags..
-      if(text_input && $selected.prev().text() !== 'Tags') {
-        var field = $selected.prev().text().toLowerCase();
-        // update it in our annotation object
-        self.new_anno[field] = text_input;
-      }
-      // if it was tags..
-      else if ($selected.prev().text() === 'Tags') {
-        // directly save it..
-        self.new_anno['tags'] = $('#tags-input').tags().getTags();
-      }
-
-      // if the current selected is tags
-      if($selected.text() === 'Tags') {
-        $('#tags-input').tags({
-          tagSize: 'md',
-          promptText: 'Type word (and press enter)..',
-          caseInsensitive: true,
-          suggestions: self.tags_suggestions
-        });
-        $('#tags-input').show();
-        $('.annotorious-editor-text').hide();
-      }
-      else {
-        $('#tags-input').hide();
-        $('.annotorious-editor-text').show();
-      }
-      $anno_form.val('');
-      $anno_form.attr('placeholder', 'Add ' + $selected.text());
-      console.log(self.new_anno);
-    },
-    createPopupText: function(annotation) {
-      // title
-      var text = (annotation.title) ? '<h4>' + annotation.title + '</h4>' : '';
-
-      // comment
-      text += (annotation.comment) ? '<p>' + annotation.comment + '</p>' : '';
-
-      // link
-      text += (annotation.link) ? '<a target="blank" href="' +
-        swtr.utils.linkify(annotation.link) + '">' + annotation.link +
-        '</a>' : '';
-
-      // tags
-      text += (annotation.tags) ? '<p>' + annotation.tags + '</p>' : '';
-
-      // if older annotation i.e w/o comment,title etc fields
-      // add text field as text
-      if(!text) {
-        text = annotation.text;
-      }
-      return text;
-    },
-    // load the suggestions for the tag spraying..
-    getSuggestionsForTags: function() {
-      var self = swtr.annoView;
-      $.ajax({
-        url: '/static/data/tags_suggestions.json',
-        success: function(data) {
-          self.tags_suggestions = data;
-        }
-      });
-    }
-  });
-
   var AppView = Backbone.View.extend({
     el: $('#swtr-root'),
     events: {
       'click #user-input-submit': 'submitUserInput',
       'click #sweet': 'sweet',
       'click #sign-in': 'signIn',
-      'click #setbox': 'showHide',
       'click #ocd-source': 'sourceChanged'
       //'mouseup .annotorious-editor-button-save': 'addnew_anno'
     },
@@ -537,20 +379,7 @@
       this.$overlay = $('#app-overlay');
       this.$img = $('#annotatable-img');
 
-      // attach a load event handler, whenever an image is loaded..
-      this.$img.on('load', this, this.imageLoaded);
-      this.$img.on('error', this, this.onImageLoadError);
-
-      // check if already an image is provided at load time..
-      this.imgURL = this.$img.attr('src');
-      if(this.imgURL) {
-        this.initImageAnno();
-        $('#user-input').val(this.imgURL);
-      }
-      else {
-        this.helpview.step(1);
-      }
-
+      this.helpview.step(1);
       // initialize the oauth stuff
       this.oauth = new Oauth({
         app_id: swtr.app_id,
@@ -582,13 +411,30 @@
       }
       // if type is given explicitly; we load it as such.
       if(type === 'image') {
-        this.setImage(url);
+        if(swtr.imgAnnoView) {
+          swtr.imgAnnoView.setImage(url);
+        }
+        else {
+          swtr.imgAnnoView = new swtr.ImgAnnoView({collection:swtr.sweets,
+                                                   img: this.$img[0],
+                                                   $img: this.$img,
+                                                   url: url});
+        }
         return false;
       }
       // else try to find what resource is the URL..
       // if url has an image extension then load the image annotation
       if(url.match(/.jpg|.jpeg|.png|.gif|.bmp|.svg/)) {
-        this.setImage(url);
+        if(swtr.imgAnnoView) {
+          swtr.imgAnnoView.setImage(url);
+        }
+        else {
+          swtr.imgAnnoView = new swtr.ImgAnnoView({collection:swtr.sweets,
+                                                   img: this.$img[0],
+                                                   $img: this.$img,
+                                                   url: url});
+        }
+
         return false;
       }
       // else check with our /media-type endpoint to see what type of resource
@@ -601,7 +447,15 @@
           //console.log(response);
           self.$overlay.hide();
           if(response.type === 'image') {
-            self.setImage(url);
+            if(swtr.imgAnnoView) {
+              swtr.imgAnnoView.setImage(url);
+            }
+            else {
+              swtr.imgAnnoView = new swtr.ImgAnnoView({collection:swtr.sweets,
+                                                       img: self.$img[0],
+                                                       $img: self.$img,
+                                                       url: url});
+            }
           }
           else {
             window.location.href = '/annotate?where=' + url;
@@ -609,76 +463,6 @@
         });
       }
     },
-    setImage: function(url) {
-      this.imgURL = url;
-
-      if(this.$img.attr('src') === this.imgURL) {
-        return;
-      }
-      anno.reset();
-      var self = this;
-      this.$overlay.show();
-      this.helpview.step(7);
-      this.$img.attr('src', this.imgURL);
-    },
-    imageLoaded: function(event) {
-      var self = event.data;
-      console.log('image loaded', self);
-      self.$overlay.hide();
-      self.initImageAnno();
-    },
-    // when image fails to load - could be because of broken URL or network
-    // issues
-    onImageLoadError: function(event) {
-      var self = event.data;
-      console.log('error while loading image');
-      self.$overlay.hide();
-      self.helpview.step(8);
-    },
-    initImageAnno: function() {
-      // img is a jquery object which annotorious doesn't accept; instead it
-      // takes the native object returned by a browser API; fortunately, jqeury
-      // stores a copy of the native object too!
-
-      swtr.annoView = new ImgAnnoView({collection:swtr.sweets, img: this.$img[0]});
-      this.getExistingAnnotations();
-
-    },
-    getExistingAnnotations: function() {
-      var self = this;
-      this.helpview.step(0);
-      this.$overlay.show();
-      //console.log('getting existing annotations of ', this.imgURL);
-      swtr.sweets.getAll({
-        where: this.imgURL,
-        success: function(data) {
-          if(_.isArray(data)) {
-            swtr.sweets.add(data);
-            swtr.filterview = new FilterView({collection: swtr.sweets});
-            // _.each(data, function(swt) {
-            //   swt.how['editable'] = false;
-            //   swt.how.text = swtr.annoView.createPopupText(swt.how);
-            //   swt.how.text += '\n - by ' + swt.who;
-            //   anno.addAnnotation(swt.how);
-            // });
-            self.$overlay.hide();
-            self.helpview.step(2);
-          }
-        },
-        error: function(jqxhr, error, statusText) {
-          if(jqxhr.status === 404) { //annotations don't exist for this image
-            console.log('annotations don\'t exist for this image. Create one!');
-          }
-          self.$overlay.hide();
-          self.helpview.step(2);
-        }
-      });
-    },
-    // showSwtHelp: function(annotation) {
-    //   var self = swtr.appView;//TODO: figure out how we can bind the scope when this func is called as a callback
-    //   self.helpview.step(3);
-    //   $('#sweet').show();
-    // },
     getSweets: function() {
       var annos = _.filter(anno.getAnnotations(), function(anno) {
         return (!_.has(anno, 'editable') || anno.editable === true);
@@ -701,133 +485,6 @@
       this.showSweets();
       return false;
     },
-    showHide: function() {
-      if($("#setbox:checked").length) {
-        $('.annotorious-item-unfocus').css("opacity",  "0.5");
-      }
-      else {
-        $('.annotorious-item-unfocus').css("opacity", "0");
-      }
-    },
-    // hideOriginalEditor: function(annotation) {
-    //   console.log('hideOriginalEditor()');
-    //   var self = swtr.appView;
-    //   self.new_anno = {};
-    //   self.getSuggestionsForTags();
-    //   //$('.annotorious-editor-text').hide();
-    //   //$('.annotorious-editor').css('width', '100%');
-    // },
-
-    // getSuggestionsForTags: function() {
-    //   var self = swtr.appView;
-    //   $.ajax({
-    //     url: '/static/data/tags_suggestions.json',
-    //     success: function(data) {
-    //       self.tags_suggestions = data;
-    //     }
-    //   });
-    // },
-    //dropdown event
-    // getFormValue: function(event) {
-    //   console.log('getFormValue()');
-
-    //   var self = swtr.appView;
-    //   // show the editor field to input text
-    //   var $anno_form = $('.annotorious-editor-text');
-    //   //$anno_form.slideDown();
-    //   // get the previous item entered
-    //   var $selected = $('select option:selected');
-    //   var text_input = $anno_form.val();
-
-    //   // if there was a input and it was not tags..
-    //   if(text_input && $selected.prev().text() !== 'Tags') {
-    //     var field = $selected.prev().text().toLowerCase();
-    //     // update it in our annotation object
-    //     self.new_anno[field] = text_input;
-    //   }
-    //   // if it was tags..
-    //   else if ($selected.prev().text() === 'Tags') {
-    //     // directly save it..
-    //     self.new_anno['tags'] = $('#tags-input').tags().getTags();
-    //   }
-
-    //   // if the current selected is tags
-    //   if($selected.text() === 'Tags') {
-    //     $('#tags-input').tags({
-    //       tagSize: 'md',
-    //       promptText: 'Type word (and press enter)..',
-    //       caseInsensitive: true,
-    //       suggestions: self.tags_suggestions
-    //     });
-    //     $('#tags-input').show();
-    //     $('.annotorious-editor-text').hide();
-    //   }
-    //   else {
-    //     $('#tags-input').hide();
-    //     $('.annotorious-editor-text').show();
-    //   }
-    //   $anno_form.val('');
-    //   $anno_form.attr('placeholder', 'Add ' + $selected.text());
-    //   console.log(self.new_anno);
-    // },
-    // //to add the final annotation
-    // //save button - event bind
-    // updateNewAnno: function(annotation) {
-    //   console.log('updateNewAnno()');
-    //   var self = swtr.appView;
-    //   // get the final value/input from the editor
-    //   var selected = $('select option:selected').text().toLowerCase();
-    //   var text_input = $('.annotorious-editor-text').val();
-    //   if( selected === "tags") {
-    //     self.new_anno[selected] = $('#tags-input').tags().getTags();
-    //   }
-    //   else {
-    //     // update it in our annotation object
-    //     self.new_anno[selected] = text_input;
-    //   }
-    //   // prepare the text field
-    //   self.new_anno.text = self.createPopupText(self.new_anno);
-    //   // update the annotorious annotation object with the new values
-    //   if(self.new_anno.comment) {
-    //     annotation.comment = self.new_anno.comment;
-    //   }
-    //   if(self.new_anno.link) {
-    //     annotation.link = self.new_anno.link;
-    //   }
-    //   if(self.new_anno.tags) {
-    //     annotation.tags = self.new_anno.tags;
-    //   }
-    //   if(self.new_anno.title) {
-    //     annotation.title = self.new_anno.title;
-    //   }
-    //   annotation.text = self.new_anno.text;
-    //   console.log(self.new_anno, annotation);
-    // },
-    // // create the text to displayed for each annotation from the other
-    // // attributes of the sweet/annotation
-    // createPopupText: function(annotation) {
-    //   // title
-    //   var text = (annotation.title) ? '<h4>' + annotation.title + '</h4>' : '';
-
-    //   // comment
-    //   text += (annotation.comment) ? '<p>' + annotation.comment + '</p>' : '';
-
-    //   // link
-    //   text += (annotation.link) ? '<a target="blank" href="' +
-    //     swtr.utils.linkify(annotation.link) + '">' + annotation.link +
-    //     '</a>' : '';
-
-    //   // tags
-    //   text += (annotation.tags) ? '<p>' + annotation.tags + '</p>' : '';
-
-    //   // if older annotation i.e w/o comment,title etc fields
-    //   // add text field as text
-    //   if(!text) {
-    //     text = annotation.text;
-    //   }
-    //   return text;
-    // },
-    // to sign in the user to swtstore..just make a call to the oauth endpoint
     signIn: function(event) {
       event.preventDefault();
       this.oauth.authorize();
@@ -1068,7 +725,25 @@
       }
     }
   };
-
   //swtr.AppView = AppView;
 
+  var AppRouter = Backbone.Router.extend({
+    routes: {
+      'home': 'home',
+      'linked-data': 'linkedData',
+      'play': 'play',
+      'search-external': 'search'
+    },
+    home: function() {
+    },
+    linkedData: function() {
+    },
+    play: function() {
+
+    },
+    search: function() {
+    }
+  });
+  new AppRouter();
+  Backbone.history.start();
 })(swtr);
