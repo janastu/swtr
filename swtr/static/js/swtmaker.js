@@ -257,8 +257,8 @@
       }, this);
 
       // pluck uniq tags of sweets
-      var tags = _.chain(this.collection.pluck('how')).pluck('tags').uniq().
-        value();
+      var tags = _.chain(this.collection.pluck('how')).pluck('tags').flatten().
+        uniq().value();
       // render them as filter controls
       _.each(tags, function(tag) {
         if(tag) {
@@ -309,11 +309,16 @@
         return;
       }
       var filtered_swts = this.collection.filter(function(model) {
+        //TODO: find a better way of doing this..
+        var flag = false;
         _.each(model.get('how').tags, function(tag) {
           if(_.indexOf(tags, tag) > -1) {
-            return model;
+            flag = true;
           }
         });
+        if(flag === true) {
+          return model;
+        }
       });
       if(filtered_swts.length) {
         anno.removeAll();
