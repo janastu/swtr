@@ -735,7 +735,8 @@
   var TagCloudView = Backbone.View.extend({
     el: $('#tag-cloud'),
     events: {
-      "click g": "test"
+      "click #user-tag-cloud g": "userTagClicked",
+      "click #tags-tag-cloud g": "tagsTagClicked"
     },
     initialize: function() {
       this.user_tag_el = $('#user-tag-cloud');
@@ -743,23 +744,24 @@
       this.render();
 
     },
-    test: function(e) {
+    userTagClicked: function(e) {
       console.log(e);
+    },
+    tagsTagClicked: function(e) {
+      console.log('tags ',e);
     },
     render: function() {
       this.renderUserTagCloud();
       this.renderTagsTagCloud();
     },
     renderUserTagCloud: function() {
-      var fill = d3.scale.category20();
       var words = _.uniq(swtr.LDs.pluck('who'));
       var weight = swtr.LDs.countBy('who');
-      d3.layout.cloud().size([300, 300])
+      d3.layout.cloud().size([1000, 1000])
         .words(words.map(function(d) {
-          return {text: d, size: weight[d]};
+          return {text: d, size: 5};
         }))
         .padding(5)
-        .rotate(function() { return ~~(Math.random() * 2) * 90; })
         .font("Impact")
         .fontSize(function(d) { return d.size; })
         .on("end", this.draw)
@@ -767,25 +769,23 @@
 
     },
     draw: function (words) {
+      var fill = d3.scale.category20();
       d3.select("#user-tag-cloud").append("svg")
-        .attr("width", 300)
-        .attr("height", 300)
         .append("g")
-        .attr("transform", "translate(150,150)")
+        .attr("transform", "translate(370,180)")
         .selectAll("text")
         .data(words)
         .enter().append("text")
         .style("font-size", function(d) { return "16px"; })
         .style("font-family", "Impact")
-        .style("fill", function(d, i) {console.log(i); return 'red'; })
+        .style("fill", function(d, i) { return fill(i); })
         .attr("text-anchor", "middle")
         .attr("transform", function(d) {
-          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-        })
-        .text(function(d) {console.log(d); return d.text; });
+          return "translate(" + [d.x, d.y] + ")";})
+        .text(function(d) { return d.text; });
+
     },
     renderTagsTagCloud: function() {
-      var fill = d3.scale.category20();
       var sweetsWithTags = swtr.LDs.filter(function(k) {
         if(k.get('how').tags) {
           return k;
@@ -795,13 +795,12 @@
       _.each(sweetsWithTags, function(sweet) {
         tags.push(sweet.get('how').tags);
       });
-      tags = _.flatten(tags);
-      d3.layout.cloud().size([300, 300])
+      tags = _.uniq(_.flatten(tags));
+      d3.layout.cloud().size([500, 500])
         .words(tags.map(function(d) {
           return {text: d, size: 10};
         }))
-        .padding(5)
-        .rotate(function() { return ~~(Math.random() * 2) * 90; })
+        .padding(7)
         .font("Impact")
         .fontSize(function(d) { return d.size; })
         .on("end", this.drawTags)
@@ -809,20 +808,19 @@
 
     },
     drawTags: function(words) {
+      var fill = d3.scale.category20();
         d3.select("#tags-tag-cloud").append("svg")
-        .attr("width", 300)
-        .attr("height", 300)
         .append("g")
-        .attr("transform", "translate(150,150)")
+        .attr("transform", "translate(700,300)")
         .selectAll("text")
         .data(words)
         .enter().append("text")
-        .style("font-size", function(d) { return "16px"; })
+        .style("font-size", function(d) { return "20px"; })
         .style("font-family", "Impact")
-        .style("fill", function(d, i) {console.log(i); return 'red'; })
+        .style("fill", function(d, i) { return fill(i); })
         .attr("text-anchor", "middle")
         .attr("transform", function(d) {
-          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+          return "translate(" + [d.x, d.y] + ")";
         })
         .text(function(d) {console.log(d); return d.text; });
     }
