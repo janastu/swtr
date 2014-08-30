@@ -695,14 +695,14 @@
       swtr.LDs.getAll({what: 'img-anno',
                        success: function(data) {
                          swtr.LDs.add(data);
-                         this.tagCloudView = new TagCloudView({collection: swtr.LDs});
+                         if(!swtr.tagCloudView) {
+                           swtr.tagCloudView = new TagCloudView({collection: swtr.LDs});
+                         }
                        }});
     },
     destroy: function() {
       this.remove();
 
-      // $('#user-tag-cloud').html('');
-      // $('#tags-tag-cloud').html('');
     }
   });
 
