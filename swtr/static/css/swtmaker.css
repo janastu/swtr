@@ -5,6 +5,9 @@ body {
 .annotorious-editor {
   min-width: 250px;
 }
+#header {
+    z-index: 1;
+}
 .annotorious-editor-text {
   font-size: 12px;
   min-height: 35px;
