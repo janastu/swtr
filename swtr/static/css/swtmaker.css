@@ -50,12 +50,28 @@ body {
   margin-bottom: 10px;
 }
 
+.ocd-item.col-md-4 {
+  width: 32.3333%;
+}
 .ocd-item {
   padding-bottom: 4px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  margin-bottom: 20px;
+  margin: 0 5px 20px 5px;
   text-align: center;
+}
+.ocd-item-cover {
+  position: absolute;
+  border: 1px solid #ddd;
+  box-shadow: 1px 1px 3px #ccc;
+  width: 100%;
+  padding: 12px;
+  background: #fff;
+  height: 60px;
+  margin-left: -15px;
+}
+.ocd-item .text{
+  margin-top: 3px;
 }
 
 .thumb-image {

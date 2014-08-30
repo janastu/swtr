@@ -466,6 +466,8 @@
     el: $('#ocd-view'),
     events: {
       'click .ocd-item a': 'onImgClick',
+      'click .ocd-item-cover .close': 'onCoverCloseClick',
+      'click .ocd-item-mark': 'onMarkClick',
       'click .pager li': 'onPagerClick'
     },
     initialize: function(opts) {
@@ -475,6 +477,7 @@
       this.page = 0;
       this.item_template = _.template($('#ocd-item-template').html());
       this.base_template = _.template($('#ocd-view-base-template').html());
+      this.cover_template = _.template($('#ocd-item-cover-template').html());
       this.render();
     },
     render: function() {
@@ -495,7 +498,8 @@
         $row_el.append(this.item_template({
           title: item._source.title,
           media_url: item._source.media_urls[0].url,
-          authors: item._source.authors
+          authors: item._source.authors,
+          description: item._source.description
         }));
       }, this);
       this.resolveOCDURLs();
@@ -557,11 +561,33 @@
       return false;
     },
     onImgClick: function(event) {
+      //console.log('onImgClick');
       event.preventDefault();
       // TODO: init the image anno
-      var url = $(event.currentTarget).find('img').attr('src');
+      this.highlightImg(event);
       //swtr.appView.loadURL(url, 'image');
       return false;
+    },
+    highlightImg: function(event) {
+      //console.log('highlightImg');
+      var elem = $(event.currentTarget).parent().parent();
+      // if .ocd-item-cover exists return
+      if(elem.find('.ocd-item-cover').length) {
+        return;
+      }
+      //console.log(elem);
+      elem.prepend(this.cover_template());
+      $(elem.find('.ocd-item-cover')[0]).slideDown('slow');
+    },
+    onCoverCloseClick: function(event) {
+      var elem = $(event.currentTarget).parent();
+      elem.slideUp('slow');
+      elem.remove();
+    },
+    onMarkClick: function(event) {
+      var url = $(event.currentTarget).parent().parent().
+        find('img').attr('src');
+      console.log('load image anno', url);
     },
     search: function(data, cb) {
       swtr.appView.$overlay.show();

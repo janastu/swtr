@@ -262,7 +262,16 @@
             <img src="" class="responsive thumb-image">
           </a>
         </div>
-        <div>Authors: <%= authors %> </div>
+        <div class="text">Authors: <%= authors %> </div>
+        <div class="text">Description: <%= description %> </div>
+      </div>
+    </script>
+    <script type="text/template" id="ocd-item-cover-template">
+      <div class="ocd-item-cover">
+        Mark and load this image to annotate
+        <button class="btn btn-xs btn-default pull-left ocd-item-mark">Mark</button>
+        <a class="close">&times;</a>
+        <div class="clearfix"></div>
       </div>
     </script>
     <script type="text/template" id="filter-users">
