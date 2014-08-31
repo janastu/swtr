@@ -147,11 +147,13 @@
           <div id="tags-tag-cloud"></div>
           <div id="user-tag-cloud"></div>
         </div>
+        <div id="gallery">
+        </div>
       </div>
       <!-- the search page -->
       <div id="search-page" class="page"></div>
 
-      <div id="linked-data-page" class="page"></div>
+      <!-- <div id="linked-data-page" class="page"></div> <\!--  -\-> -->
 
     </div>
     <div id="app-overlay"></div>
@@ -288,6 +290,14 @@
         <label><%= tag %></label>
       </ul>
     </script>
-
+    <script type="text/template" id="gallery-item-template">
+      <div class="col-md-4 col-sm-6 ocd-item">
+        <div class="media">
+          <img src="<%= how.src %>" class="responsive thumb-image">
+        </div>
+        <div class="text">Author: <%= who %> </div>
+        <div class="text">Tags: <%= how.tags %> </div>
+      </div>
+    </script>
   </body>
 </html>

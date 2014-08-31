@@ -735,8 +735,8 @@
   var TagCloudView = Backbone.View.extend({
     el: $('#tag-cloud'),
     events: {
-      "click #user-tag-cloud g": "userTagClicked",
-      "click #tags-tag-cloud g": "tagsTagClicked"
+      "click #user-tag-cloud g text": "userTagClicked",
+      "click #tags-tag-cloud g text": "tagsTagClicked"
     },
     initialize: function() {
       this.user_tag_el = $('#user-tag-cloud');
@@ -745,10 +745,37 @@
 
     },
     userTagClicked: function(e) {
-      console.log(e);
+      var user = $(e.currentTarget).text();
+      var swts = swtr.LDs.filter(function(swt) {
+        if(swt.get('who') == user) {
+          return swt;
+        }
+      });
+      swts = _.uniq(swts,'how'.src);
+      this.setGalleryView(swts);
+      $(this.el).hide();
     },
     tagsTagClicked: function(e) {
-      console.log('tags ',e);
+      var tag = $(e.currentTarget).text();
+      var swts = swtr.LDs.filter(function(swt) {
+        if(swt.get('how').tags){
+          if(_.contains(swt.get('how').tags, tag)) {
+              return swt;
+            }
+        }
+      });
+      this.setGalleryView(swts);
+      $(this.el).hide();
+    },
+    setGalleryView: function(swts) {
+      if(this.galleryView) {
+        //set the collection of galleryView to new set of swts to be displayed.
+        this.galleryView.collection = swts;
+        this.galleryView.render();
+      }
+      else {
+        this.galleryView = new GalleryView({collection: swts});
+      }
     },
     render: function() {
       this.renderUserTagCloud();
@@ -822,9 +849,22 @@
         .attr("transform", function(d) {
           return "translate(" + [d.x, d.y] + ")";
         })
-        .text(function(d) {console.log(d); return d.text; });
+        .text(function(d) { return d.text; });
     }
+  });
 
+  var GalleryView = Backbone.View.extend({
+    el: $("#gallery"),
+    initialize: function() {
+      this.template = _.template($("#gallery-item-template").html());
+      this.render();
+    },
+    render: function() {
+      $(this.el).html('');
+      _.each(this.collection, function(model) {
+        $(this.el).append(this.template(model.toJSON()));
+      }, this);
+    }
   });
 
   var AppRouter = Backbone.Router.extend({
