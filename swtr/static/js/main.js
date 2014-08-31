@@ -727,8 +727,15 @@
                        }});
     },
     destroy: function() {
+      this.cleanUp();
       this.remove();
 
+    },
+    cleanUp: function() {
+      if(!$("#tag-cloud").is(':visible')) {
+        $("#gallery").hide();
+        $("#tag-cloud").show();
+      }
     }
   });
 
@@ -860,10 +867,17 @@
       this.render();
     },
     render: function() {
-      $(this.el).html('');
+      this.setUp();
       _.each(this.collection, function(model) {
         $(this.el).append(this.template(model.toJSON()));
       }, this);
+    },
+    setUp: function() {
+      if(!$(this.el).is(':visible')) {
+        $(this.el).show();
+      }
+      $(this.el).html('');
+
     }
   });
 
