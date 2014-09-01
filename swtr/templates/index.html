@@ -38,7 +38,7 @@
               <span class="glyphicon glyphicon-home"></span>
             </a></li>
             <li> <a href="#/play" title="My Playarea">
-              <span class="glyphicon glyphicon-wrench"></span>
+                <span class="glyphicon glyphicon-user"></span>
             </a></li>
             <li> <a href="#/search" title="Search External Sources">
               <span class="glyphicon glyphicon-search"></span>
@@ -47,7 +47,6 @@
               <span class="glyphicon glyphicon-globe"></span>
             </a></li>
             <li> <a id="sign-in" href="#" title="">
-              <span class="glyphicon glyphicon-user"></span>
               <span id="signinview"> Sign In </span>
             </a></li>
           </ul>
@@ -75,13 +74,78 @@
             other users who can further filter the users of interest and tags or
             datasets of interest.
           </p>
-          <p>
-            <a class="btn btn-info btn-lg" href="#/search">Start Searching and Tagging</a>
-          </p>
+          <!-- <p> -->
+          <!--   <a class="btn btn-info btn-lg" href="#/search">Start Searching and Tagging</a> -->
+          <!-- </p> -->
+          <div class="col-md-12 center-block">
+            <h4 class="col-md-3">
+              <a href="#/search">
+                <span class="glyphicon glyphicon-search"></span>
+                Search
+              </a>
+            </h4>
+            <h4 class="col-md-3">
+              <a href="#/play">
+                <span class="glyphicon glyphicon-user"></span>
+                Personal PlayArea</a>
+            </h4>
+            <h4 class="col-md-3">
+              <a href="#/linked-data">
+                <span class="glyphicon glyphicon-globe"></span>
+                Linked Data</a>
+            </h4>
+          </div>
+        </div>
+        <div>
+          <h3>
+            <p>
+              <span class="glyphicon glyphicon-search"></span>
+              Search</p>
+          </h3>
+          <h4>
+            Search uses search.opencultuurdata.nl to look for images from
+            the OCD collection.  One can then start annotating an image of
+            interest. Such an image is marked and is available in the play
+            area [<span class="glyphicon glyphicon-user"></span>] of the user.
+          </h4>
+        </div>
+        <div>
+          <h3>
+            <p>
+              <span class="glyphicon glyphicon-user"></span>
+              Personal PlayArea
+            </p>
+          </h3>
+          <h4>A user can view all annotated images. The tags used in
+            annotations are also shown as a list and can be used for filtering the
+            set of images. User can also choose to annotate an image outside the
+            OCD collection by using the image URL.
+          </h4>
+        </div>
+        <div>
+          <h3>
+            <p>
+              <span class="glyphicon glyphicon-globe"></span>
+              Linked Data
+            </p>
+          </h3>
+          <h4>
+
+          All images that are tagged by all users are available for browsing,
+          filtering based on selecting or deselecting users (and their
+          annotations); and also by selecting and deselecting tags of interest.
         </div>
         <footer>
           <p>This app is part of the <a href="http://www.opencultuurdata.nl/challenge-english/">
             Open Cuultur Data challenge</a>
+          </p>
+          <p>We use persona.org for identifying a user; Annotorious for image
+            annotation and SWeeT Web for assimilating the linked open data
+            announced by users. [opensource cc]
+          </p>
+          <p>
+            Clink: [Middle English clinken, probably from Middle Dutch klinken, of
+            imitative origin.]
           </p>
         </footer>
       </div>
