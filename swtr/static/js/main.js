@@ -313,6 +313,11 @@
       this.showSweets();
       return false;
     },
+    // function to update the urls in the UI if an image is loaded internally
+    // and not from user UI.
+    updateURLs: function(url) {
+      $('#user-input').val(url);
+    },
     // load a URL for annotation (can be of image or html resource for now)
     loadURL: function(url, type) {
       //console.log('loadURL()');
@@ -323,6 +328,7 @@
       // if type is given explicitly; we load it as such.
       if(type === 'image') {
         this.initImageAnno(url);
+        this.updateURLs(url);
         return false;
       }
       // else try to find what resource is the URL..
@@ -541,6 +547,7 @@
         find('img').attr('src');
       //TODO: load the image in the play area/workbench
       console.log('load image anno', url);
+      swtr.app_router.loadPlayArea(url, 'image');
     },
     search: function(data, cb) {
       swtr.appView.$overlay.show();
@@ -872,6 +879,7 @@
       }
       $('#' + id).show();
       this.highlight(id);
+      console.log('shown', id);
     },
     highlight: function(id) {
       $('#swtr-navbar-collapse li').removeClass('active');
@@ -882,13 +890,17 @@
     start: function() {
       var fragment = window.location.hash.split('#')[1];
       if(!fragment) {
-        this.navigate('home');
+        this.navigate('home', {trigger: true});
         return;
       }
       var route = fragment.split('/')[1];
       if(_.indexOf(_.keys(this.routes), route) > -1) {
-        this.navigate(fragment);
+        this.navigate(fragment, {trigger: true});
       }
+    },
+    loadPlayArea: function(url, type) {
+      this.navigate('play', {trigger: true});
+      this.mounted_component.loadURL(url, type);
     }
   });
 
