@@ -679,7 +679,7 @@
       var self = this;
       swtr.LDs = new LDSwts();
       swtr.LDs.getAll({
-        what: 'ocd-img-anno',
+        what: 'img-anno',
         success: function(data) {
           swtr.LDs.add(data);
           if(!swtr.tagCloudView) {

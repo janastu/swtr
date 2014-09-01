@@ -4,7 +4,7 @@
   var ImgAnnoSwt = Backbone.Model.extend({
     defaults: {
       'who': '',
-      'what': 'ocd-img-anno',
+      'what': 'img-anno',
       'where': '',
       'how': {}
     },
