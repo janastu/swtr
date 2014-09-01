@@ -35,7 +35,7 @@
       var where = options.where,
     who = options.who || null;
       url = swtr.swtstoreURL() + swtr.endpoints.get + '?where=' +
-        encodeURIComponent(where) + '&access_token=' + swtr.access_token;
+        encodeURIComponent(where);// '&access_token=' + swtr.access_token;
       if(who) {
         url += '&who=' + who;
       }
@@ -100,13 +100,15 @@
     update: function() {
     }
   });
+
   swtr.ImgAnnoView = Backbone.View.extend({
-    el: $("#img-annotation-wrapper"),
+    el: $('#img-annotation-wrapper'),
     events: {
-      'change #custom-dropdown ': 'getFormValue',
-      'click #setbox': 'showHide'
+      'change #custom-dropdown': 'getFormValue',
+      'click #toggle-anno-areas': 'toggleAnnoAreas'
     },
     initialize: function(options) {
+      this.$el = $('#img-annotation-wrapper');
       this.listenTo(this.collection, 'add', this.render);
       // attach event handlers to the anno object
       anno.addHandler('onAnnotationCreated', this.showSwtHelp);
@@ -125,8 +127,15 @@
         this.$img = options.$img;
         options.$img.on('load', this, this.imageLoaded);
         options.$img.on('error', this, this.onImageLoadError);
-        this.setImage(options.url);
       }
+      if(!options.helpview) {
+        //TODO: figure out a better way so that everyone can communicate with
+        //helpview independently
+        throw new Error('Image annotation view must be passed a reference to the helpview');
+      }
+      this.helpview = options.helpview;
+      //console.log('initing img annoview; helpview in opts', options.helpview);
+      this.setImage(options.url);
     },
     render: function(model) {
       var swt = model.toJSON();
@@ -140,7 +149,7 @@
     },
     showSwtHelp: function(annotation) {
       var self = swtr.imgAnnoView;//TODO: figure out how we can bind the scope when this func is called as a callback
-      swtr.appView.helpview.step(3);
+      self.helpview.step(3);
       $('#sweet').show();
     },
     updateNewAnno: function(annotation) {
@@ -260,14 +269,13 @@
     },
     setImage: function(url) {
       this.imgURL = url;
-      console.log(url);
+      //console.log(url);
       if(this.$img.attr('src') === this.imgURL) {
         return;
       }
       anno.reset();
-      var self = this;
       swtr.appView.$overlay.show();
-      swtr.appView.helpview.step(7);
+      this.helpview.step(7);
       this.$img.attr('src', this.imgURL);
     },
     imageLoaded: function(event) {
@@ -277,7 +285,7 @@
       // reset the collection
       swtr.sweets.reset();
       anno.makeAnnotatable(swtr.imgAnnoView.img);
-      swtr.imgAnnoView.getExistingAnnotations();
+      self.getExistingAnnotations();
     },
     // when image fails to load - could be because of broken URL or network
     // issues
@@ -285,7 +293,7 @@
       var self = event.data;
       console.log('error while loading image');
       swtr.appView.$overlay.hide();
-      swtr.appView.helpview.step(8);
+      self.helpview.step(8);
     },
     initImageAnno: function() {
       // img is a jquery object which annotorious doesn't accept; instead it
@@ -297,7 +305,7 @@
     },
     getExistingAnnotations: function() {
       var self = this;
-      swtr.appView.helpview.step(0);
+      this.helpview.step(0);
       swtr.appView.$overlay.show();
       swtr.sweets.getAll({
         where: this.imgURL,
@@ -305,7 +313,7 @@
           if(_.isArray(data)) {
             swtr.sweets.add(data);
             swtr.appView.$overlay.hide();
-            swtr.appView.helpview.step(2);
+            self.helpview.step(2);
           }
         },
         error: function(jqxhr, error, statusText) {
@@ -313,16 +321,16 @@
             console.log('annotations don\'t exist for this image. Create one!');
           }
           swtr.appView.$overlay.hide();
-          swtr.appView.helpview.step(2);
+          self.helpview.step(2);
         }
       });
     },
-    showHide: function() {
-      if($("#setbox:checked").length) {
-        $('.annotorious-item-unfocus').css("opacity",  "0.5");
+    toggleAnnoAreas: function() {
+      if($('#toggle-anno-areas').is(':checked')) {
+        $('.annotorious-item-unfocus').css('opacity',  '0.5');
       }
       else {
-        $('.annotorious-item-unfocus').css("opacity", "0");
+        $('.annotorious-item-unfocus').css('opacity', '0');
       }
     }
   });

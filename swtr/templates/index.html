@@ -86,72 +86,17 @@
         </footer>
       </div>
 
-      <div id="play-page" class="page">
-        <!-- second row: image URL input box and Load button -->
-        <div class="row" id="user-input-row">
-          <div class="col-md-8">
-            <form class="form-inline" role="form">
-              <div class="form-group col-md-11">
-                <label class="sr-only" for="user-input">Enter URL of an image or web page</label>
-                <input class="form-control" type="text"
-                  placeholder="Enter URL of an image or web page" id="user-input">
-              </div>
-              <button type="submit" class="btn btn-info" id="user-input-submit">Load</button>
-            </form>
-          </div>
-          <div class="col-md-4">
-          </div>
-        </div> <!-- end second row -->
-        <!-- third row - control panel? -->
-        <div class="row" id="control-panel">
-          <div class="col-md-8">
-            <form class="form-inline" role="form">
-              <div class="form-group">
-                <button class="btn btn-default" id="sweet">Sweet</button>
-              </div>
-            </form>
-          </div>
-          <div class="col-md-4"></div>
-        </div> <!-- end third row -- >
-        <!-- fourth row: the image annotation window -->
-        <div class="row">
-          <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
-            <div id="img-anno-controls">
-              <form class="form-inline" role="form">
-                <div class="form-group">
-                  <label class="checkbox-inline">
-                    <input type="checkbox" id="setbox"> Show annotated areas
-                  </label>
-                </div>
-              </form>
-            </div>
-          {% if url %}
-            <img src="{{ url }}" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
-          {% else %}
-            <img src="" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
-          {% endif %}
-          </div>
-        </div> <!-- end fourth row -->
+      <div id="play-page" class="page"></div>
 
-        <div id="sweet-list-wrapper">
-          <ul id="sweet-list"></ul>
-          <div class="btn-grp">
-            <button class="btn btn-default" id="sweet-cancel">Cancel</button>
-            <button class="btn btn-primary" id="post-sweet">Sweet</button>
-          </div>
-        </div>
+      <!-- the search page -->
+      <div id="search-page" class="page"></div>
 
-      </div>
       <div id="linked-data-page" class="page">
         <div id="tag-cloud">
           <div id="tags-tag-cloud"></div>
           <div id="user-tag-cloud"></div>
         </div>
       </div>
-      <!-- the search page -->
-      <div id="search-page" class="page"></div>
-
-      <div id="linked-data-page" class="page"></div>
 
     </div>
     <div id="app-overlay"></div>
@@ -225,6 +170,61 @@
           <li class="custom-popup-line"><span>Related Links: </span><%= Links %></li>
         </ul>
       </span>
+    </script>
+    <script type="text/template" id="play-page-template">
+      <!-- second row: image URL input box and Load button -->
+        <div class="row" id="user-input-row">
+          <div class="col-md-8">
+            <form class="form-inline" role="form">
+              <div class="form-group col-md-11">
+                <label class="sr-only" for="user-input">Enter URL of an image or web page</label>
+                <input class="form-control" type="text"
+                  placeholder="Enter URL of an image or web page" id="user-input">
+              </div>
+              <button type="submit" class="btn btn-info" id="user-input-submit">Load</button>
+            </form>
+          </div>
+          <div class="col-md-4">
+          </div>
+        </div> <!-- end second row -->
+        <!-- third row - control panel? -->
+        <div class="row" id="control-panel">
+          <div class="col-md-8">
+            <form class="form-inline" role="form">
+              <div class="form-group">
+                <button class="btn btn-default" id="sweet">Sweet</button>
+              </div>
+            </form>
+          </div>
+          <div class="col-md-4"></div>
+        </div> <!-- end third row -- >
+        <!-- fourth row: the image annotation window -->
+        <div class="row">
+          <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
+            <div id="img-anno-controls">
+              <form class="form-inline" role="form">
+                <div class="form-group">
+                  <label class="checkbox-inline">
+                    <input type="checkbox" id="toggle-anno-areas"> Show annotated areas
+                  </label>
+                </div>
+              </form>
+            </div>
+          {% if url %}
+            <img src="{{ url }}" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
+          {% else %}
+            <img src="" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
+          {% endif %}
+          </div>
+        </div> <!-- end fourth row -->
+
+        <div id="sweet-list-wrapper">
+          <ul id="sweet-list"></ul>
+          <div class="btn-grp">
+            <button class="btn btn-default" id="sweet-cancel">Cancel</button>
+            <button class="btn btn-primary" id="post-sweet">Sweet</button>
+          </div>
+        </div>
     </script>
     <script type="text/template" id="search-page-template">
       <div class="row" id="search-user-input-row">
