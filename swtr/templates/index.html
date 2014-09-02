@@ -78,74 +78,79 @@
           <!-- <p> -->
           <!--   <a class="btn btn-info btn-lg" href="#/search">Start Searching and Tagging</a> -->
           <!-- </p> -->
-          <div class="col-md-12 center-block">
-            <h4 class="col-md-3">
-              <a href="#/search">
+          <div class="row home-links">
+            <div class="col-md-4">
+              <a href="#/search" class="btn btn-info btn-lg">
                 <span class="glyphicon glyphicon-search"></span>
                 Search
               </a>
-            </h4>
-            <h4 class="col-md-3">
-              <a href="#/play">
+            </div>
+            <div class="col-md-4">
+              <a href="#/play" class="btn btn-info btn-lg">
                 <span class="glyphicon glyphicon-user"></span>
-                Personal PlayArea</a>
-            </h4>
-            <h4 class="col-md-3">
-              <a href="#/linked-data">
+                Personal PlayArea
+              </a>
+            </div>
+            <div class="col-md-4">
+              <a href="#/linked-data" class="btn btn-info btn-lg">
                 <span class="glyphicon glyphicon-globe"></span>
-                Linked Data</a>
-            </h4>
+                Linked Data
+              </a>
+            </div>
           </div>
         </div>
-        <div>
+        <hr/>
+        <p>
           <h3>
-            <p>
               <span class="glyphicon glyphicon-search"></span>
-              Search</p>
+              Search
           </h3>
           <h4>
-            Search uses search.opencultuurdata.nl to look for images from
-            the OCD collection.  One can then start annotating an image of
-            interest. Such an image is marked and is available in the play
+            Search uses <a href="opencultuurdata.nl">opencultuurdata.nl</a>
+            APIs to look for images from the datases provided by OCD collection.
+            One can then start annotating an image of interest.
+            Such an image is marked and is available in the play
             area [<span class="glyphicon glyphicon-user"></span>] of the user.
           </h4>
-        </div>
-        <div>
+        </p>
+        <p>
           <h3>
-            <p>
-              <span class="glyphicon glyphicon-user"></span>
-              Personal PlayArea
-            </p>
+            <span class="glyphicon glyphicon-user"></span>
+            Personal PlayArea
           </h3>
-          <h4>A user can view all annotated images. The tags used in
+          <h4>
+            A user can view all annotated images. The tags used in
             annotations are also shown as a list and can be used for filtering the
             set of images. User can also choose to annotate an image outside the
             OCD collection by using the image URL.
           </h4>
-        </div>
-        <div>
+        </p>
+        <p>
           <h3>
-            <p>
-              <span class="glyphicon glyphicon-globe"></span>
-              Linked Data
-            </p>
+            <span class="glyphicon glyphicon-globe"></span>
+            Linked Data
           </h3>
           <h4>
+            All images that are tagged by all users are available for browsing,
+            filtering based on selecting or deselecting users (and their
+            annotations); and also by selecting and deselecting tags of interest.
+          </h4>
+        </p>
 
-          All images that are tagged by all users are available for browsing,
-          filtering based on selecting or deselecting users (and their
-          annotations); and also by selecting and deselecting tags of interest.
-        </div>
-        <footer>
-          <p>This app is part of the <a href="http://www.opencultuurdata.nl/challenge-english/">
+        <hr/>
+
+        <footer style="text-align: center; font-size: 0.9em;">
+          <!--p>This app is part of the <a href="http://www.opencultuurdata.nl/challenge-english/">
             Open Cuultur Data challenge</a>
-          </p>
-          <p>We use persona.org for identifying a user; Annotorious for image
-            annotation and SWeeT Web for assimilating the linked open data
-            announced by users. [opensource cc]
+          </p-->
+          <p>
+            We use <a href="https://login.persona.org/about">Mozilla Persona</a> for identifying
+            users, <a href="http://annotorious.github.io/">Annotorious</a> for image annotation and
+            <a href="http://janastu.org/technoscience/index.php/Sweet_Web">SWeeT Web</a>
+            for assimilating the linked open data announced by users. [opensource cc]
           </p>
           <p>
-            Clink: [Middle English clinken, probably from Middle Dutch klinken, of
+            [<b>Clink</b>: Middle English clinken, probably from Middle Dutch klinken, of
             imitative origin.]
           </p>
         </footer>
