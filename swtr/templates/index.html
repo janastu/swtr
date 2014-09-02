@@ -10,7 +10,7 @@
     <link href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/annotorious.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/bootstrap-tags.css') }}"  rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-tags.css') }}" type="text/css" media="screen" />
   </head>
 
   <body>
@@ -31,6 +31,16 @@
             CLink: Community Linked Open Cultuur Data
           </a>
         </div>
+        <div class="col-md-2">
+          <button class="btn btn-default" id="img-url-submit">Load</button>
+        </div>
+        <div class="col-md-8">
+          <button class="btn btn-default" id="img-url-load">Annotate</button>
+          <button class="btn btn-default" id="sweet">Sweet</button>
+          <input id="setbox" type="checkbox"/ > <label
+                                                   id="setcontrol"><p>Show annotated areas</p></label>
+        </div>
+      </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="swtr-navbar-collapse">
           <ul class="nav navbar-nav navbar-right">
@@ -52,7 +62,6 @@
             </a></li>
           </ul>
         </div>
-      </div>
     </header>
 
     <div id="swtr-root" class="container">
@@ -154,6 +163,7 @@
             imitative origin.]
           </p>
         </footer>
+
       </div>
 
       <div id="play-page" class="page"></div>
@@ -181,6 +191,9 @@
 
     <script>
       window.swtr = window.swtr || {};
+      swtr.swtstoreURL = function() { return '{{ conf.swtstoreURL }}'; }
+      swtr.endpoints = {'get': '/sweets/q', 'post': '/sweets', 'auth':
+      '/authenticate'};
       swtr.swtstoreURL = function() { return '{{ config.swtstoreURL }}'; }
       swtr.endpoints = {
         'get': '/api/sweets/q',
@@ -194,7 +207,7 @@
       swtr.app_id = '{{ config.app_id }}';
       swtr.oauth_redirect_uri = '{{ config.redirect_uri }}';
       window.onload = function() {
-        swtr.init();
+      swtr.init();
       };
     </script>
     <script src="{{ url_for('static', filename='js/lib/jquery-1.10.2.min.js') }}"></script>
@@ -205,6 +218,10 @@
     <script src="{{ url_for('static', filename='js/lib/backbone-1.0.0.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/annotorious.debug.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/custom-fields-plugin.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/label.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/lib/bootstrap-tags.min.js') }}"></script>
+    <!--script src="https://login.persona.org/include.js"></script-->
+    <script src="{{ url_for('static', filename='js/swtmaker.js') }}"></script>
     <script src="{{ url_for('static', filename='js/oauth.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/bootstrap-tags.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/img_swtr.js') }}"></script>
