@@ -163,8 +163,14 @@
 
       <div id="linked-data-page" class="page">
         <div id="tag-cloud">
-          <div id="tags-tag-cloud"></div>
-          <div id="user-tag-cloud"></div>
+          <div class="col-md-5">
+            <label>Tags:</label>
+            <ul class="list-group" id="tags-tag-cloud"></ul>
+          </div>
+          <div class="col-md-5">
+            <label>Users:</label>
+            <ul class="list-group" id="user-tag-cloud"></ul>
+          </div>
         </div>
         <div id="gallery">
         </div>
@@ -368,6 +374,12 @@
         <div class="text">Author: <%= who %> </div>
         <div class="text">Tags: <%= how.tags %> </div>
       </div>
+    </script>
+    <script type="text/template" id="linked-data-list-template">
+      <li class="list-group-item">
+        <span class="badge"> <%= weight %> </span>
+        <p><%= who %></p>
+      </li>
     </script>
   </body>
 </html>

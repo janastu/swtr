@@ -703,16 +703,18 @@
   var TagCloudView = Backbone.View.extend({
     el: $('#tag-cloud'),
     events: {
-      "click #user-tag-cloud g text": "userTagClicked",
-      "click #tags-tag-cloud g text": "tagsTagClicked"
+      "click #user-tag-cloud li p": "userTagClicked",
+      "click #tags-tag-cloud li p": "tagsTagClicked"
     },
     initialize: function() {
       this.user_tag_el = $('#user-tag-cloud');
       this.tags_tag_el = $('#tags-tag-cloud');
+      this.template = _.template($("#linked-data-list-template").html());
       this.render();
     },
     userTagClicked: function(e) {
       var user = $(e.currentTarget).text();
+      console.log(user);
       var swts = swtr.LDs.filter(function(swt) {
         if(swt.get('who') == user) {
           return swt;
@@ -749,17 +751,20 @@
       this.renderTagsTagCloud();
     },
     renderUserTagCloud: function() {
-      var words = _.uniq(swtr.LDs.pluck('who'));
-      var weight = swtr.LDs.countBy('who');
-      d3.layout.cloud().size([1000, 1000])
-        .words(words.map(function(d) {
-          return {text: d, size: 5};
-        }))
-        .padding(5)
-        .font("Impact")
-        .fontSize(function(d) { return d.size; })
-        .on("end", this.draw)
-        .start();
+      // var words = _.uniq(swtr.LDs.pluck('who'));
+      var weights = swtr.LDs.countBy('who');
+      _.each(weights, function(weight, who) {
+        $(this.user_tag_el).append(this.template({weight: weight, who: who}));
+      }, this);
+      // d3.layout.cloud().size([1000, 1000])
+      //   .words(words.map(function(d) {
+      //     return {text: d, size: 5};
+      //   }))
+      //   .padding(5)
+      //   .font("Impact")
+      //   .fontSize(function(d) { return d.size; })
+      //   .on("end", this.draw)
+      //   .start();
     },
     draw: function (words) {
       var fill = d3.scale.category20();
@@ -787,16 +792,11 @@
       _.each(sweetsWithTags, function(sweet) {
         tags.push(sweet.get('how').tags);
       });
-      tags = _.uniq(_.flatten(tags));
-      d3.layout.cloud().size([500, 500])
-        .words(tags.map(function(d) {
-          return {text: d, size: 10};
-        }))
-        .padding(7)
-        .font("Impact")
-        .fontSize(function(d) { return d.size; })
-        .on("end", this.drawTags)
-        .start();
+      tags = _.countBy(_.flatten(tags));
+      _.each(tags, function(weight, who) {
+        $(this.tags_tag_el).append(this.template({weight: weight, who: who}));
+      }, this);
+
     },
     drawTags: function(words) {
       var fill = d3.scale.category20();
