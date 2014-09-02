@@ -93,6 +93,7 @@
     },
     postSweets: function() {
       var appView = swtr.appView;
+      var self = this;
       this.helpview.step(5);
       appView.$overlay.show();
       try {
@@ -101,18 +102,18 @@
             console.log(collection, response);
             swtr.sweets.set(collection);
             appView.$overlay.hide();
-            this.helpview.step(6);
+            self.helpview.step(6);
           },
           error: function(jqxhr, error, text) {
             console.log(jqxhr, error, text);
             appView.$overlay.hide();
-            this.helpview.step(10);
+            self.helpview.step(10);
           }
         });
       } catch(e) {
         if(e.message == 'Access Token is required to sweet') {
           appView.$overlay.hide();
-          this.helpview.step(9);
+          self.helpview.step(9);
         }
       }
       this.cleanUp();
@@ -590,7 +591,7 @@
               break;
       case 2: text = 'Annotate the image, or see other annotations';
               break;
-      case 3: text = 'Now you can sweet this annotation, or add more annotations';
+      case 3: text = 'Now you can publish this annotation, or add more annotations';
               break;
       case 4: text = 'Click Sweet button to publish these annotations to the Sweet Store';
               break;

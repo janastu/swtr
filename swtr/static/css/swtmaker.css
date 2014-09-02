@@ -126,6 +126,11 @@ body {
   display: none;
 }
 
+footer {
+  font-size: 0.9em;
+  text-align: center;
+}
+
 
 /* text-annotation styles */
 
