@@ -7,6 +7,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 requires = [
     'Flask',
+    'requests',
+    'lxml'
 ]
 
 setup(name='Swtr',

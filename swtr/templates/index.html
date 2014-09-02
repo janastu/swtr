@@ -3,32 +3,33 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sweet Maker</title>
+    <title> CLink: Community Linked Open Cultuur Data </title>
 
-    <meta name="description" content="Sweet Maker, Social, Semantic, Web, Decentralized, Makes Sweet">
+    <meta name="description" content="Sweet Maker, Social, Semantic, Web, Decentralized, Makes Sweet, Sweet Swagger, Swtr, swtr">
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/annotorious.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/swtmaker.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-tags.css') }}" type="text/css" media="screen" />
   </head>
-  <body>
 
-    <div id="swt-maker" class="container">
-      <div id="helpview" class="alert alert-info col-md-8"></div>
-      <div class="row" id="signinview">
-        <form class="form-inline" role="form">
-          <span id="signin-msg">You are not signed in. </span>
-          <button class="btn btn-sm btn-primary" id="signin-credentials">
-            Sign In
+  <body>
+    <!-- navigation and branding of the app -->
+    <header id="header" class="navbar navbar-inverse" role="navigation">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse"
+            data-target="#swtr-navbar-collapse">
+
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
           </button>
-        </form>
-      </div>
-      <div id="img-input" class="row">
-        <div class="form-group col-md-8">
-          <input type="text" placeholder="Enter URL of the image"
-                 id="img-url-input" class="form-control">
+          <a class="navbar-brand" href="#/home">
+            CLink: Community Linked Open Cultuur Data
+          </a>
         </div>
         <div class="col-md-2">
           <button class="btn btn-default" id="img-url-submit">Load</button>
@@ -40,20 +41,145 @@
                                                    id="setcontrol"><p>Show annotated areas</p></label>
         </div>
       </div>
-      <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
-        {% if url %}
-        <img src="{{ url }}" id="annotatable-img">
-        {% else %}
-        <img src="" id="annotatable-img">
-        {% endif %}
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="swtr-navbar-collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li class="active"> <a href="#/home" title="Home">
+              <span class="glyphicon glyphicon-home"></span>
+            </a></li>
+            <li> <a href="#/search" title="Search External Sources">
+              <span class="glyphicon glyphicon-search"></span>
+            </a></li>
+            <li> <a href="#/play" title="My Playarea">
+                <span class="glyphicon glyphicon-user"></span>
+            </a></li>
+
+            <li> <a href="#/linked-data" title="Linked Data">
+              <span class="glyphicon glyphicon-globe"></span>
+            </a></li>
+            <li> <a id="sign-in" href="#" title="">
+              <span id="signinview"> Sign In </span>
+            </a></li>
+          </ul>
+        </div>
+    </header>
+
+    <div id="swtr-root" class="container">
+      <div id="helpview-container"></div>
+
+      <div id="home-page" class="page">
+        <div class="jumbotron">
+          <h1> CLink: Community Linked Open Cultuur Data </h1>
+          <p>
+            There are over 30 data sets in <a href="http://www.opencultuurdata.nl">
+            Open Cultuur Data.</a> Using CLink, one can
+            bookmark, annotate, tag and discover the social enrichment of the data
+            by a community of interest.
+          </p>
+          <p>
+            CLink provides annotation and tagging of images that are searchable in
+            the <a href="http://www.opencultuurdata.nl">OCD</a> dataset and also
+            tagging and connecting to images that are outside the dataset.
+            The annotations/tags of a person are announced and made available for
+            other users who can further filter the users of interest and tags or
+            datasets of interest.
+          </p>
+          <!-- <p> -->
+          <!--   <a class="btn btn-info btn-lg" href="#/search">Start Searching and Tagging</a> -->
+          <!-- </p> -->
+          <div class="row home-links">
+            <div class="col-md-4">
+              <a href="#/search" class="btn btn-info btn-lg">
+                <span class="glyphicon glyphicon-search"></span>
+                Search
+              </a>
+            </div>
+            <div class="col-md-4">
+              <a href="#/play" class="btn btn-info btn-lg">
+                <span class="glyphicon glyphicon-user"></span>
+                Personal PlayArea
+              </a>
+            </div>
+            <div class="col-md-4">
+              <a href="#/linked-data" class="btn btn-info btn-lg">
+                <span class="glyphicon glyphicon-globe"></span>
+                Linked Data
+              </a>
+            </div>
+          </div>
+        </div>
+        <hr/>
+        <p>
+          <h3>
+              <span class="glyphicon glyphicon-search"></span>
+              Search
+          </h3>
+          <h4>
+            Search uses <a href="opencultuurdata.nl">opencultuurdata.nl</a>
+            APIs to look for images from the datases provided by OCD collection.
+            One can then start annotating an image of interest.
+            Such an image is marked and is available in the play
+            area [<span class="glyphicon glyphicon-user"></span>] of the user.
+          </h4>
+        </p>
+        <p>
+          <h3>
+            <span class="glyphicon glyphicon-user"></span>
+            Personal PlayArea
+          </h3>
+          <h4>
+            A user can view all annotated images. The tags used in
+            annotations are also shown as a list and can be used for filtering the
+            set of images. User can also choose to annotate an image outside the
+            OCD collection by using the image URL.
+          </h4>
+        </p>
+        <p>
+          <h3>
+            <span class="glyphicon glyphicon-globe"></span>
+            Linked Data
+          </h3>
+          <h4>
+            All images that are tagged by all users are available for browsing,
+            filtering based on selecting or deselecting users (and their
+            annotations); and also by selecting and deselecting tags of interest.
+          </h4>
+        </p>
+
+        <hr/>
+
+        <footer style="text-align: center; font-size: 0.9em;">
+          <!--p>This app is part of the <a href="http://www.opencultuurdata.nl/challenge-english/">
+            Open Cuultur Data challenge</a>
+          </p-->
+          <p>
+            We use <a href="https://login.persona.org/about">Mozilla Persona</a> for identifying
+            users, <a href="http://annotorious.github.io/">Annotorious</a> for image annotation and
+            <a href="http://janastu.org/technoscience/index.php/Sweet_Web">SWeeT Web</a>
+            for assimilating the linked open data announced by users. [opensource cc]
+          </p>
+          <p>
+            [<b>Clink</b>: Middle English clinken, probably from Middle Dutch klinken, of
+            imitative origin.]
+          </p>
+        </footer>
+
       </div>
-      <div id="sweet-list-wrapper">
-        <ul id="sweet-list"></ul>
-        <div class="btn-grp">
-          <button class="btn btn-default" id="sweet-cancel">Cancel</button>
-          <button class="btn btn-primary" id="post-sweet">Sweet</button>
+
+      <div id="play-page" class="page"></div>
+
+      <!-- the search page -->
+      <div id="search-page" class="page"></div>
+
+      <div id="linked-data-page" class="page">
+        <div id="tag-cloud">
+          <div id="tags-tag-cloud"></div>
+          <div id="user-tag-cloud"></div>
+        </div>
+        <div id="gallery">
         </div>
       </div>
+
     </div>
     <div id="app-overlay"></div>
 
@@ -62,11 +188,25 @@
       swtr.swtstoreURL = function() { return '{{ conf.swtstoreURL }}'; }
       swtr.endpoints = {'get': '/sweets/q', 'post': '/sweets', 'auth':
       '/authenticate'};
+      swtr.swtstoreURL = function() { return '{{ config.swtstoreURL }}'; }
+      swtr.endpoints = {
+        'get': '/api/sweets/q',
+        'post': '/api/sweets',
+        'auth': '/oauth/authorize',
+        'login': '/auth/login',
+        'logout': '/auth/logout'
+      };
+      swtr.access_token = '{{ access_token }}';
+      swtr.refresh_token = '{{ refresh_token }}';
+      swtr.app_id = '{{ config.app_id }}';
+      swtr.oauth_redirect_uri = '{{ config.redirect_uri }}';
       window.onload = function() {
       swtr.init();
       };
     </script>
     <script src="{{ url_for('static', filename='js/lib/jquery-1.10.2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/d3.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/d3.layout.cloud.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/underscore-1.5.2.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/backbone-1.0.0.min.js') }}"></script>
@@ -76,54 +216,175 @@
     <script type="text/javascript" src="{{ url_for('static', filename='js/lib/bootstrap-tags.min.js') }}"></script>
     <!--script src="https://login.persona.org/include.js"></script-->
     <script src="{{ url_for('static', filename='js/swtmaker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/oauth.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lib/bootstrap-tags.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/img_swtr.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
+    <!-- underscore.js templates -->
+    <script type="text/template" id="helpview-template">
+      <div class="row">
+        <div class="col-md-8">
+          <div id="helpview" class="bg-info">
+            <span class="label label-primary">Tip</span>
+            <span id="helpview-text"></span>
+            <a class="close">&times;</a>
+          </div>
+        </div>
+        <div class="col-md-4"></div>
+      </div>
+    </script>
     <script type="text/template" id="sweet-template">
       <li class="sweet">
         <a href="#">@<%= who %></a> <strong>#<%= what %></strong>
         /<a href="<%= where %>"><%= where.substr(0, 30) + '...' %></a>
-        <%= how %>
+        <p><%= how %></p>
       </li>
     </script>
-    <script type="text/template" id="signin-credentials-template">
-      <div class="form-inline col-md-3">
-        <label class="sr-only" for="username">Username</label>
-        <input type="text" class="form-control" id="username" placeholder="Enter username">
-      </div>
-      <div class="form-inline col-md-3">
-        <label class="sr-only" for="password">Password</label>
-        <input type="password" class="form-control" id="password" placeholder="Password">
-      </div>
-    </script>
     <script type="text/template" id="dropdown-template">
-      <div id="tagsInput">
-      </div>
+      <div id="tags-input"></div>
       <select class="form-control" id="custom-dropdown">
-        <option id="">Choose an Option</option>
-        <option id="comment" >Comment</option>
-        <option id="title" >Title</option>
-        <option id="tags">Tags</option>
-        <option id="links">Links</option>
+        <option value="comment" selected>Comment</option>
+        <option value="title" >Title</option>
+        <option value="tags">Tags</option>
+        <option value="link">Link</option>
       </select>
     </script>
-    <!-- script type="text/template" id="dropdown-template">
-         <form class="form-control" id="custom-dropdown">
-           <textarea class="annotorious-editor-text goog-textarea"
-                     placeholder="Add Label" id="label"></textarea>
-           <textarea class="annotorious-editor-text goog-textarea"
-                     placeholder="Add Tags" id="tags"></textarea>
-           <textarea class="annotorious-editor-text goog-textarea"
-                     placeholder="Add Links" id="links"></textarea>
-         </form>
-      </script-->
-      <script type="text/template" id="popup-template">
-        <span class="annotorious-popup-text">
-          <ul class="custom-style-popup">
-            <li class="custom-popup-line" ><span>Title: </span><%= Label %></li>
-            <li class="custom-popup-line"><span>Comment: </span><%= Comment %></li>
-            <li class="custom-popup-line"><span>Tags: </span><%= Tags[0] %></li>
-            <li class="custom-popup-line"><span>Related Links: </span><%= Links %></li>
-            </ul>
-          </span>
-      </script>
+    <script type="text/template" id="popup-template">
+      <span class="annotorious-popup-text">
+        <ul class="custom-style-popup">
+          <li class="custom-popup-line" ><span>Title: </span><%= Label %></li>
+          <li class="custom-popup-line"><span>Comment: </span><%= Comment %></li>
+          <li class="custom-popup-line"><span>Tags: </span><%= Tags %></li>
+          <li class="custom-popup-line"><span>Related Links: </span><%= Links %></li>
+        </ul>
+      </span>
+    </script>
+    <script type="text/template" id="play-page-template">
+      <!-- second row: image URL input box and Load button -->
+        <div class="row" id="user-input-row">
+          <div class="col-md-8">
+            <form class="form-inline" role="form">
+              <div class="form-group col-md-11">
+                <label class="sr-only" for="user-input">Enter URL of an image or web page</label>
+                <input class="form-control" type="text"
+                  placeholder="Enter URL of an image or web page" id="user-input">
+              </div>
+              <button type="submit" class="btn btn-info" id="user-input-submit">Load</button>
+            </form>
+          </div>
+          <div class="col-md-4">
+          </div>
+        </div> <!-- end second row -->
+        <!-- third row - control panel? -->
+        <div class="row" id="control-panel">
+          <div class="col-md-8">
+            <form class="form-inline" role="form">
+              <div class="form-group">
+                <button class="btn btn-default" id="sweet">Sweet</button>
+              </div>
+            </form>
+          </div>
+          <div class="col-md-4"></div>
+        </div> <!-- end third row -- >
+        <!-- fourth row: the image annotation window -->
+        <div class="row">
+          <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
+            <div id="img-anno-controls">
+              <form class="form-inline" role="form">
+                <div class="form-group">
+                  <label class="checkbox-inline">
+                    <input type="checkbox" id="toggle-anno-areas"> Show annotated areas
+                  </label>
+                </div>
+              </form>
+            </div>
+          {% if url %}
+            <img src="{{ url }}" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
+          {% else %}
+            <img src="" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
+          {% endif %}
+          </div>
+        </div> <!-- end fourth row -->
+
+        <div id="sweet-list-wrapper">
+          <ul id="sweet-list"></ul>
+          <div class="btn-grp">
+            <button class="btn btn-default" id="sweet-cancel">Cancel</button>
+            <button class="btn btn-primary" id="post-sweet">Sweet</button>
+          </div>
+        </div>
+    </script>
+    <script type="text/template" id="search-page-template">
+      <div class="row" id="search-user-input-row">
+        <div class="col-md-8">
+          <form class="form-inline" role="form">
+            <div class="form-group col-md-11">
+              <label class="sr-only" for="search-user-input">Enter search query</label>
+              <input class="form-control" type="text"
+                placeholder="Enter search query" id="search-user-input">
+            </div>
+            <button type="submit" class="btn btn-info" id="search-user-input-submit">
+              Go
+            </button>
+          </form>
+        </div>
+        <div class="col-md-4">
+        </div>
+      </div>
+    </script>
+    <script type="text/template" id="ocd-view-base-template">
+      <div id="ocd-hud">
+        <span id="ocd-total-results"></span>
+      </div>
+      <div id="ocd-results"></div>
+      <ul class="pager">
+        <li class="previous"> <a href="#">&laquo; Previous </a></li>
+        <li class="next"> <a href="#"> Next &raquo; </a></li>
+      </ul>
+    </script>
+    <script type="text/template" id="ocd-item-template">
+      <div class="col-sm-6 col-md-4 ocd-item">
+        <h4> <%= title %> </h4>
+        <div class="media">
+          <a href="<%= media_url %>">
+            <img src="" class="responsive thumb-image">
+          </a>
+        </div>
+        <div class="text">Authors: <%= authors %> </div>
+        <div class="text">Description: <%= description %> </div>
+      </div>
+    </script>
+    <script type="text/template" id="ocd-item-cover-template">
+      <div class="ocd-item-cover">
+        Mark and load this image to annotate
+        <button class="btn btn-xs btn-default pull-left ocd-item-mark">Mark</button>
+        <a class="close">&times;</a>
+        <div class="clearfix"></div>
+      </div>
+    </script>
+    <script type="text/template" id="filter-users">
+      <ul>
+        <label>
+          <input type="checkbox" name="<%= who %>" checked="checked">
+          <%= who %>
+        </label>
+      </ul>
+    </script>
+    <script type="text/template" id="filter-tags">
+      <ul>
+        <input type="checkbox" checked="checked" name=<%= tag %>>
+        <label><%= tag %></label>
+      </ul>
+    </script>
+    <script type="text/template" id="gallery-item-template">
+      <div class="col-md-4 col-sm-6 ocd-item">
+        <div class="media">
+          <img src="<%= how.src %>" class="responsive thumb-image">
+        </div>
+        <div class="text">Author: <%= who %> </div>
+        <div class="text">Tags: <%= how.tags %> </div>
+      </div>
+    </script>
   </body>
 </html>

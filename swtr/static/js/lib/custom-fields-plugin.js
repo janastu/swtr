@@ -15,5 +15,7 @@ annotorious.plugin.CustomFields = function(opt_config_options) {
         return '';
       }
     });
-  };
+  
+
+  }
 };

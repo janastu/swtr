@@ -1,53 +1,161 @@
+body {
+  overflow-y: scroll;
+}
+/* styles modifying annotorious editor default styles */
+.annotorious-editor {
+  min-width: 250px;
+}
+#header {
+    z-index: 1;
+}
+.annotorious-editor-text {
+  font-size: 12px;
+  min-height: 35px;
+}
+
 #swt-maker {
 }
-#signinview {
-  margin 0 20px;
-  padding: 10px;
-  text-align: center;
+
+#control-panel {
+  margin-top: 10px;
+  margin-left: 0;
 }
-#img-annotation-wrapper {
+
+#img-annotation-wrapper, #ocd-results {
   margin: 30px auto 0 auto;
-  /*border: 1px solid black;*/
-  /*min-height: 500px;*/
 }
+
 #annotatable-img {
+  margin: 0 auto;
+  max-width: 1125px;
 }
+
 #sweet-list-wrapper {
   width: 500px;
   min-height: 300px;
   position: absolute;
   top: 33%;
   left: 33%;
-  z-index: 100;
+  z-index: 1000;
   border: 1px solid #999;
   box-shadow: 1px 1px 6px #999;
   background-color: #FFF;
   padding: 30px;
   display: none;
 }
+
+.jumbotron h1 {
+  font-size: 50px;
+  margin-bottom: 25px;
+}
+
+.home-links {
+  text-align: center;
+}
+
 #sweet-list {
   margin-bottom: 10px;
 }
-.btn-grp {
-  position: relative;
-  bottom: -10%;
-  right: -10%;
+
+.ocd-item.col-md-4 {
+  width: 32.3333%;
 }
+.ocd-item {
+  padding-bottom: 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin: 0 5px 20px 5px;
+  text-align: center;
+}
+.ocd-item-cover {
+  position: absolute;
+  border: 1px solid #ddd;
+  box-shadow: 1px 1px 3px #ccc;
+  width: 100%;
+  padding: 12px;
+  background: #fff;
+  height: 60px;
+  margin-left: -15px;
+  display: none;
+}
+.ocd-item .text{
+  margin-top: 3px;
+}
+
+.thumb-image {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: block;
+  height: 400px;
+  margin: 0 auto;
+}
+
 #sweet {
   display: none;
 }
+
 #helpview {
-  font-weight: bold;
-  font-size: 1.3em;
-  min-height: 60px;
+  font-size: 1.2em;
+  padding: 8px;
+  box-shadow: 1px 1px 3px #ccc;
+  color: #444;
+  margin-bottom: 20px;
+}
+#helpview-text {
   text-align: center;
+  margin-left: 30px;
 }
 #app-overlay {
-  position: absolute;
-  top: 0px;
+  position: fixed;
+  top: 0;
+  left: 0;
   display: none;
   width: 100%;
   height: 100%;
   z-index: 10000;
   background-color: rgba(255, 255, 255, 0.7);
+}
+
+#user-input-row .form-inline .form-control,
+#search-user-input-row .form-inline .form-control {
+  width: 100%;
+}
+
+.page {
+  display: none;
+}
+
+
+/* text-annotation styles */
+
+#overlayBar {
+  background: #fff;
+  border-bottom: 1px solid #ccc;
+  left: 0;
+  opacity: 0.95;
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+.nav-btn {
+  margin-left: 10px;
+}
+#tag-cloud {
+    height:768px;
+}
+#tags-tag-cloud svg {
+    position: absolute;
+    left:100px;
+    top: 0;
+    height:100%;
+    width: 100%;
+}
+#user-tag-cloud svg {
+    position: absolute;
+    height:100%;
+    top: 40em;
+    left:100px;
+    width: 100%
 }
