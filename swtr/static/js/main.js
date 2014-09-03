@@ -800,6 +800,8 @@
       }, 1000);
     },
     setUp: function() {
+      $("#tag-list").collapse('hide');
+      $("#user-list").collapse('hide');
       if(!$(this.el).is(':visible')) {
         $(this.el).show();
       }

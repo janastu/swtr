@@ -147,12 +147,15 @@ footer {
 .nav-btn {
   margin-left: 10px;
 }
+
 #tag-cloud {
     display: none;
 }
+
 #gallery {
     margin-top: 10em;
 }
+
 #tags-tag-cloud svg {
     position: absolute;
     left:100px;
@@ -160,12 +163,17 @@ footer {
     height:100%;
     width: 100%;
 }
+
 #user-tag-cloud svg {
     position: absolute;
     height:100%;
     top: 40em;
     left:100px;
     width: 100%
+}
+
+.mCursor {
+    cursor: pointer;
 }
 
 .spinner {
