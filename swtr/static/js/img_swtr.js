@@ -184,7 +184,7 @@
         annotation.title = self.new_anno.title;
       }
       annotation.text = self.new_anno.text;
-      //annotation.editable = false;
+      annotation.editable = false;
       //console.log(self.new_anno, annotation);
     },
     // hide the original editor window, when user has completed selecting part
