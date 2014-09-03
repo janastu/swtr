@@ -162,14 +162,36 @@
       <div id="search-page" class="page"></div>
 
       <div id="linked-data-page" class="page">
-        <div id="tag-cloud">
-          <div class="col-md-5">
-            <label>Tags:</label>
-            <ul class="list-group" id="tags-tag-cloud"></ul>
-          </div>
-          <div class="col-md-5">
-            <label>Users:</label>
-            <ul class="list-group" id="user-tag-cloud"></ul>
+        <div id="tag-cloud" class="col-md-4">
+          <div class="panel-group" id="accordion">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordion" href="#tag-list">
+                    Tags
+                  </a>
+                </h4>
+              </div>
+              <div id="tag-list" class="panel-collapse collapse in">
+                <div class="panel-body">
+                  <ul class="list-group" id="tags-tag-cloud"></ul>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordion" href="#user-list">
+                    User
+                  </a>
+                </h4>
+              </div>
+              <div id="user-list" class="panel-collapse collapse in">
+                <div class="panel-body">
+                  <ul class="list-group" id="user-tag-cloud"></ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div id="gallery">
