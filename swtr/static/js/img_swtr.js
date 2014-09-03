@@ -104,7 +104,8 @@
   swtr.ImgAnnoView = Backbone.View.extend({
     el: $('#img-annotation-wrapper'),
     events: {
-      'change #custom-dropdown': 'getFormValue',
+      'keydown .annotorious-editor-button-save': 'getFormValue',
+      'mousedown .annotorious-editor-button-save': 'getFormValue',
       'click #toggle-anno-areas': 'toggleAnnoAreas'
     },
     initialize: function(options) {
@@ -155,8 +156,9 @@
     updateNewAnno: function(annotation) {
       console.log('updateNewAnno()');
       var self = swtr.imgAnnoView;
+        console.log(annotation.text);
       // get the final value/input from the editor
-      var selected = $('select option:selected').text().toLowerCase();
+     /* var selected = $('select option:selected').text().toLowerCase();
       var text_input = $('.annotorious-editor-text').val();
       if( selected === "tags") {
         self.new_anno[selected] = $('#tags-input').tags().getTags();
@@ -164,12 +166,13 @@
       else {
         // update it in our annotation object
         self.new_anno[selected] = text_input;
-      }
+      }*/
       // prepare the text field
+      self.new_anno.comment = annotation.text;
       self.new_anno.text = self.createPopupText(self.new_anno);
       // update the annotorious annotation object with the new values
       if(self.new_anno.comment) {
-        annotation.comment = self.new_anno.comment;
+        annotation.comment = annotation.text;
       }
       if(self.new_anno.link) {
         annotation.link = self.new_anno.link;
@@ -181,7 +184,8 @@
         annotation.title = self.new_anno.title;
       }
       annotation.text = self.new_anno.text;
-      console.log(self.new_anno, annotation);
+      //annotation.editable = false;
+      //console.log(self.new_anno, annotation);
     },
     // hide the original editor window, when user has completed selecting part
     // of the image to annotate..
@@ -189,16 +193,40 @@
       console.log('hideOriginalEditor()');
       var self = swtr.imgAnnoView;
       self.new_anno = {};
+        $('#tags-input').tags({
+          tagSize: 'md',
+          promptText: 'Add tags: type a word (and press enter)',
+          caseInsensitive: true,
+          suggestions: self.tags_suggestions
+        });
       self.getSuggestionsForTags();
       //$('.annotorious-editor-text').hide();
       //$('.annotorious-editor').css('width', '100%');
     },
     getFormValue: function(event) {
       console.log('getFormValue()');
-
       var self = swtr.imgAnnoView;
       // show the editor field to input text
-      var $anno_form = $('.annotorious-editor-text');
+      $('.annotorious-editor-text').each(function(index, element) {
+        if( index === 0) {
+          self.new_anno['comment'] = $(element).text();
+        console.log(index, $(element).text() );
+        }
+        else if ( index === 1) {
+          self.new_anno['title'] = $(element).val();
+        console.log(index, $(element).val() );
+        }
+        else if (index === 2) {
+          self.new_anno['link'] = $(element).val();
+        console.log(index, $(element).val() );
+        }
+        else {
+          self.new_anno['tags'] = $(element).tags().getTags();
+        console.log(index, $('#tags-input').tags().getTags() );
+        }
+      });
+      // show the editor field to input text
+    /*  var $anno_form = $('.annotorious-editor-text');
       //$anno_form.slideDown();
       // get the previous item entered
       var $selected = $('select option:selected');
@@ -217,23 +245,16 @@
       }
 
       // if the current selected is tags
-      if($selected.text() === 'Tags') {
         $('#tags-input').tags({
           tagSize: 'md',
           promptText: 'Type word (and press enter)..',
           caseInsensitive: true,
           suggestions: self.tags_suggestions
         });
-        $('#tags-input').show();
-        $('.annotorious-editor-text').hide();
-      }
-      else {
-        $('#tags-input').hide();
-        $('.annotorious-editor-text').show();
-      }
-      $anno_form.val('');
+     /* $anno_form.val('');
       $anno_form.attr('placeholder', 'Add ' + $selected.text());
-      console.log(self.new_anno);
+      console.log(self.new_anno);*/
+
     },
     createPopupText: function(annotation) {
       // title
@@ -243,12 +264,12 @@
       text += (annotation.comment) ? '<p>' + annotation.comment + '</p>' : '';
 
       // link
-      text += (annotation.link) ? '<a target="blank" href="' +
+      text += (annotation.link) ? '<p><a target="blank" href="' +
         swtr.utils.linkify(annotation.link) + '">' + annotation.link +
-        '</a>' : '';
+        '</a></p>' : '';
 
       // tags
-      text += (annotation.tags) ? '<p>' + annotation.tags + '</p>' : '';
+      text += (annotation.tags) ? '<p>[' + annotation.tags + ']</p>' : '';
 
       // if older annotation i.e w/o comment,title etc fields
       // add text field as text
