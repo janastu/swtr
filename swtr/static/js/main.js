@@ -751,6 +751,7 @@
       }
     },
     render: function() {
+      $(this.el).show();
       this.renderUserTagCloud();
       this.renderTagsTagCloud();
     },

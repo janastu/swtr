@@ -148,6 +148,7 @@ footer {
   margin-left: 10px;
 }
 #tag-cloud {
+    display: none;
     height:768px;
 }
 #tags-tag-cloud svg {
