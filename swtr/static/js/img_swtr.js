@@ -184,7 +184,8 @@
         annotation.title = self.new_anno.title;
       }
       annotation.text = self.new_anno.text;
-      console.log(self.new_anno, annotation);
+      //annotation.editable = false;
+      //console.log(self.new_anno, annotation);
     },
     // hide the original editor window, when user has completed selecting part
     // of the image to annotate..
@@ -194,7 +195,7 @@
       self.new_anno = {};
         $('#tags-input').tags({
           tagSize: 'md',
-          promptText: 'Type word (and press enter)..',
+          promptText: 'Add tags: type a word (and press enter)',
           caseInsensitive: true,
           suggestions: self.tags_suggestions
         });
@@ -223,7 +224,6 @@
           self.new_anno['tags'] = $(element).tags().getTags();
         console.log(index, $('#tags-input').tags().getTags() );
         }
-        
       });
       // show the editor field to input text
     /*  var $anno_form = $('.annotorious-editor-text');
@@ -251,8 +251,6 @@
           caseInsensitive: true,
           suggestions: self.tags_suggestions
         });
-    
-      
      /* $anno_form.val('');
       $anno_form.attr('placeholder', 'Add ' + $selected.text());
       console.log(self.new_anno);*/
@@ -266,12 +264,12 @@
       text += (annotation.comment) ? '<p>' + annotation.comment + '</p>' : '';
 
       // link
-      text += (annotation.link) ? '<a target="blank" href="' +
+      text += (annotation.link) ? '<p><a target="blank" href="' +
         swtr.utils.linkify(annotation.link) + '">' + annotation.link +
-        '</a>' : '';
+        '</a></p>' : '';
 
       // tags
-      text += (annotation.tags) ? '<p>' + annotation.tags + '</p>' : '';
+      text += (annotation.tags) ? '<p>[' + annotation.tags + ']</p>' : '';
 
       // if older annotation i.e w/o comment,title etc fields
       // add text field as text
