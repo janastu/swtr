@@ -678,12 +678,15 @@
     id: 'linked-data-container',
     initialize: function() {
       var self = this;
+      this.loader_template = _.template($("#loader-template").html());
+      $("#linked-data-page").prepend(this.loader_template());
       swtr.LDs = new LDSwts();
       swtr.LDs.getAll({
         what: 'img-anno',
         success: function(data) {
           swtr.LDs.add(data);
           if(!swtr.tagCloudView) {
+            $("#spinner").remove();
             swtr.tagCloudView = new TagCloudView({collection: swtr.LDs});
           }
         }
@@ -748,6 +751,7 @@
       }
     },
     render: function() {
+      $(this.el).show();
       this.renderUserTagCloud();
       this.renderTagsTagCloud();
     },
