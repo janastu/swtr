@@ -149,7 +149,9 @@ footer {
 }
 #tag-cloud {
     display: none;
-    height:768px;
+}
+#gallery {
+    margin-top: 10em;
 }
 #tags-tag-cloud svg {
     position: absolute;

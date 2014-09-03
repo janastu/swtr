@@ -718,7 +718,6 @@
     },
     userTagClicked: function(e) {
       var user = $(e.currentTarget).text();
-      console.log(user);
       var swts = swtr.LDs.filter(function(swt) {
         if(swt.get('who') == user) {
           return swt;
@@ -726,7 +725,7 @@
       });
       swts = _.uniq(swts,'how'.src);
       this.setGalleryView(swts);
-      $(this.el).hide();
+      // $(this.el).hide();
     },
     tagsTagClicked: function(e) {
       var tag = $(e.currentTarget).text();
@@ -738,7 +737,7 @@
         }
       });
       this.setGalleryView(swts);
-      $(this.el).hide();
+      // $(this.el).hide();
     },
     setGalleryView: function(swts) {
       if(this.galleryView) {
@@ -761,31 +760,6 @@
       _.each(weights, function(weight, who) {
         $(this.user_tag_el).append(this.template({weight: weight, who: who}));
       }, this);
-      // d3.layout.cloud().size([1000, 1000])
-      //   .words(words.map(function(d) {
-      //     return {text: d, size: 5};
-      //   }))
-      //   .padding(5)
-      //   .font("Impact")
-      //   .fontSize(function(d) { return d.size; })
-      //   .on("end", this.draw)
-      //   .start();
-    },
-    draw: function (words) {
-      var fill = d3.scale.category20();
-      d3.select("#user-tag-cloud").append("svg")
-        .append("g")
-        .attr("transform", "translate(370,180)")
-        .selectAll("text")
-        .data(words)
-        .enter().append("text")
-        .style("font-size", function(d) { return "16px"; })
-        .style("font-family", "Impact")
-        .style("fill", function(d, i) { return fill(i); })
-        .attr("text-anchor", "middle")
-        .attr("transform", function(d) {
-          return "translate(" + [d.x, d.y] + ")";})
-        .text(function(d) { return d.text; });
     },
     renderTagsTagCloud: function() {
       var sweetsWithTags = swtr.LDs.filter(function(k) {
@@ -802,23 +776,6 @@
         $(this.tags_tag_el).append(this.template({weight: weight, who: who}));
       }, this);
 
-    },
-    drawTags: function(words) {
-      var fill = d3.scale.category20();
-        d3.select("#tags-tag-cloud").append("svg")
-        .append("g")
-        .attr("transform", "translate(700,300)")
-        .selectAll("text")
-        .data(words)
-        .enter().append("text")
-        .style("font-size", function(d) { return "20px"; })
-        .style("font-family", "Impact")
-        .style("fill", function(d, i) { return fill(i); })
-        .attr("text-anchor", "middle")
-        .attr("transform", function(d) {
-          return "translate(" + [d.x, d.y] + ")";
-        })
-        .text(function(d) { return d.text; });
     }
   });
 
@@ -833,6 +790,9 @@
       _.each(this.collection, function(model) {
         $(this.el).append(this.template(model.toJSON()));
       }, this);
+      $('html, body').animate({
+        scrollTop: $("#gallery").offset().top
+      }, 1000);
     },
     setUp: function() {
       if(!$(this.el).is(':visible')) {
