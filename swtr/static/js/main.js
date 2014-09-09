@@ -722,17 +722,21 @@
       this.render();
     },
     userTagClicked: function(e) {
+      anno.reset();
       var user = $(e.currentTarget).text();
       var swts = swtr.LDs.filter(function(swt) {
         if(swt.get('who') == user) {
           return swt;
         }
       });
-      swts = _.uniq(swts,'how'.src);
+      swts = _.uniq(swts, function(swt) {
+        return swt.get('where');
+      });
       this.setGalleryView(swts);
       // $(this.el).hide();
     },
     tagsTagClicked: function(e) {
+      anno.reset();
       var tag = $(e.currentTarget).text();
       var swts = swtr.LDs.filter(function(swt) {
         if(swt.get('how').tags){
@@ -741,7 +745,11 @@
             }
         }
       });
-      this.setGalleryView(swts);
+      swts = _.uniq(swts, function(swt) {
+        return swt.get('where');
+      });
+
+      this.setGalleryView(_.uniq(swts, 'where'));
       // $(this.el).hide();
     },
     setGalleryView: function(swts) {
