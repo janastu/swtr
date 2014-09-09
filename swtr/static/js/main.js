@@ -824,6 +824,7 @@
         anno_obj['editable'] = false;
         anno.addAnnotation(anno_obj);
       });
+      anno.hideSelectionWidget();
       this.$(".annotorious-item-unfocus").css("opacity", '0.6');
     }
   });
