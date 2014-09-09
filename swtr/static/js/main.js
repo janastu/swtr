@@ -786,8 +786,12 @@
 
   var GalleryView = Backbone.View.extend({
     el: $("#gallery"),
+    events: {
+      "click img":"onImgClick"
+    },
     initialize: function() {
       this.template = _.template($("#gallery-item-template").html());
+      this.cover_template = _.template($("#ocd-item-cover-template").html());
       this.render();
     },
     render: function() {
@@ -807,6 +811,20 @@
       }
       $(this.el).html('');
 
+    },
+    onImgClick: function(e){
+      var swts = swtr.LDs.filter(function(k) {
+        if(k.get('where') == $(e.currentTarget).attr('src')) {
+          return k;
+        }
+      });
+      anno.makeAnnotatable($(e.currentTarget)[0]);
+      _.each(swts, function(swt) {
+        var anno_obj = swt.get('how');
+        anno_obj['editable'] = false;
+        anno.addAnnotation(anno_obj);
+      });
+      this.$(".annotorious-item-unfocus").css("opacity", '0.6');
     }
   });
 
