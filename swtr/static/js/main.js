@@ -642,17 +642,21 @@
       this.render();
     },
     userTagClicked: function(e) {
+      anno.reset();
       var user = $(e.currentTarget).text();
       var swts = swtr.LDs.filter(function(swt) {
         if(swt.get('who') == user) {
           return swt;
         }
       });
-      swts = _.uniq(swts,'how'.src);
+      swts = _.uniq(swts, function(swt) {
+        return swt.get('where');
+      });
       this.setGalleryView(swts);
       // $(this.el).hide();
     },
     tagsTagClicked: function(e) {
+      anno.reset();
       var tag = $(e.currentTarget).text();
       var swts = swtr.LDs.filter(function(swt) {
         if(swt.get('how').tags){
@@ -661,7 +665,11 @@
             }
         }
       });
-      this.setGalleryView(swts);
+      swts = _.uniq(swts, function(swt) {
+        return swt.get('where');
+      });
+
+      this.setGalleryView(_.uniq(swts, 'where'));
       // $(this.el).hide();
     },
     setGalleryView: function(swts) {
@@ -706,8 +714,12 @@
 
   var GalleryView = Backbone.View.extend({
     el: $("#gallery"),
+    events: {
+      "click img":"onImgClick"
+    },
     initialize: function() {
       this.template = _.template($("#gallery-item-template").html());
+      this.cover_template = _.template($("#ocd-item-cover-template").html());
       this.render();
     },
     render: function() {
@@ -727,6 +739,21 @@
       }
       $(this.el).html('');
 
+    },
+    onImgClick: function(e){
+      var swts = swtr.LDs.filter(function(k) {
+        if(k.get('where') == $(e.currentTarget).attr('src')) {
+          return k;
+        }
+      });
+      anno.makeAnnotatable($(e.currentTarget)[0]);
+      _.each(swts, function(swt) {
+        var anno_obj = swt.get('how');
+        anno_obj['editable'] = false;
+        anno.addAnnotation(anno_obj);
+      });
+      anno.hideSelectionWidget();
+      this.$(".annotorious-item-unfocus").css("opacity", '0.6');
     }
   });
 
