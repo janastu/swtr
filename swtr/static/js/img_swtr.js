@@ -63,6 +63,7 @@
     post: function(options) {
       var new_sweets = this.getNew();
       var dummy_collection = new Backbone.Collection(new_sweets);
+      console.log('swts to be posted', dummy_collection.toJSON());
 
       if(!swtr.access_token) {
         throw new Error('Access Token is required to sweet');
@@ -106,23 +107,40 @@
     events: {
       'keydown .annotorious-editor-button-save': 'getFormValue',
       'mousedown .annotorious-editor-button-save': 'getFormValue',
-      'click #toggle-anno-areas': 'toggleAnnoAreas'
+      'click #toggle-anno-areas': 'toggleAnnoAreas',
+      // HACK: hook to the annotorious editing via the UI :(
+      'click .annotorious-popup-button-edit': 'editAnno'
     },
     initialize: function(options) {
       this.$el = $('#img-annotation-wrapper');
       this.listenTo(this.collection, 'add', this.render);
+      this.listenTo(this.collection, 'change', this.render);
+      var self = this;
+
       // attach event handlers to the anno object
       anno.addHandler('onAnnotationCreated', this.showSwtHelp);
       anno.addHandler('onAnnotationCreated', this.updateNewAnno);
-      anno.addHandler('onAnnotationUpdated', this.showSwtHelp);
+      anno.addHandler('onAnnotationUpdated', this.updateNewAnno);
       anno.addHandler('onSelectionStarted', function(annotation) {
         anno.hideAnnotations();
       });
       anno.addHandler('onSelectionCompleted', function(annotation) {
         anno.showAnnotations();
       });
+
+      // save the current anno in a cache when a user hovers over an anno
+      // TODO: this is part of a hack to hook into annotorious' edit event
+      // state and get the current editing annotation
+      anno.addHandler('onMouseOverAnnotation', function(event) {
+        self.current_anno = event['$annotation$'];
+      });
+      anno.addHandler('onMouseOutOfAnnotation', function(event) {
+        self.current_anno = undefined;
+      });
+
       anno.addPlugin('CustomFields', {});
-      anno.addHandler('onSelectionCompleted', this.hideOriginalEditor);
+      anno.addHandler('onSelectionCompleted', _.bind(this.hideOriginalEditor, this));
+
       if(options.img) {
         this.img = options.img;
         this.$img = options.$img;
@@ -140,13 +158,16 @@
     },
     render: function(model) {
       var swt = model.toJSON();
+      console.log('rendering swt as anno', swt);
+      //anno.removeAnnotation(swt.how);
       swt.how['editable'] = false;
-      swt.how.text = swtr.imgAnnoView.createPopupText(swt.how);
-      swt.how.text += '\n - by ' + swt.who;
+      //swt.how.text = this.createPopupText(swt.how);
+      //swt.how.text += '\n - by ' + swt.who;
+      console.log('adding anno to torious', swt.how);
       anno.addAnnotation(swt.how);
     },
     renderWith: function() {
-      _.each(this.collection, this.render);
+      this.collection.each(this.render, this);
     },
     showSwtHelp: function(annotation) {
       var self = swtr.imgAnnoView;//TODO: figure out how we can bind the scope when this func is called as a callback
@@ -154,22 +175,10 @@
       $('#sweet').show();
     },
     updateNewAnno: function(annotation) {
-      console.log('updateNewAnno()');
+      //console.log('updateNewAnno()');
       var self = swtr.imgAnnoView;
-        console.log(annotation.text);
-      // get the final value/input from the editor
-     /* var selected = $('select option:selected').text().toLowerCase();
-      var text_input = $('.annotorious-editor-text').val();
-      if( selected === "tags") {
-        self.new_anno[selected] = $('#tags-input').tags().getTags();
-      }
-      else {
-        // update it in our annotation object
-        self.new_anno[selected] = text_input;
-      }*/
-      // prepare the text field
       self.new_anno.comment = annotation.text;
-      self.new_anno.text = self.createPopupText(self.new_anno);
+      //self.new_anno.text = self.createPopupText(self.new_anno);
       // update the annotorious annotation object with the new values
       if(self.new_anno.comment) {
         annotation.comment = annotation.text;
@@ -183,31 +192,52 @@
       if(self.new_anno.title) {
         annotation.title = self.new_anno.title;
       }
-      annotation.text = self.new_anno.text;
-      annotation.editable = false;
+      annotation.text = '';
+      //annotation.text = self.new_anno.text;
       //console.log(self.new_anno, annotation);
     },
     // hide the original editor window, when user has completed selecting part
     // of the image to annotate..
     hideOriginalEditor: function(annotation) {
-      console.log('hideOriginalEditor()');
-      var self = swtr.imgAnnoView;
-      self.new_anno = {};
-        $('#tags-input').tags({
-          tagSize: 'md',
-          promptText: 'Add tags: type a word (and press enter)',
-          caseInsensitive: true,
-          suggestions: self.tags_suggestions
-        });
-      self.getSuggestionsForTags();
+      //console.log('hideOriginalEditor()');
+      this.new_anno = {};
+      this.initBSTags([], this.tags_suggestions);
+      //self.getSuggestionsForTags();
       //$('.annotorious-editor-text').hide();
       //$('.annotorious-editor').css('width', '100%');
     },
+    // initialize the bootstrap tags component..
+    initBSTags: function(initial_tags, suggested_tags) {
+      $('#tags-input').tags({
+        tagSize: 'md',
+        promptText: 'Add tags: type a word (and press enter)',
+        caseInsensitive: true,
+        tagData: (initial_tags && initial_tags.length) ?
+          initial_tags : [],
+        suggestions: (suggested_tags && suggested_tags.length) ?
+          suggested_tags : []
+      });
+    },
     getFormValue: function(event) {
-      console.log('getFormValue()');
-      var self = swtr.imgAnnoView;
-      // show the editor field to input text
-      $('.annotorious-editor-text').each(function(index, element) {
+      //console.log('getFormValue()');
+      var comment = $('.annotorious-editor-text[placeholder="Add a Comment..."]').val();
+      if(comment) {
+        this.new_anno['comment'] = comment;
+      }
+      var title = $('#title-input').val();
+      if(title) {
+        this.new_anno['title'] = title;
+      }
+      var link = $('#link-input').val();
+      if(link) {
+        this.new_anno['link'] = link;
+      }
+      var tags = $('#tags-input').tags().getTags();
+      if(tags.length) {
+        this.new_anno['tags'] = tags;
+      }
+
+      /*$('.annotorious-editor-text').each(function(index, element) {
         if( index === 0) {
           self.new_anno['comment'] = $(element).text();
         console.log(index, $(element).text() );
@@ -222,39 +252,27 @@
         }
         else {
           self.new_anno['tags'] = $(element).tags().getTags();
-        console.log(index, $('#tags-input').tags().getTags() );
+          console.log(index, $('#tags-input').tags().getTags() );
         }
-      });
-      // show the editor field to input text
-    /*  var $anno_form = $('.annotorious-editor-text');
-      //$anno_form.slideDown();
-      // get the previous item entered
-      var $selected = $('select option:selected');
-      var text_input = $anno_form.val();
-
-      // if there was a input and it was not tags..
-      if(text_input && $selected.prev().text() !== 'Tags') {
-        var field = $selected.prev().text().toLowerCase();
-        // update it in our annotation object
-        self.new_anno[field] = text_input;
+      });*/
+    },
+    editAnno: function(event) {
+      //console.log('edit anno');
+      if(this.current_anno.comment) {
+        $('.annotorious-editor-text[placeholder="Add a Comment..."]').val(this.current_anno.comment);
       }
-      // if it was tags..
-      else if ($selected.prev().text() === 'Tags') {
-        // directly save it..
-        self.new_anno['tags'] = $('#tags-input').tags().getTags();
+      if(this.current_anno.title) {
+        $('#title-input').val(this.current_anno.title);
       }
-
-      // if the current selected is tags
-        $('#tags-input').tags({
-          tagSize: 'md',
-          promptText: 'Type word (and press enter)..',
-          caseInsensitive: true,
-          suggestions: self.tags_suggestions
-        });
-     /* $anno_form.val('');
-      $anno_form.attr('placeholder', 'Add ' + $selected.text());
-      console.log(self.new_anno);*/
-
+      if(this.current_anno.link) {
+        $('#link-input').val(this.current_anno.link);
+      }
+      if(this.current_anno.tags) {
+        this.initBSTags(this.current_anno.tags, this.tags_suggestions);
+      }
+      else {
+        this.initBSTags([], this.tags_suggestions);
+      }
     },
     createPopupText: function(annotation) {
       // title
@@ -269,7 +287,9 @@
         '</a></p>' : '';
 
       // tags
-      text += (annotation.tags) ? '<p>[' + annotation.tags + ']</p>' : '';
+      if(annotation.tags) {
+        text += (annotation.tags.length) ? '<p>[' + annotation.tags + ']</p>' : '';
+      }
 
       // if older annotation i.e w/o comment,title etc fields
       // add text field as text
@@ -301,7 +321,7 @@
     },
     imageLoaded: function(event) {
       var self = event.data;
-      console.log('image loaded', self);
+      //console.log('image loaded', self);
       swtr.appView.$overlay.hide();
       // reset the collection
       swtr.sweets.reset();
@@ -333,6 +353,7 @@
         success: function(data) {
           if(_.isArray(data)) {
             swtr.sweets.add(data);
+            //self.renderWith();
             swtr.appView.$overlay.hide();
             self.helpview.step(2);
           }

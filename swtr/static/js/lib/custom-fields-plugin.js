@@ -1,21 +1,24 @@
 annotorious.plugin.CustomFields = function(opt_config_options) {
 
-  annotorious.plugin.CustomFields.prototype.onInitAnnotator = function(annotorious) {
-    var dropDownTemplate= _.template($('#customEdit-template').html()); // creates the HTML element for dropdown - from template in index.html
-    annotorious.editor.addField(dropDownTemplate);  // add dropdown to editor UI widget
-    annotorious.popup.addField( function(annotation){
-      var popupTemplate = _.template($('#popup-template').html()); //created a popup template - yet to find how to bind it to newanno
-      console.log(annotation.text1);
-      if(annotation.text1 != undefined) {
-        //console.log(annotation.text1.Comment); annotation.text is Obj - can
-        //access each element Comment, tags, links..
-        return popupTemplate(annotation.text1);
-      }
-      else {
-        return '';
-      }
-    });
-  
+  var editorTemplate = _.template($('#customEdit-template').html()); //returns the HTML string for the editor
 
+  annotorious.plugin.CustomFields.prototype.onInitAnnotator = function(annotorious) {
+    annotorious.editor.addField(editorTemplate);
+
+    annotorious.popup.addField(function(annotation) {
+      return (annotation.title) ? '<h4>' + annotation.title + '</h4>' : '';
+    });
+    annotorious.popup.addField(function(annotation) {
+      return (annotation.comment) ? '<p>' + annotation.comment + '</h4>' : '';
+    });
+    annotorious.popup.addField(function(annotation) {
+      return (annotation.link) ? '<p><a target="blank" href="' +
+              swtr.utils.linkify(annotation.link) + '">' + annotation.link +
+              '</a></p>' : '';
+    });
+    annotorious.popup.addField(function(annotation) {
+      return (annotation.tags && annotation.tags.length) ? '<p>[' +
+        annotation.tags + ']</p>' : '';
+    });
   }
 };

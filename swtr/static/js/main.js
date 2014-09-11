@@ -48,9 +48,10 @@
     initialize: function(opts) {
       this.template = _.template($('#sweet-template').html());
       this.helpview = opts.helpview;
-      //this.setElement(opts.el);
     },
     render: function() {
+      console.log('sweetsview rendering');
+      debugger;
       $('#sweet-list').html('<h4>These are your sweet annotations!</h4>');
       _.each(this.collection.models, function(swt) {
         if(swt.has('id')) {
@@ -91,7 +92,10 @@
       });
       this.collection.remove(notPosted);
     },
-    postSweets: function() {
+    postSweets: function(event) {
+      event.preventDefault();
+      console.log('posting swts');
+      debugger;
       var appView = swtr.appView;
       var self = this;
       this.helpview.step(5);
@@ -99,10 +103,12 @@
       try {
         this.collection.post({
           success: function(collection, response) {
-            console.log(collection, response);
-            swtr.sweets.set(collection);
+            console.log('updated', collection, response);
+            swtr.sweets.add(collection, {merge: true});
+            console.log('new swtr coll', swtr.sweets);
             appView.$overlay.hide();
             self.helpview.step(6);
+            self.trigger('postedSweets');
           },
           error: function(jqxhr, error, text) {
             console.log(jqxhr, error, text);
@@ -122,102 +128,6 @@
     cleanUp: function() {
       //console.log('cleaning up');
       this.$el.hide();
-    }
-  });
-
-  var FilterView = Backbone.View.extend({
-    el: $('#filter-div'),
-    events: {
-      'click #filter-user-div input': 'filter',
-      'click #filter-tags-div input': 'filter'
-    },
-    initialize: function() {
-      this.filter_users_template = _.template($('#filter-users').html());
-      this.filter_tags_template = _.template($('#filter-tags').html());
-      this.render();
-    },
-    render: function() {
-      //console.log(this.collection);
-      // pluck uniq authors of sweets
-      var authors = _.uniq(this.collection.pluck('who'));
-      // render them as filter controls
-      _.each(authors, function(author) {
-        $('#filter-user-div').append(this.filter_users_template({
-          who: author
-        }));
-      }, this);
-
-      // pluck uniq tags of sweets
-      var tags = _.chain(this.collection.pluck('how')).pluck('tags').flatten().
-        uniq().value();
-
-      // render them as filter controls
-      _.each(tags, function(tag) {
-        if(tag) {
-          $('#filter-tags-div').append(this.filter_tags_template({
-            tag: tag
-          }));
-        }
-      }, this);
-
-      //this.delegateEvents();
-    },
-    filter: function(event) {
-      // get id of div - parent to parent to the clicked input
-      var target_id = $(event.currentTarget).parent().parent().attr('id');
-      // find out user/tag div
-      var which = target_id.split('-')[1];
-
-      var selected = [];
-      $('#'+target_id + ' input:checked').each(function() {
-        selected.push($(this).attr('name'));
-      });
-
-      if(which === 'user') {
-        this.filterUsers(selected);
-      }
-      else if(which === 'tags') {
-        this.filterTags(selected);
-      }
-    },
-    filterUsers: function(users) {
-      if(!users.length) {
-        return;
-      }
-      var filtered_swts = this.collection.filter(function(model) {
-        if(_.indexOf(users, model.get('who')) > -1) {
-          return model;
-        }
-      });
-      if(filtered_swts.length) {
-        anno.removeAll();
-        _.each(filtered_swts, function(swt) {
-          anno.addAnnotation(swt.get('how'));
-        });
-      }
-    },
-    filterTags: function(tags) {
-      if(!tags.length) {
-        return;
-      }
-      var filtered_swts = this.collection.filter(function(model) {
-        //TODO: find a better way of doing this..
-        var flag = false;
-        _.each(model.get('how').tags, function(tag) {
-          if(_.indexOf(tags, tag) > -1) {
-            flag = true;
-          }
-        });
-        if(flag === true) {
-          return model;
-        }
-      });
-      if(filtered_swts.length) {
-        anno.removeAll();
-        _.each(filtered_swts, function(swt) {
-          anno.addAnnotation(swt.get('how'));
-        });
-      }
     }
   });
 
@@ -263,7 +173,7 @@
   });
 
   var PlayAreaView = Backbone.View.extend({
-    id: '#play-page-container',
+    id: 'play-page-container',
     events: {
       'click #user-input-submit': 'submitUserInput',
       'click #sweet': 'sweet'
@@ -278,6 +188,7 @@
         helpview: this.helpview
       });
       this.$img = $('#annotatable-img');
+      //this.sweetsview.on('postedSweets', this.rerenderAnnos);
       this.helpview.step(1);
     },
     render: function() {
@@ -294,6 +205,7 @@
       var annos = _.filter(anno.getAnnotations(), function(anno) {
         return (!_.has(anno, 'editable') || anno.editable === true);
       });
+      console.log(annos);
 
       _.each(annos, function(anno) {
         swtr.sweets.add({
@@ -305,13 +217,17 @@
       });
     },
     showSweets: function() {
-      console.log('showSweets');
+      //console.log('showSweets');
       this.sweetsview.render();
     },
-    sweet: function() {
+    sweet: function(event) {
+      event.preventDefault();
       console.log('sweeting');
+      debugger;
       this.getSweets();
+      debugger;
       this.showSweets();
+      debugger;
       return false;
     },
     // function to update the urls in the UI if an image is loaded internally
@@ -346,9 +262,9 @@
         var self = this;
         $.get('/media-type', {where: url}, function(response) {
           //console.log(response);
-          self.appView.$overlay.hide();
+          swtr.appView.$overlay.hide();
           if(response.type === 'image') {
-           this.initImageAnno(url);
+           self.initImageAnno(url);
           }
           else {
             window.location.href = '/annotate?where=' + url;
@@ -547,7 +463,7 @@
       var url = $(event.currentTarget).parent().parent().
         find('img').attr('src');
       //TODO: load the image in the play area/workbench
-      console.log('load image anno', url);
+      //console.log('load image anno', url);
       swtr.app_router.loadPlayArea(url, 'image');
     },
     search: function(data, cb) {
@@ -568,6 +484,7 @@
   var HelpView = Backbone.View.extend({
     id: 'helpview-wrapper',
     events: {
+      'click .close': 'clickedClose'
     },
     initialize: function() {
       this.template = _.template($('#helpview-template').html());
@@ -577,6 +494,9 @@
     render: function() {
       $('#helpview-container').html(this.$el);
       this.$el.html(this.template({}));
+    },
+    clickedClose: function(event) {
+      this.remove();
     },
     //TODO: move from number based steps to something else. number based steps
     //implicitly imply sequential processing..which does not happen in this
@@ -851,7 +771,7 @@
       }
       $('#' + id).show();
       this.highlight(id);
-      console.log('shown', id);
+      //console.log('shown', id);
     },
     highlight: function(id) {
       $('#swtr-navbar-collapse li').removeClass('active');
@@ -873,6 +793,102 @@
     loadPlayArea: function(url, type) {
       this.navigate('play', {trigger: true});
       this.mounted_component.loadURL(url, type);
+    }
+  });
+
+  var FilterView = Backbone.View.extend({
+    el: $('#filter-div'),
+    events: {
+      'click #filter-user-div input': 'filter',
+      'click #filter-tags-div input': 'filter'
+    },
+    initialize: function() {
+      this.filter_users_template = _.template($('#filter-users').html());
+      this.filter_tags_template = _.template($('#filter-tags').html());
+      this.render();
+    },
+    render: function() {
+      //console.log(this.collection);
+      // pluck uniq authors of sweets
+      var authors = _.uniq(this.collection.pluck('who'));
+      // render them as filter controls
+      _.each(authors, function(author) {
+        $('#filter-user-div').append(this.filter_users_template({
+          who: author
+        }));
+      }, this);
+
+      // pluck uniq tags of sweets
+      var tags = _.chain(this.collection.pluck('how')).pluck('tags').flatten().
+        uniq().value();
+
+      // render them as filter controls
+      _.each(tags, function(tag) {
+        if(tag) {
+          $('#filter-tags-div').append(this.filter_tags_template({
+            tag: tag
+          }));
+        }
+      }, this);
+
+      //this.delegateEvents();
+    },
+    filter: function(event) {
+      // get id of div - parent to parent to the clicked input
+      var target_id = $(event.currentTarget).parent().parent().attr('id');
+      // find out user/tag div
+      var which = target_id.split('-')[1];
+
+      var selected = [];
+      $('#'+target_id + ' input:checked').each(function() {
+        selected.push($(this).attr('name'));
+      });
+
+      if(which === 'user') {
+        this.filterUsers(selected);
+      }
+      else if(which === 'tags') {
+        this.filterTags(selected);
+      }
+    },
+    filterUsers: function(users) {
+      if(!users.length) {
+        return;
+      }
+      var filtered_swts = this.collection.filter(function(model) {
+        if(_.indexOf(users, model.get('who')) > -1) {
+          return model;
+        }
+      });
+      if(filtered_swts.length) {
+        anno.removeAll();
+        _.each(filtered_swts, function(swt) {
+          anno.addAnnotation(swt.get('how'));
+        });
+      }
+    },
+    filterTags: function(tags) {
+      if(!tags.length) {
+        return;
+      }
+      var filtered_swts = this.collection.filter(function(model) {
+        //TODO: find a better way of doing this..
+        var flag = false;
+        _.each(model.get('how').tags, function(tag) {
+          if(_.indexOf(tags, tag) > -1) {
+            flag = true;
+          }
+        });
+        if(flag === true) {
+          return model;
+        }
+      });
+      if(filtered_swts.length) {
+        anno.removeAll();
+        _.each(filtered_swts, function(swt) {
+          anno.addAnnotation(swt.get('how'));
+        });
+      }
     }
   });
 
