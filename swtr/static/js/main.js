@@ -51,7 +51,7 @@
     },
     render: function() {
       console.log('sweetsview rendering');
-      debugger;
+//      debugger;
       $('#sweet-list').html('<h4>These are your sweet annotations!</h4>');
       _.each(this.collection.models, function(swt) {
         if(swt.has('id')) {
@@ -95,7 +95,7 @@
     postSweets: function(event) {
       event.preventDefault();
       console.log('posting swts');
-      debugger;
+//      debugger;
       var appView = swtr.appView;
       var self = this;
       this.helpview.step(5);
@@ -104,6 +104,12 @@
         this.collection.post({
           success: function(collection, response) {
             console.log('updated', collection, response);
+            anno.reset();
+            anno.makeAnnotatable($("#annotatable-img")[0]);
+            swtr.imgAnnoView.renderWith();
+            // _.each(collection, function(k) {
+            //   anno.removeAnnotation(k['how']);
+            // });
             swtr.sweets.add(collection, {merge: true});
             console.log('new swtr coll', swtr.sweets);
             appView.$overlay.hide();
@@ -223,11 +229,11 @@
     sweet: function(event) {
       event.preventDefault();
       console.log('sweeting');
-      debugger;
+//      debugger;
       this.getSweets();
-      debugger;
+//      debugger;
       this.showSweets();
-      debugger;
+//      debugger;
       return false;
     },
     // function to update the urls in the UI if an image is loaded internally
@@ -334,7 +340,7 @@
     destroy: function() {
       this.helpview.remove();
       this.remove();
-    },
+    }
   });
 
   var OCDView = Backbone.View.extend({

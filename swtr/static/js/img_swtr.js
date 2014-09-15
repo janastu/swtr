@@ -114,7 +114,7 @@
     initialize: function(options) {
       this.$el = $('#img-annotation-wrapper');
       this.listenTo(this.collection, 'add', this.render);
-      this.listenTo(this.collection, 'change', this.render);
+      // this.listenTo(this.collection, 'change', this.render);
       var self = this;
 
       // attach event handlers to the anno object
@@ -170,7 +170,8 @@
       this.collection.each(this.render, this);
     },
     showSwtHelp: function(annotation) {
-      var self = swtr.imgAnnoView;//TODO: figure out how we can bind the scope when this func is called as a callback
+      var self = swtr.imgAnnoView;
+      //TODO: figure out how we can bind the scope when this func is called as a callback
       self.helpview.step(3);
       $('#sweet').show();
     },
