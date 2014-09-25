@@ -51,7 +51,6 @@
     },
     render: function() {
       console.log('sweetsview rendering');
-//      debugger;
       $('#sweet-list').html('<h4>These are your sweet annotations!</h4>');
       _.each(this.collection.models, function(swt) {
         if(swt.has('id')) {
@@ -95,7 +94,6 @@
     postSweets: function(event) {
       event.preventDefault();
       console.log('posting swts');
-//      debugger;
       var appView = swtr.appView;
       var self = this;
       this.helpview.step(5);
@@ -107,10 +105,15 @@
             anno.reset();
             anno.makeAnnotatable($("#annotatable-img")[0]);
             swtr.imgAnnoView.renderWith();
-            // _.each(collection, function(k) {
-            //   anno.removeAnnotation(k['how']);
-            // });
-            swtr.sweets.add(collection, {merge: true});
+            swtr.sweets.add(collection);
+            //HACK! somehow updated models from the server don't get merged
+            //with existing models, they duplicate. this is probably because of
+            //some attribute change that backbone is not able to detect the
+            //models are same. FIX for now is to update the collection with
+            //updated models from the server and delete the older ones(w/o
+            //id's)..
+            self.removeSwtsNotPosted();
+
             console.log('new swtr coll', swtr.sweets);
             appView.$overlay.hide();
             self.helpview.step(6);
@@ -229,11 +232,8 @@
     sweet: function(event) {
       event.preventDefault();
       console.log('sweeting');
-//      debugger;
       this.getSweets();
-//      debugger;
       this.showSweets();
-//      debugger;
       return false;
     },
     // function to update the urls in the UI if an image is loaded internally
