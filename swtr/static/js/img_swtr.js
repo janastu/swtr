@@ -325,7 +325,6 @@
       //console.log('image loaded', self);
       swtr.appView.$overlay.hide();
       self.showImgAnnoControls();
-      self.toggleAnnoAreas();
       // reset the collection
       swtr.sweets.reset();
       anno.makeAnnotatable(swtr.imgAnnoView.img);
@@ -361,6 +360,7 @@
             swtr.sweets.add(data);
             //self.renderWith();
             swtr.appView.$overlay.hide();
+            self.toggleAnnoAreas();
             self.helpview.step(2);
           }
         },
