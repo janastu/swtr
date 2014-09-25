@@ -675,7 +675,8 @@
         return swt.get('where');
       });
 
-      this.setGalleryView(_.uniq(swts, 'where'));
+      // this.setGalleryView(_.uniq(swts, 'where'));
+      this.setGalleryView(swts);
       // $(this.el).hide();
     },
     setGalleryView: function(swts) {
@@ -731,7 +732,21 @@
     render: function() {
       this.setUp();
       _.each(this.collection, function(model) {
-        $(this.el).append(this.template(model.toJSON()));
+        var models = swtr.LDs.filter(function(swt) {
+          if(swt.get('how').src == model.get('how').src) {
+            return model;
+          }
+        });
+        var tags = [];
+        _.each(models, function(model) {
+          if(model.get('how').tags) {
+            tags.push(model.get('how').tags);
+          }
+        });
+        tags = _.flatten(tags);
+        $(this.el).append(this.template({'how':{'tags': tags,
+                                                'src':model.get('how').src},
+                                         'who':model.get('who')}));
       }, this);
       $('html, body').animate({
         scrollTop: $("#gallery").offset().top
