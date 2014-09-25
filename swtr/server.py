@@ -156,6 +156,31 @@ def getMediaType():
         return jsonify({'type': 'image'})
 
 
+@app.route('/webpage', methods=['GET'])
+def annotate_webpage():
+
+    where = request.args.get('where')
+    response = requests.get(where)
+    content = response.text
+    if imghdr.what('ignore', content) is None:
+        root = lxml.html.parse(StringIO.StringIO(content)).getroot()
+        root.make_links_absolute(where,
+                                 resolve_base_href=True)
+
+        addScript("//code.jquery.com/jquery-1.11.0.min.js", root)
+        addScript(url_for('static', filename="js/annotator-full.min.js"),
+                  root)
+        addScript(url_for('static',
+                  filename="js/annotorious.okfn.0.3.js"),
+                  root)
+        addScript(url_for('static', filename="js/txt_swtr.js"), root)
+        addCSS(url_for('static', filename='css/annotator.min.css'), root)
+
+        response = make_response()
+        response.data = lxml.html.tostring(root)
+        return response
+
+
 @app.route('/annotate', methods=['GET'])
 def annotate():
     # img = urllib2.urlopen(flask.request.args['where']).read()

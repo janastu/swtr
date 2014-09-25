@@ -266,14 +266,25 @@
         this.helpview.step(12);
         swtr.appView.$overlay.show();
         var self = this;
-        $.get('/media-type', {where: url}, function(response) {
-          //console.log(response);
-          swtr.appView.$overlay.hide();
-          if(response.type === 'image') {
-           self.initImageAnno(url);
-          }
-          else {
-            window.location.href = '/annotate?where=' + url;
+        $.ajax({
+          type: 'GET',
+          url: '/media-type',
+          data: {where: url},
+          success: function(response) {
+            //console.log(response);
+            swtr.appView.$overlay.hide();
+            if(response.type === 'image') {
+              self.initImageAnno(url);
+            }
+            else {
+              //window.location.href = '/annotate?where=' + url;
+              self.initTextAnno(url);
+            }
+          },
+          error: function(error) {
+            console.log('error');
+            swtr.appView.$overlay.hide();
+            self.helpview.step(13);
           }
         });
       }
@@ -291,6 +302,13 @@
           helpview: this.helpview
         });
       }
+    },
+    initTextAnno: function(url) {
+      var txt_anno_endpoint = '/webpage?where=' + url;
+      var box_width = $('#img-annotation-wrapper').css('width');
+      $('#img-annotation-wrapper').find('iframe').remove();
+      $('#img-annotation-wrapper').append('<iframe src="' + txt_anno_endpoint +
+        '" height="800" width="' + box_width + '"></iframe>');
     },
     destroy: function() {
       this.helpview.remove();
