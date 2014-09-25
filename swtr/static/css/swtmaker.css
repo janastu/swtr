@@ -25,6 +25,12 @@ body {
   margin: 30px auto 0 auto;
 }
 
+#img-anno-controls {
+  display: none;
+  margin-bottom: 5px;
+  padding-bottom: 3px;
+}
+
 #annotatable-img {
   margin: 0 auto;
   max-width: 1125px;
@@ -88,6 +94,7 @@ body {
   background-size: cover;
   display: block;
   height: 400px;
+  width: 400px;
   margin: 0 auto;
 }
 

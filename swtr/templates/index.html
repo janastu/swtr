@@ -320,8 +320,8 @@
             <div id="img-anno-controls">
               <form class="form-inline" role="form">
                 <div class="form-group">
-                  <label class="checkbox-inline">
-                    <input type="checkbox" id="toggle-anno-areas"> Show annotated areas
+                  <label class="btn btn-info">
+                      <input type="checkbox" id="toggle-anno-areas"> Show annotated areas
                   </label>
                 </div>
               </form>
@@ -329,7 +329,7 @@
           {% if url %}
             <img src="{{ url }}" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
           {% else %}
-            <img src="" id="annotatable-img" class="img-responsive" alt="Annotation Workbench">
+            <img src="" id="annotatable-img" class="img-responsive" alt="">
           {% endif %}
           </div>
         </div> <!-- end fourth row -->

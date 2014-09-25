@@ -324,6 +324,7 @@
       var self = event.data;
       //console.log('image loaded', self);
       swtr.appView.$overlay.hide();
+      self.showImgAnnoControls();
       // reset the collection
       swtr.sweets.reset();
       anno.makeAnnotatable(swtr.imgAnnoView.img);
@@ -336,6 +337,9 @@
       console.log('error while loading image');
       swtr.appView.$overlay.hide();
       self.helpview.step(8);
+    },
+    showImgAnnoControls: function() {
+      $('#img-anno-controls').show();
     },
     initImageAnno: function() {
       // img is a jquery object which annotorious doesn't accept; instead it
