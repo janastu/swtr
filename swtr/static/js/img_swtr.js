@@ -325,6 +325,7 @@
       //console.log('image loaded', self);
       swtr.appView.$overlay.hide();
       self.showImgAnnoControls();
+      self.toggleAnnoAreas();
       // reset the collection
       swtr.sweets.reset();
       anno.makeAnnotatable(swtr.imgAnnoView.img);

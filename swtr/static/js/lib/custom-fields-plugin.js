@@ -11,7 +11,12 @@ annotorious.plugin.CustomFields = function(opt_config_options) {
       // HACK! to get around disabling annotorious' default text box in the
       // popup..
       if(!annotation.text) {
+        //console.log('no anno text:', annotation);
         $('.annotorious-popup-text').hide();
+      }
+      else {
+        //console.log('anno text is there', annotation);
+        $('.annotorious-popup-text').show();
       }
       // this is the title
       return (annotation.title) ? '<h4>' + annotation.title + '</h4>' : '';
