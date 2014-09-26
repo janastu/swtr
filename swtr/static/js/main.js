@@ -143,7 +143,7 @@
   var AppView = Backbone.View.extend({
     el: $('body'),
     events: {
-      'click #sign-in': 'signIn',
+      'click #sign-in': 'signIn'
       //'mouseup .annotorious-editor-button-save': 'addnew_anno'
     },
     initialize: function() {
@@ -162,6 +162,27 @@
         redirect_uri: swtr.oauth_redirect_uri,
         scopes: 'email,sweet'
       });
+      var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+      var eventer = window[eventMethod];
+      var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+
+      // Listen to message from child window
+      eventer(messageEvent,function(e) {
+        var key = e.message ? "message" : "data";
+        var data = e[key];
+        //run function//
+        console.log(data + " from postMessage");
+        // Create a object of swt with required values.
+        var annotation = JSON.parse(data);
+        var swt = {};
+        swt.how = annotation;
+        swt.what = "txt-anno";
+        swt.who = swtr.who;
+        swt.where = $('body').find('iframe').attr('src').split('=')[1];
+        swtr.sweets.add(swt);
+        $("#sweet").show();
+      },false);
+
     },
     signIn: function(event) {
       event.preventDefault();
