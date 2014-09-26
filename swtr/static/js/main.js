@@ -102,9 +102,13 @@
         this.collection.post({
           success: function(collection, response) {
             console.log('updated', collection, response);
-            anno.reset();
-            anno.makeAnnotatable($("#annotatable-img")[0]);
-            swtr.imgAnnoView.renderWith();
+            // update img anno view if exists..
+            if(anno && swtr.imgAnnoView) {
+              anno.reset();
+              anno.makeAnnotatable($("#annotatable-img")[0]);
+              swtr.imgAnnoView.renderWith();
+            }
+
             swtr.sweets.add(collection);
             //HACK! somehow updated models from the server don't get merged
             //with existing models, they duplicate. this is probably because of
@@ -162,27 +166,6 @@
         redirect_uri: swtr.oauth_redirect_uri,
         scopes: 'email,sweet'
       });
-      var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
-      var eventer = window[eventMethod];
-      var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
-
-      // Listen to message from child window
-      eventer(messageEvent,function(e) {
-        var key = e.message ? "message" : "data";
-        var data = e[key];
-        //run function//
-        console.log(data + " from postMessage");
-        // Create a object of swt with required values.
-        var annotation = JSON.parse(data);
-        var swt = {};
-        swt.how = annotation;
-        swt.what = "txt-anno";
-        swt.who = swtr.who;
-        swt.where = $('body').find('iframe').attr('src').split('=')[1];
-        swtr.sweets.add(swt);
-        $("#sweet").show();
-      },false);
-
     },
     signIn: function(event) {
       event.preventDefault();
@@ -209,8 +192,12 @@
       'click #sweet': 'sweet'
     },
     initialize: function() {
+      var self = this;
       this.template = _.template($('#play-page-template').html());
       this.helpview = new HelpView();
+      // create a cache to store the text annos coming from the child iframe
+      this.txt_anno_swts = new swtr.ImgAnnoSwts();
+
       this.render();
       this.sweetsview = new SweetsView({
         el: $('#sweet-list-wrapper'),
@@ -220,6 +207,31 @@
       this.$img = $('#annotatable-img');
       //this.sweetsview.on('postedSweets', this.rerenderAnnos);
       this.helpview.step(1);
+
+      var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+      var eventer = window[eventMethod];
+      var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+
+      // Listen to message from child window
+      eventer(messageEvent,function(e) {
+        var key = e.message ? "message" : "data";
+        var data = e[key];
+        //run function//
+        console.log(data + " from postMessage");
+        // Create a object of swt with required values.
+        var annotation = JSON.parse(data);
+        var swt = {};
+        swt.how = annotation;
+        swt.what = "txt-anno";
+        swt.who = swtr.who;
+        swt.where = $('body').find('iframe').attr('src').split('=')[1];
+
+        // add the swt to the cache
+        self.txt_anno_swts.add(swt);
+        self.helpview.step(3);
+        $("#sweet").show();
+      },false);
+
     },
     render: function() {
       this.$el.html(this.template());
@@ -231,11 +243,20 @@
       this.loadURL(input);
     },
     getSweets: function() {
-      console.log('getSweets');
+      //console.log('getSweets');
+      // check if text anno swts exist..
+      if(this.txt_anno_swts.length) {
+        this.txt_anno_swts.each(function(swt) {
+          //console.log('swt in txt anno swts', swt);
+          swtr.sweets.add(swt);
+        });
+      }
+
+      // get image anno swts from annotorious
       var annos = _.filter(anno.getAnnotations(), function(anno) {
         return (!_.has(anno, 'editable') || anno.editable === true);
       });
-      console.log(annos);
+      //console.log(annos);
 
       _.each(annos, function(anno) {
         swtr.sweets.add({

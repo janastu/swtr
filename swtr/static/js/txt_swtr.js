@@ -6,6 +6,7 @@
     this.annotator.addPlugin("Tags");
     //this.annotator.addPlugin("AnnotoriousImagePlugin");
     this.annotator.subscribe("annotationCreated", swtr.updateParent);
+    this.annotator.subscribe("annotationUpdated", swtr.updateParent);
     console.log('inited annotator');
   };
 
