@@ -347,10 +347,13 @@
     },
     initTextAnno: function(url) {
       var txt_anno_endpoint = '/webpage?where=' + url;
-      var box_width = $('#img-annotation-wrapper').css('width');
+      var box_width = $('#img-annotation-wrapper').css('width').split('px')[0];
+      box_width = box_width - 30;
       $('#img-annotation-wrapper').find('iframe').remove();
       $('#img-annotation-wrapper').append('<iframe src="' + txt_anno_endpoint +
         '" height="800" width="' + box_width + '"></iframe>');
+
+      this.helpview.step(14);
     },
     destroy: function() {
       this.helpview.remove();
@@ -599,6 +602,8 @@
                break;
       case 13: text = 'This does not seem to be a URL. Please enter a valid URL.';
                break;
+      case 14: text = 'Select text to annotate the page';
+              break;
       }
       this.$text_el.html(text);
       $(window).scrollTop(0, 0);
