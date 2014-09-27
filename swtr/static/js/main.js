@@ -79,6 +79,12 @@
       if(how.link) {
         human_readable_json['link'] = how.link;
       }
+      if(how.quote) {
+        human_readable_json['quote'] = how.quote;
+      }
+      if(how.text) {
+        human_readable_json['text'] = how.text;
+      }
       return human_readable_json;
     },
     cancelSweeting: function() {
@@ -213,25 +219,32 @@
       var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 
       // Listen to message from child window
-      eventer(messageEvent,function(e) {
+      eventer(messageEvent, function(e) {
         var key = e.message ? "message" : "data";
         var data = e[key];
         //run function//
         console.log(data + " from postMessage");
-        // Create a object of swt with required values.
-        var annotation = JSON.parse(data);
-        var swt = {};
-        swt.how = annotation;
-        swt.what = "txt-anno";
-        swt.who = swtr.who;
-        swt.where = $('body').find('iframe').attr('src').split('=')[1];
+        data = JSON.parse(data);
 
-        // add the swt to the cache
-        self.txt_anno_swts.add(swt);
-        self.helpview.step(3);
-        $("#sweet").show();
+        if(data['event'] === 'annotationUpdated') {
+          self.updateTextAnnos(data);
+        }
       },false);
 
+    },
+    updateTextAnnos: function(payload) {
+      // Create a object of swt with required values.
+      var annotation = payload.data;
+      var swt = {};
+      swt.how = annotation;
+      swt.what = "txt-anno";
+      swt.who = swtr.who;
+      swt.where = $('body').find('iframe').attr('src').split('=')[1];
+
+      // add the swt to the cache
+      this.txt_anno_swts.add(swt);
+      this.helpview.step(3);
+      $('#sweet').show();
     },
     render: function() {
       this.$el.html(this.template());

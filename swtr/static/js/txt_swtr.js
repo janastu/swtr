@@ -13,7 +13,12 @@
   swtr.updateParent = function(annotation) {
     /* Notify the parent winow about the annotation  */
     delete(annotation['highlights']);
-    parent.postMessage(JSON.stringify(annotation),"*");
+    var payload = {
+      event: 'annotationUpdated',
+      data: annotation
+    };
+    console.log('updateParent');
+    parent.postMessage(JSON.stringify(payload), '*');
   };
 
   window.onload = function() {
