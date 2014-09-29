@@ -33,11 +33,17 @@
       }
       // setting up params
       var where = options.where,
-    who = options.who || null;
+          what = options.what || null;
+      who = options.who || null;
+
       url = swtr.swtstoreURL() + swtr.endpoints.get + '?where=' +
         encodeURIComponent(where);// '&access_token=' + swtr.access_token;
+
       if(who) {
         url += '&who=' + who;
+      }
+      if(what) {
+        url += '&what=' + what;
       }
       // get them!
       this.sync('read', this, {

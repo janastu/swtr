@@ -25,6 +25,7 @@
 
       if(annos && annos.length) {
         annos.forEach(function(anno) {
+          //console.log(anno);
           swtr.annotator.createAnnotation(anno.how);
           swtr.annotator.setupAnnotation(anno.how);
         });
