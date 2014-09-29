@@ -21,8 +21,9 @@ body {
   margin-left: 0;
 }
 
-#img-annotation-wrapper, #ocd-results {
+#img-annotation-wrapper, #ocd-results, #txt-anno-wrapper {
   margin: 30px auto 0 auto;
+  display: none;
 }
 
 #img-anno-controls {
@@ -35,6 +36,7 @@ body {
   margin: 0 auto;
   max-width: 1125px;
 }
+
 
 #sweet-list-wrapper {
   width: 500px;

@@ -207,6 +207,7 @@
 
     <script>
       window.swtr = window.swtr || {};
+
       swtr.swtstoreURL = function() { return '{{ config.swtstoreURL }}'; }
       swtr.endpoints = {
         'get': '/api/sweets/q',
@@ -219,9 +220,6 @@
       swtr.refresh_token = '{{ refresh_token }}';
       swtr.app_id = '{{ config.app_id }}';
       swtr.oauth_redirect_uri = '{{ config.redirect_uri }}';
-      window.onload = function() {
-        swtr.init();
-      };
     </script>
     <script src="{{ url_for('static', filename='js/lib/jquery-1.10.2.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/d3.js') }}"></script>
@@ -331,6 +329,10 @@
           {% else %}
             <img src="" id="annotatable-img" class="img-responsive" alt="">
           {% endif %}
+          </div>
+
+          <div id="txt-anno-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
+            <iframe id="txt-anno-frame" src="" height="800"></iframe>
           </div>
         </div> <!-- end fourth row -->
 

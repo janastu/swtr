@@ -1,8 +1,9 @@
-(function(swtr) {
+(function(window) {
 
-  //TODO: find a better way to init.
-  //Find a better way to do closure
-  //Remove script code from the HTML page
+  window.swtr = window.swtr || {};
+
+
+  // init the app..
   swtr.init = function() {
     this.sweets = new swtr.ImgAnnoSwts();
     this.appView = new AppView();
@@ -211,40 +212,35 @@
         helpview: this.helpview
       });
       this.$img = $('#annotatable-img');
+      this.$img_wrapper = $('#img-annotation-wrapper');
+      this.$txt_wrapper = $('#txt-anno-wrapper');
+      this.$txt = $('#txt-anno-frame');
+
       //this.sweetsview.on('postedSweets', this.rerenderAnnos);
       this.helpview.step(1);
 
-      var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+      var eventMethod = window.addEventListener ? 'addEventListener' :
+        'attachEvent';
+      var messageEvent = eventMethod == 'attachEvent' ? 'onmessage' :
+        'message';
       var eventer = window[eventMethod];
-      var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 
       // Listen to message from child window
       eventer(messageEvent, function(e) {
-        var key = e.message ? "message" : "data";
+        var key = e.message ? 'message' : 'data';
         var data = e[key];
         //run function//
-        console.log(data + " from postMessage");
+        console.log(data + ' from postMessage');
         data = JSON.parse(data);
 
         if(data['event'] === 'annotationUpdated') {
           self.updateTextAnnos(data);
         }
+        if(data['event'] === 'imgClicked') {
+          self.imgClickedFrmTxtAnno(data);
+        }
       },false);
 
-    },
-    updateTextAnnos: function(payload) {
-      // Create a object of swt with required values.
-      var annotation = payload.data;
-      var swt = {};
-      swt.how = annotation;
-      swt.what = "txt-anno";
-      swt.who = swtr.who;
-      swt.where = $('body').find('iframe').attr('src').split('=')[1];
-
-      // add the swt to the cache
-      this.txt_anno_swts.add(swt);
-      this.helpview.step(3);
-      $('#sweet').show();
     },
     render: function() {
       this.$el.html(this.template());
@@ -345,6 +341,9 @@
       }
     },
     initImageAnno: function(url) {
+      this.$txt_wrapper.hide();
+      this.$img_wrapper.show();
+
       if(swtr.imgAnnoView) {
         swtr.imgAnnoView.setImage(url);
       }
@@ -359,14 +358,39 @@
       }
     },
     initTextAnno: function(url) {
-      var txt_anno_endpoint = '/webpage?where=' + url;
-      var box_width = $('#img-annotation-wrapper').css('width').split('px')[0];
-      box_width = box_width - 30;
-      $('#img-annotation-wrapper').find('iframe').remove();
-      $('#img-annotation-wrapper').append('<iframe src="' + txt_anno_endpoint +
-        '" height="800" width="' + box_width + '"></iframe>');
+      this.$img_wrapper.hide();
+      this.$txt_wrapper.show();
+
+      // the current url is already loaded..
+      if(this.$txt.attr('src') !== url) {
+        var txt_anno_endpoint = '/webpage?where=' + url;
+
+        var box_width = this.$txt_wrapper.css('width').split('px')[0];
+        box_width = box_width - 30;
+
+        this.$txt.attr('src', txt_anno_endpoint);
+        this.$txt.attr('width', box_width);
+      }
 
       this.helpview.step(14);
+    },
+    updateTextAnnos: function(payload) {
+      // Create a object of swt with required values.
+      var annotation = payload.data;
+      var swt = {};
+      swt.how = annotation;
+      swt.what = 'txt-anno';
+      swt.who = swtr.who;
+      swt.where = this.$txt.attr('src').split('=')[1];
+
+      // add the swt to the cache
+      this.txt_anno_swts.add(swt);
+      this.helpview.step(3);
+      $('#sweet').show();
+    },
+    imgClickedFrmTxtAnno: function(payload) {
+      var url = payload.data.url;
+      this.loadURL(url);
     },
     destroy: function() {
       this.helpview.remove();
@@ -615,7 +639,7 @@
                break;
       case 13: text = 'This does not seem to be a URL. Please enter a valid URL.';
                break;
-      case 14: text = 'Select text to annotate the page';
+      case 14: text = 'Drag and select text to annotate the page';
               break;
       }
       this.$text_el.html(text);
@@ -687,14 +711,14 @@
       }
       if(!swtr.LDs.length) {
         console.log(swtr.LDs);
-        this.loader_template = _.template($("#loader-template").html());
-        $("#linked-data-page").prepend(this.loader_template());
+        this.loader_template = _.template($('#loader-template').html());
+        $('#linked-data-page').prepend(this.loader_template());
         swtr.LDs.getAll({
           what: 'img-anno',
           success: function(data) {
             swtr.LDs.add(data);
             if(!swtr.tagCloudView) {
-              $("#spinner").remove();
+              $('#spinner').remove();
               swtr.tagCloudView = new TagCloudView({collection: swtr.LDs});
             }
           }
@@ -706,9 +730,9 @@
       this.remove();
     },
     cleanUp: function() {
-      if(!$("#tag-cloud").is(':visible')) {
-        $("#gallery").hide();
-        $("#tag-cloud").show();
+      if(!$('#tag-cloud').is(':visible')) {
+        $('#gallery').hide();
+        $('#tag-cloud').show();
       }
     }
   });
@@ -716,13 +740,13 @@
   var TagCloudView = Backbone.View.extend({
     el: $('#tag-cloud'),
     events: {
-      "click #user-tag-cloud li p": "userTagClicked",
-      "click #tags-tag-cloud li p": "tagsTagClicked"
+      'click #user-tag-cloud li p': 'userTagClicked',
+      'click #tags-tag-cloud li p': 'tagsTagClicked'
     },
     initialize: function() {
       this.user_tag_el = $('#user-tag-cloud');
       this.tags_tag_el = $('#tags-tag-cloud');
-      this.template = _.template($("#linked-data-list-template").html());
+      this.template = _.template($('#linked-data-list-template').html());
       this.render();
     },
     userTagClicked: function(e) {
@@ -798,13 +822,13 @@
   });
 
   var GalleryView = Backbone.View.extend({
-    el: $("#gallery"),
+    el: $('#gallery'),
     events: {
-      "click img":"onImgClick"
+      'click img': 'onImgClick'
     },
     initialize: function() {
-      this.template = _.template($("#gallery-item-template").html());
-      this.cover_template = _.template($("#ocd-item-cover-template").html());
+      this.template = _.template($('#gallery-item-template').html());
+      this.cover_template = _.template($('#ocd-item-cover-template').html());
       this.render();
     },
     render: function() {
@@ -821,21 +845,32 @@
             tags.push(model.get('how').tags);
           }
         });
+
         tags = _.flatten(tags);
-        $(this.el).append(this.template({'how':{'tags': tags,
-                                                'src':model.get('how').src},
-                                         'who':model.get('who')}));
+
+        $(this.el).append(this.template({
+          'how': {
+            'tags': tags,
+            'src': model.get('how').src
+          },
+          'who':model.get('who')
+        }));
+
       }, this);
+
       $('html, body').animate({
-        scrollTop: $("#gallery").offset().top
+        scrollTop: $('#gallery').offset().top
       }, 1000);
+
     },
     setUp: function() {
-      $("#tag-list").collapse('hide');
-      $("#user-list").collapse('hide');
+      $('#tag-list').collapse('hide');
+      $('#user-list').collapse('hide');
+
       if(!$(this.el).is(':visible')) {
         $(this.el).show();
       }
+
       $(this.el).html('');
 
     },
@@ -1018,4 +1053,7 @@
     }
   });
 
-})(swtr);
+  window.onload = function() {
+    swtr.init();
+  };
+})(window);
