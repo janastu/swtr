@@ -233,7 +233,7 @@
         console.log(data + ' from postMessage');
         data = JSON.parse(data);
 
-        if(data['event'] === 'annotationUpdated') {
+        if(data['event'] === 'annotationCreated') {
           self.updateTextAnnos(data);
         }
         if(data['event'] === 'imgClicked') {
@@ -371,6 +371,22 @@
         this.$txt.attr('src', txt_anno_endpoint);
         this.$txt.attr('width', box_width);
       }
+
+      /* Load swts of text annotations */
+
+      swtr.sweets.getAll({where: url,
+                          success: function(data) {
+                            swtr.sweets.add(data);
+                            var iframe = $('body').find('iframe');
+                            $(iframe).on("load", function() {
+                              iframe[0].contentWindow.postMessage(JSON.stringify(data), '*');
+                              console.log("posted");
+                            });
+                          },
+                          error: function(data, response) {
+                            console.log("error while getting swts of txt anno" +
+                                        data + ", " + response);
+                          }});
 
       this.helpview.step(14);
     },
@@ -639,7 +655,7 @@
                break;
       case 13: text = 'This does not seem to be a URL. Please enter a valid URL.';
                break;
-      case 14: text = 'Drag and select text to annotate the page';
+      case 14: text = 'Select text to annotate the page or browse other annotations.';
               break;
       }
       this.$text_el.html(text);
