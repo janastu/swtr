@@ -363,31 +363,34 @@
 
       // the current url is already loaded..
       if(this.$txt.attr('src') !== url) {
-        var txt_anno_endpoint = '/webpage?where=' + url;
+        var txt_anno_endpoint = swtr.endpoints.annotate_webpage +
+          '?where=' + url;
 
         var box_width = this.$txt_wrapper.css('width').split('px')[0];
         box_width = box_width - 30;
 
         this.$txt.attr('src', txt_anno_endpoint);
         this.$txt.attr('width', box_width);
+        var self = this;
+
+        // Load txt anno swts of current url
+        swtr.sweets.getAll({
+          where: url,
+          what: 'txt-anno',
+          success: function(data) {
+            swtr.sweets.add(data);
+            self.$txt.on('load', function() {
+              console.log(this);
+              this.contentWindow.postMessage(JSON.stringify(data), '*');
+              console.log("posted");
+            });
+          },
+          error: function(data, response) {
+            console.log("error while getting swts of txt anno" +
+            data + ", " + response);
+          }
+        });
       }
-
-      /* Load swts of text annotations */
-
-      swtr.sweets.getAll({where: url,
-                          success: function(data) {
-                            swtr.sweets.add(data);
-                            var iframe = $('body').find('iframe');
-                            $(iframe).on("load", function() {
-                              iframe[0].contentWindow.postMessage(JSON.stringify(data), '*');
-                              console.log("posted");
-                            });
-                          },
-                          error: function(data, response) {
-                            console.log("error while getting swts of txt anno" +
-                                        data + ", " + response);
-                          }});
-
       this.helpview.step(14);
     },
     updateTextAnnos: function(payload) {
