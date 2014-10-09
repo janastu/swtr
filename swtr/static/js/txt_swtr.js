@@ -4,6 +4,7 @@
   swtr.init = function() {
     this.annotator = new Annotator(document.body);
     this.annotator.addPlugin("Tags");
+    this.annotator.addPlugin("Permissions", {'admin': ['__nobody__'] });
     //this.annotator.addPlugin("AnnotoriousImagePlugin");
 
     this.annotator.subscribe("annotationCreated", swtr.tellParentCreate);
@@ -26,6 +27,10 @@
       if(annos && annos.length) {
         annos.forEach(function(anno) {
           //console.log(anno);
+          anno.how.permissions = {'read': [],
+                                  'update': ['__nobody__'],
+                                  'admin': ['__nobody__'],
+                                  'delete': ['__nobody__']};
           swtr.annotator.createAnnotation(anno.how);
           swtr.annotator.setupAnnotation(anno.how);
         });
