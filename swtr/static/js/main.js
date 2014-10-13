@@ -914,13 +914,13 @@
     routes: {
       'home': 'home',
       'linked-data': 'linkedData',
-      'play': 'play',
-      'search': 'search'
+      'play': 'play'
+      // 'search': 'search'
     },
     components: {
       'linked-data': LDView,
-      'play': PlayAreaView,
-      'search': SearchView
+      'play': PlayAreaView
+      // 'search': SearchView
     },
     home: function() {
       this.hideAll();
