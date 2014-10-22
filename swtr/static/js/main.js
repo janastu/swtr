@@ -899,11 +899,13 @@
           return k;
         }
       });
+      anno.addPlugin("CustomFields", {});
       anno.makeAnnotatable($(e.currentTarget)[0]);
+      console.log(swts);
       _.each(swts, function(swt) {
-        var anno_obj = swt.get('how');
-        anno_obj['editable'] = false;
-        anno.addAnnotation(anno_obj);
+        var anno_obj = swt.toJSON();
+        anno_obj.how['editable'] = false;
+        anno.addAnnotation(anno_obj.how);
       });
       anno.hideSelectionWidget();
       this.$(".annotorious-item-unfocus").css("opacity", '0.6');
