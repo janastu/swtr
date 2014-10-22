@@ -845,6 +845,7 @@
     events: {
       'click img': 'onImgClick'
     },
+    setCustomField: false,
     initialize: function() {
       this.template = _.template($('#gallery-item-template').html());
       this.cover_template = _.template($('#ocd-item-cover-template').html());
@@ -899,7 +900,10 @@
           return k;
         }
       });
-      anno.addPlugin("CustomFields", {});
+      if(!this.setCustomField) {
+        anno.addPlugin("CustomFields", {});
+        this.setCustomField = true;
+      }
       anno.makeAnnotatable($(e.currentTarget)[0]);
       console.log(swts);
       _.each(swts, function(swt) {
