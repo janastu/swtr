@@ -57,7 +57,7 @@
         });
       }
 
-      if(this.params) {
+      if(_.isEmpty(this.params)) {
         this.loadState(this.params);
       }
     },
