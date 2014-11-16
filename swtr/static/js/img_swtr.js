@@ -164,12 +164,12 @@
     },
     render: function(model) {
       var swt = model.toJSON();
-      console.log('rendering swt as anno', swt);
+      //console.log('rendering swt as anno', swt);
       //anno.removeAnnotation(swt.how);
       swt.how['editable'] = false;
       //swt.how.text = this.createPopupText(swt.how);
       //swt.how.text += '\n - by ' + swt.who;
-      console.log('adding anno to torious', swt.how);
+      //console.log('adding anno to torious', swt.how);
       anno.addAnnotation(swt.how);
     },
     renderWith: function() {

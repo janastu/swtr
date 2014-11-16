@@ -2,7 +2,6 @@
 
   window.swtr = window.swtr || {};
 
-
   // init the app..
   swtr.init = function() {
     this.sweets = new swtr.ImgAnnoSwts();
@@ -22,6 +21,8 @@
       crossDomain: true
     });
     this.handleOAuth();
+    // handle if application state was saved previously..
+    this.appView.handleState();
   };
 
   swtr.handleOAuth = function() {
@@ -161,8 +162,7 @@
       // initialize components
       this.source = 'none';
       //this.helpview = new HelpView();
-
-      // cache jquery selected elements which are used frequently
+      // cache jquery selected DOM elements which are used frequently
       this.$overlay = $('#app-overlay');
 
       //this.helpview.step(1);
@@ -176,10 +176,59 @@
     },
     signIn: function(event) {
       event.preventDefault();
+      // if user is Guest.. sign them in..
       if(swtr.who === 'Guest') {
+        // check if user has loaded any URL to annotate
+        if(swtr.app_router.mounted_component.loaded_url) {
+          this.saveState();
+        }
+        debugger;
+        console.log('oauth.authorize');
         this.oauth.authorize();
       }
       return false;
+    },
+    // saves the state of the application in localStorage
+    saveState: function() {
+      // get the current state
+      var current_state = {};
+      var unpublished_annotations = swtr.sweets.getNew().map(function(swt) {
+        return {'what': swt.get('what'), 'how': swt.get('how')};
+      });
+      // the loaded URL
+      current_state['loaded_url'] =
+        swtr.app_router.mounted_component.loaded_url;
+      // unsaved annotations that are there
+      current_state['unpublished_annotations'] = unpublished_annotations;
+      // checkbox to show annotation boxes
+      current_state['show_annotated_areas'] =
+        $('#toggle-anno-areas').is(':checked');
+      // timestamp
+      current_state['timestamp'] = Date.now();
+
+      console.log('current state', current_state);
+      console.log('saving state..');
+      if(window.localStorage) {
+        localStorage.setItem('swtr-state', JSON.stringify(current_state));
+      }
+      else {
+        //TODO: handle fallback for localStorage
+      }
+    },
+    // handle state when the application is loaded; check if the application
+    // has previous state saved in the browser..
+    handleState: function() {
+      var saved_state = JSON.parse(localStorage.getItem('swtr-state'));
+      if(!saved_state) {
+        return;
+      }
+      console.log('found previous state');
+      console.log('swtr-state', saved_state);
+
+      var type = (saved_state.what === 'img-anno') ? 'image' : 'text';
+      console.log('type', type);
+      swtr.app_router.loadPlayArea(saved_state.loaded_url, type);
+      localStorage.removeItem('swtr-state');
     },
     userLoggedIn: function(username) {
       swtr.who = username;
@@ -189,480 +238,6 @@
     userLoggedOut: function() {
       swtr.who = 'Guest';
       $('#signinview').html('Logged out');
-    }
-  });
-
-  var PlayAreaView = Backbone.View.extend({
-    id: 'play-page-container',
-    events: {
-      'click #user-input-submit': 'submitUserInput',
-      'click #sweet': 'sweet'
-    },
-    initialize: function() {
-      var self = this;
-      this.template = _.template($('#play-page-template').html());
-      this.helpview = new HelpView();
-      // create a cache to store the text annos coming from the child iframe
-      this.txt_anno_swts = new swtr.ImgAnnoSwts();
-
-      this.render();
-      this.sweetsview = new SweetsView({
-        el: $('#sweet-list-wrapper'),
-        collection: swtr.sweets,
-        helpview: this.helpview
-      });
-      this.$img = $('#annotatable-img');
-      this.$img_wrapper = $('#img-annotation-wrapper');
-      this.$txt_wrapper = $('#txt-anno-wrapper');
-      this.$txt = $('#txt-anno-frame');
-
-      //this.sweetsview.on('postedSweets', this.rerenderAnnos);
-      this.helpview.step(1);
-
-      var eventMethod = window.addEventListener ? 'addEventListener' :
-        'attachEvent';
-      var messageEvent = eventMethod == 'attachEvent' ? 'onmessage' :
-        'message';
-      var eventer = window[eventMethod];
-
-      // Listen to message from child window
-      eventer(messageEvent, function(e) {
-        var key = e.message ? 'message' : 'data';
-        var data = e[key];
-        //run function//
-        console.log(data + ' from postMessage');
-        data = JSON.parse(data);
-
-        if(data['event'] === 'annotationCreated') {
-          self.updateTextAnnos(data);
-        }
-        if(data['event'] === 'imgClicked') {
-          self.imgClickedFrmTxtAnno(data);
-        }
-      },false);
-
-    },
-    render: function() {
-      this.$el.html(this.template());
-      $('#play-page').html(this.$el);
-    },
-    submitUserInput: function(event) {
-      event.preventDefault();
-      var input = $('#user-input').val();
-      this.loadURL(input);
-    },
-    getSweets: function() {
-      //console.log('getSweets');
-      // check if text anno swts exist..
-      if(this.txt_anno_swts.length) {
-        this.txt_anno_swts.each(function(swt) {
-          //console.log('swt in txt anno swts', swt);
-          swtr.sweets.add(swt);
-        });
-      }
-
-      // get image anno swts from annotorious
-      var annos = _.filter(anno.getAnnotations(), function(anno) {
-        return (!_.has(anno, 'editable') || anno.editable === true);
-      });
-      //console.log(annos);
-
-      _.each(annos, function(anno) {
-        swtr.sweets.add({
-          who: swtr.who,
-          where: anno.src,
-          // remove the text field; we don't want to store that in the sweets
-          how: _.omit(anno, 'text')
-        });
-      });
-    },
-    showSweets: function() {
-      //console.log('showSweets');
-      this.sweetsview.render();
-    },
-    sweet: function(event) {
-      event.preventDefault();
-      console.log('sweeting');
-      this.getSweets();
-      this.showSweets();
-      return false;
-    },
-    // function to update the urls in the UI if an image is loaded internally
-    // and not from user UI.
-    updateURLs: function(url) {
-      $('#user-input').val(url);
-    },
-    // load a URL for annotation (can be of image or html resource for now)
-    loadURL: function(url, type) {
-      //console.log('loadURL()');
-      if(!url || !url.match(/http/)) {
-        this.helpview.step(13);
-        return false;
-      }
-      // if type is given explicitly; we load it as such.
-      if(type === 'image') {
-        this.initImageAnno(url);
-        this.updateURLs(url);
-        return false;
-      }
-      // else try to find what resource is the URL..
-      // if url has an image extension then load the image annotation
-      if(url.match(/.jpg|.jpeg|.png|.gif|.bmp|.svg/)) {
-        this.initImageAnno(url);
-        return false;
-      }
-      // else check with our /media-type endpoint to see what type of resource
-      // it is
-      else {
-        this.helpview.step(12);
-        swtr.appView.$overlay.show();
-        var self = this;
-        $.ajax({
-          type: 'GET',
-          url: '/media-type',
-          data: {where: url},
-          success: function(response) {
-            //console.log(response);
-            swtr.appView.$overlay.hide();
-            if(response.type === 'image') {
-              self.initImageAnno(url);
-            }
-            else {
-              //window.location.href = '/annotate?where=' + url;
-              self.initTextAnno(url);
-            }
-          },
-          error: function(error) {
-            console.log('error');
-            swtr.appView.$overlay.hide();
-            self.helpview.step(13);
-          }
-        });
-      }
-    },
-    initImageAnno: function(url) {
-      this.$txt_wrapper.hide();
-      this.$img_wrapper.show();
-
-      if(swtr.imgAnnoView) {
-        swtr.imgAnnoView.setImage(url);
-      }
-      else {
-        swtr.imgAnnoView = new swtr.ImgAnnoView({
-          collection: swtr.sweets,
-          img: this.$img[0],
-          $img: this.$img,
-          url: url,
-          helpview: this.helpview
-        });
-      }
-    },
-    initTextAnno: function(url) {
-      this.$img_wrapper.hide();
-      this.$txt_wrapper.show();
-
-      // the current url is already loaded..
-      if(this.$txt.attr('src') !== url) {
-        var txt_anno_endpoint = swtr.endpoints.annotate_webpage +
-          '?where=' + url;
-
-        var box_width = this.$txt_wrapper.css('width').split('px')[0];
-        box_width = box_width - 30;
-
-        this.$txt.attr('src', txt_anno_endpoint);
-        this.$txt.attr('width', box_width);
-        var self = this;
-
-        // Load txt anno swts of current url
-        swtr.sweets.getAll({
-          where: url,
-          what: 'txt-anno',
-          success: function(data) {
-            swtr.sweets.add(data);
-            self.$txt.on('load', function() {
-              console.log(this);
-              this.contentWindow.postMessage(JSON.stringify(data), '*');
-              console.log("posted");
-            });
-          },
-          error: function(data, response) {
-            console.log("error while getting swts of txt anno" +
-            data + ", " + response);
-          }
-        });
-      }
-      this.helpview.step(14);
-    },
-    updateTextAnnos: function(payload) {
-      // Create a object of swt with required values.
-      var annotation = payload.data;
-      var swt = {};
-      swt.how = annotation;
-      swt.what = 'txt-anno';
-      swt.who = swtr.who;
-      swt.where = this.$txt.attr('src').split('=')[1];
-
-      // add the swt to the cache
-      this.txt_anno_swts.add(swt);
-      this.helpview.step(3);
-      $('#sweet').show();
-    },
-    imgClickedFrmTxtAnno: function(payload) {
-      var url = payload.data.url;
-      this.loadURL(url);
-    },
-    destroy: function() {
-      this.helpview.remove();
-      this.remove();
-    }
-  });
-
-  var SearchView = Backbone.View.extend({
-    id: 'search-page-container',
-    events: {
-      'click #search-user-input-submit': 'userInputSubmit'
-    },
-    initialize: function() {
-      this.template = _.template($('#search-page-template').html());
-      this.helpview = new HelpView();
-      this.render();
-      this.helpview.step(11);
-    },
-    render: function() {
-      this.$el.html(this.template());
-      $('#search-page').html(this.$el);
-    },
-    userInputSubmit: function(event) {
-      event.preventDefault();
-      var input = $('#search-user-input').val();
-      this.loadSearch(input);
-      return false;
-    },
-    loadSearch: function(input) {
-      var self = this;
-      this.$el.append('<div id="ocd-view"></div>');
-      $('#ocd-view').html('<h4 style="text-align: center;">Loading..</h4>');
-      $.ajax({
-        type: 'GET',
-        url: '/search/ocd',
-        data: {query: input},
-        success: function(data) {
-          self.ocd_view = new OCDView({
-            el: $('#ocd-view'),
-            query: input,
-            data: data,
-            model: data.hits.hits
-          });
-        }
-      });
-    },
-    destroy: function() {
-      this.helpview.remove();
-      this.remove();
-    }
-  });
-
-  var OCDView = Backbone.View.extend({
-    el: $('#ocd-view'),
-    events: {
-      'click .ocd-item a': 'onImgClick',
-      'click .ocd-item-cover .close': 'onCoverCloseClick',
-      'click .ocd-item-mark': 'onMarkClick',
-      'click .pager li': 'onPagerClick'
-    },
-    initialize: function(opts) {
-      this.data = opts.data || {};
-      this.query = opts.query || '';
-      this.size = 9; // num of items per page
-      this.page = 0;
-      this.item_template = _.template($('#ocd-item-template').html());
-      this.base_template = _.template($('#ocd-view-base-template').html());
-      this.cover_template = _.template($('#ocd-item-cover-template').html());
-      this.render();
-    },
-    render: function() {
-      var $row_el;
-      this.$el.html('');
-      if(!this.model.length) {
-        this.$el.html('No results could be found from your query.');
-        return;
-      }
-      this.$el.html(this.base_template());
-      var $el = $('#ocd-results');
-      _.each(this.model, function(item, idx) {
-        // put every 3 items in a row
-        if(idx % 3 === 0) {
-          $row_el = $('<div class="row"></div>');
-          $el.append($row_el);
-        }
-        $row_el.append(this.item_template({
-          title: item._source.title,
-          media_url: item._source.media_urls[0].url,
-          authors: item._source.authors,
-          description: item._source.description
-        }));
-      }, this);
-      this.resolveOCDURLs();
-      this.appendTotal();
-    },
-    appendTotal: function() {
-      $('#ocd-total-results').html(this.data.hits.total + ' results found.');
-    },
-    // resolve the OCD media URLs
-    resolveOCDURLs: function() {
-      var self = this;
-      $('.ocd-item').each(function(idx, elem) {
-        var temp_arr = self.model[idx]._source.media_urls[0].url.split('/');
-        var media_hash = temp_arr[temp_arr.length - 1];
-        $.get('/resolve-ocd-media', {hash: media_hash}, function(resp) {
-          $(elem).find('img').attr('src', resp.url);
-        });
-      });
-    },
-    rerender: function(data) {
-      this.data = data;
-      this.model = data.hits.hits;
-      this.render();
-    },
-    onPagerClick: function(event) {
-      event.preventDefault();
-      var elem = $(event.currentTarget);
-      var self = this;
-      if(elem.hasClass('next')) {
-        if((this.page + 1) * this.size >= this.data.hits.total) {
-          console.log('no next page to go to');
-          return false;
-        }
-        console.log('clicked next');
-        this.search({
-          query: this.query,
-          from: (this.page + 1) * this.size
-        }, function(resp) {
-          console.log('reached next page');
-          self.page = self.page + 1;
-          self.rerender(resp);
-        });
-      }
-      else if (elem.hasClass('previous')) {
-        if(this.page <= 0) {
-          console.log('no prev page to go to');
-          return false;
-        }
-        console.log('clicked prev');
-        this.search({
-          query: this.query,
-          from: (this.page - 1) * this.size
-        }, function(resp) {
-          console.log('reached prev page');
-          self.page = self.page - 1;
-          self.rerender(resp);
-        });
-      }
-      return false;
-    },
-    onImgClick: function(event) {
-      //console.log('onImgClick');
-      event.preventDefault();
-      // TODO: init the image anno
-      this.drawCoverOnImg(event);
-      //swtr.appView.loadURL(url, 'image');
-      return false;
-    },
-    drawCoverOnImg: function(event) {
-      //console.log('highlightImg');
-      var elem = $(event.currentTarget).parent().parent();
-      // if .ocd-item-cover exists return
-      if(elem.find('.ocd-item-cover').length) {
-        $(elem.find('.ocd-item-cover')[0]).slideDown();
-        return;
-      }
-      //console.log(elem);
-      elem.prepend(this.cover_template());
-      $(elem.find('.ocd-item-cover')[0]).slideDown();
-    },
-    onCoverCloseClick: function(event) {
-      var elem = $(event.currentTarget).parent();
-      elem.slideUp();
-    },
-    onMarkClick: function(event) {
-      var url = $(event.currentTarget).parent().parent().
-        find('img').attr('src');
-      //TODO: load the image in the play area/workbench
-      //console.log('load image anno', url);
-      swtr.app_router.loadPlayArea(url, 'image');
-    },
-    search: function(data, cb) {
-      swtr.appView.$overlay.show();
-      var self = this;
-      $.ajax({
-        type: 'GET',
-        url: '/search/ocd',
-        data: data,
-        success: function(resp) {
-          swtr.appView.$overlay.hide();
-          cb(resp);
-        }
-      });
-    }
-  });
-
-  var HelpView = Backbone.View.extend({
-    id: 'helpview-wrapper',
-    events: {
-      'click .close': 'clickedClose'
-    },
-    initialize: function() {
-      this.template = _.template($('#helpview-template').html());
-      this.render();
-      this.$text_el = $('#helpview-text');
-    },
-    render: function() {
-      $('#helpview-container').html(this.$el);
-      this.$el.html(this.template({}));
-    },
-    clickedClose: function(event) {
-      this.remove();
-    },
-    //TODO: move from number based steps to something else. number based steps
-    //implicitly imply sequential processing..which does not happen in this
-    //case..
-    //following helps can be async..
-    step: function(n) {
-      var text = '';
-      switch (n) {
-      case 0 : text = 'Getting annotations..';
-               break;
-      case 1: text = 'Enter URL of an image or web page below, and start annotating!';
-              break;
-      case 2: text = 'Annotate the image, or see other annotations';
-              break;
-      case 3: text = 'Now you can publish this annotation, or add more annotations';
-              break;
-      case 4: text = 'Click Sweet button to publish these annotations to the Sweet Store';
-              break;
-      case 5: text = 'Publishing your sweets';
-              break;
-      case 6: text = 'Sweets successfully posted';
-              break;
-      case 7: text = 'Fetching your image..';
-              break;
-      case 8: text = 'Oops! Seems like the image URL is wrong! Or we couldn\'t fetch the image.';
-              break;
-      case 9: text = 'You have to be <i>signed in</i> to sweet store to post sweets';
-              break;
-      case 10: text = 'Oops! Something went wrong. We couldn\'t publish the sweets. Try again.'
-               break;
-      case 11: text = 'Search in <a href="http://www.opencultuurdata.nl/">Open Cuultur Data API</a>';
-               break;
-      case 12: text = 'Analyzing the resource type..';
-               break;
-      case 13: text = 'This does not seem to be a URL. Please enter a valid URL.';
-               break;
-      case 14: text = 'Select text to annotate the page or browse other annotations.';
-              break;
-      }
-      this.$text_el.html(text);
-      $(window).scrollTop(0, 0);
     }
   });
 
@@ -679,7 +254,6 @@
     }
   });
 
-
   // utilities and helper functions to go here
   swtr.utils = {
     linkify: function(link) {
@@ -691,230 +265,6 @@
       }
     }
   };
-  //swtr.AppView = AppView;
-  var LDSwts = Backbone.Collection.extend({
-    getAll: function(options) {
-      //get all sweets of ocd-anno type
-      // error checking
-      if(!options.what) {
-        throw Error('"what" option must be passed to get sweets of a URI');
-        return false;
-      }
-      // setting up params
-      var what = options.what;
-      url = swtr.swtstoreURL() + swtr.endpoints.get + '?what=' +
-        encodeURIComponent(what) + '&access_token=' + swtr.access_token;
-      // get them!
-      this.sync('read', this, {
-        url: url,
-        success: function() {
-          if(typeof options.success === 'function') {
-            options.success.apply(this, arguments);
-          }
-        },
-        error: function() {
-          if(typeof options.error === 'function') {
-            options.error.apply(this, arguments);
-          }
-        }
-      });
-    }
-  });
-
-  var LDView = Backbone.View.extend({
-    id: 'linked-data-container',
-    initialize: function() {
-      var self = this;
-      if(!swtr.LDs) {
-        swtr.LDs = new LDSwts();
-      }
-      if(!swtr.LDs.length) {
-        console.log(swtr.LDs);
-        this.loader_template = _.template($('#loader-template').html());
-        $('#linked-data-page').prepend(this.loader_template());
-        swtr.LDs.getAll({
-          what: 'img-anno',
-          success: function(data) {
-            swtr.LDs.add(data);
-            if(!swtr.tagCloudView) {
-              $('#spinner').remove();
-              swtr.tagCloudView = new TagCloudView({collection: swtr.LDs});
-            }
-          }
-        });
-      }
-    },
-    destroy: function() {
-      this.cleanUp();
-      this.remove();
-    },
-    cleanUp: function() {
-      if(!$('#tag-cloud').is(':visible')) {
-        $('#gallery').hide();
-        $('#tag-cloud').show();
-      }
-    }
-  });
-
-  var TagCloudView = Backbone.View.extend({
-    el: $('#tag-cloud'),
-    events: {
-      'click #user-tag-cloud li p': 'userTagClicked',
-      'click #tags-tag-cloud li p': 'tagsTagClicked'
-    },
-    initialize: function() {
-      this.user_tag_el = $('#user-tag-cloud');
-      this.tags_tag_el = $('#tags-tag-cloud');
-      this.template = _.template($('#linked-data-list-template').html());
-      this.render();
-    },
-    userTagClicked: function(e) {
-      anno.reset();
-      var user = $(e.currentTarget).text();
-      var swts = swtr.LDs.filter(function(swt) {
-        if(swt.get('who') == user) {
-          return swt;
-        }
-      });
-      swts = _.uniq(swts, function(swt) {
-        return swt.get('where');
-      });
-      this.setGalleryView(swts);
-      // $(this.el).hide();
-    },
-    tagsTagClicked: function(e) {
-      anno.reset();
-      var tag = $(e.currentTarget).text();
-      var swts = swtr.LDs.filter(function(swt) {
-        if(swt.get('how').tags){
-          if(_.contains(swt.get('how').tags, tag)) {
-              return swt;
-            }
-        }
-      });
-      swts = _.uniq(swts, function(swt) {
-        return swt.get('where');
-      });
-
-      // this.setGalleryView(_.uniq(swts, 'where'));
-      this.setGalleryView(swts);
-      // $(this.el).hide();
-    },
-    setGalleryView: function(swts) {
-      if(this.galleryView) {
-        //set the collection of galleryView to new set of swts to be displayed.
-        this.galleryView.collection = swts;
-        this.galleryView.render();
-      }
-      else {
-        this.galleryView = new GalleryView({collection: swts});
-      }
-    },
-    render: function() {
-      $(this.el).show();
-      this.renderUserTagCloud();
-      this.renderTagsTagCloud();
-    },
-    renderUserTagCloud: function() {
-      // var words = _.uniq(swtr.LDs.pluck('who'));
-      var weights = swtr.LDs.countBy('who');
-      _.each(weights, function(weight, who) {
-        $(this.user_tag_el).append(this.template({weight: weight, who: who}));
-      }, this);
-    },
-    renderTagsTagCloud: function() {
-      var sweetsWithTags = swtr.LDs.filter(function(k) {
-        if(k.get('how').tags) {
-          return k;
-        }
-      });
-      var tags = [];
-      _.each(sweetsWithTags, function(sweet) {
-        tags.push(sweet.get('how').tags);
-      });
-      tags = _.countBy(_.flatten(tags));
-      _.each(tags, function(weight, who) {
-        $(this.tags_tag_el).append(this.template({weight: weight, who: who}));
-      }, this);
-
-    }
-  });
-
-  var GalleryView = Backbone.View.extend({
-    el: $('#gallery'),
-    events: {
-      'click img': 'onImgClick'
-    },
-    setCustomField: false,
-    initialize: function() {
-      this.template = _.template($('#gallery-item-template').html());
-      this.cover_template = _.template($('#ocd-item-cover-template').html());
-      this.render();
-    },
-    render: function() {
-      this.setUp();
-      _.each(this.collection, function(model) {
-        var models = swtr.LDs.filter(function(swt) {
-          if(swt.get('how').src == model.get('how').src) {
-            return model;
-          }
-        });
-        var tags = [];
-        _.each(models, function(model) {
-          if(model.get('how').tags) {
-            tags.push(model.get('how').tags);
-          }
-        });
-
-        tags = _.flatten(tags);
-
-        $(this.el).append(this.template({
-          'how': {
-            'tags': tags,
-            'src': model.get('how').src
-          },
-          'who':model.get('who')
-        }));
-
-      }, this);
-
-      $('html, body').animate({
-        scrollTop: $('#gallery').offset().top
-      }, 1000);
-
-    },
-    setUp: function() {
-      $('#tag-list').collapse('hide');
-      $('#user-list').collapse('hide');
-
-      if(!$(this.el).is(':visible')) {
-        $(this.el).show();
-      }
-
-      $(this.el).html('');
-
-    },
-    onImgClick: function(e){
-      var swts = swtr.LDs.filter(function(k) {
-        if(k.get('where') == $(e.currentTarget).attr('src')) {
-          return k;
-        }
-      });
-      if(!this.setCustomField) {
-        anno.addPlugin("CustomFields", {});
-        this.setCustomField = true;
-      }
-      anno.makeAnnotatable($(e.currentTarget)[0]);
-      console.log(swts);
-      _.each(swts, function(swt) {
-        var anno_obj = swt.toJSON();
-        anno_obj.how['editable'] = false;
-        anno.addAnnotation(anno_obj.how);
-      });
-      anno.hideSelectionWidget();
-      this.$(".annotorious-item-unfocus").css("opacity", '0.6');
-    }
-  });
 
   var AppRouter = Backbone.Router.extend({
     routes: {
@@ -924,9 +274,9 @@
       // 'search': 'search'
     },
     components: {
-      'linked-data': LDView,
-      'play': PlayAreaView
-      // 'search': SearchView
+      'linked-data': swtr.LDView,
+      'play': swtr.PlayAreaView
+      //'search': swtr.SearchView
     },
     home: function() {
       this.hideAll();
@@ -982,7 +332,8 @@
     }
   });
 
-  var FilterView = Backbone.View.extend({
+  // NOT used right now. DO NOT REMOVE. maybe needed later.
+  /*var FilterView = Backbone.View.extend({
     el: $('#filter-div'),
     events: {
       'click #filter-user-div input': 'filter',
@@ -1076,7 +427,9 @@
         });
       }
     }
-  });
+  });*/
+
+  swtr.SweetsView = SweetsView;
 
   window.onload = function() {
     swtr.init();

@@ -26,7 +26,7 @@
     // if scopes returns empty array - that means scopes was not provided in
     // correct format - i.e comma seperated values
     if(!this.scopes.length) {
-      throw new Error('scopes paramater must be a string of comma seperated scopes');
+      throw new Error('`scopes` paramater must be a string of comma seperated scopes');
       return;
     }
 
