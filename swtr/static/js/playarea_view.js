@@ -7,7 +7,9 @@
       'click #user-input-submit': 'submitUserInput',
       'click #sweet': 'sweet'
     },
-    initialize: function() {
+    initialize: function(args) {
+      this.params = args || {};
+      console.log('got params', this.params);
       var self = this;
       this.template = _.template($('#play-page-template').html());
       this.helpview = new swtr.HelpView();
@@ -50,6 +52,10 @@
         }
       },false);
 
+      // if params are passed..load the component to that state..
+      if(this.params.url) {
+        this.loadURL(decodeURIComponent(this.params.url), this.params.type);
+      }
     },
     render: function() {
       this.$el.html(this.template());
@@ -99,56 +105,66 @@
     // function to update the urls in the UI if an image is loaded internally
     // and not from user UI.
     updateURLs: function(url) {
-      $('#user-input').val(url);
+      if(!$('#user-input').val()) {
+        $('#user-input').val(url);
+      }
     },
     // load a URL for annotation (can be of image or html resource for now)
     loadURL: function(url, type) {
-      //console.log('loadURL()');
-      if(!url || !url.match(/http/)) {
+      console.log('loadURL(' + url + ',' + type + ')');
+      if(!url) {
         this.helpview.step(13);
         return false;
       }
+      if(!url.match(/http/)) {
+        url = 'http://' + url;
+      }
       this.loaded_url = url;
+
       // if type is given explicitly; we load it as such.
-      if(type === 'image') {
-        this.initImageAnno(url);
-        this.updateURLs(url);
-        return false;
+      if(type) {
+        if(type === 'image') {
+          this.initImageAnno(url);
+        }
+        else if(type === 'text') {
+          this.initTextAnno(url);
+        }
       }
       // else try to find what resource is the URL..
-      // if url has an image extension then load the image annotation
-      if(url.match(/.jpg|.jpeg|.png|.gif|.bmp|.svg/)) {
-        this.initImageAnno(url);
-        return false;
-      }
-      // else check with our /media-type endpoint to see what type of resource
-      // it is
       else {
-        this.helpview.step(12);
-        swtr.appView.$overlay.show();
-        var self = this;
-        $.ajax({
-          type: 'GET',
-          url: '/media-type',
-          data: {where: url},
-          success: function(response) {
-            //console.log(response);
-            swtr.appView.$overlay.hide();
-            if(response.type === 'image') {
-              self.initImageAnno(url);
+        // if url has an image extension then load the image annotation
+        if(url.match(/.jpg|.jpeg|.png|.gif|.bmp|.svg/)) {
+          this.initImageAnno(url);
+        }
+        // else check with our /media-type endpoint to see what type of resource
+        // it is
+        else {
+          this.helpview.step(12);
+          swtr.appView.$overlay.show();
+          var self = this;
+          $.ajax({
+            type: 'GET',
+            url: '/media-type',
+            data: {where: url},
+            success: function(response) {
+              //console.log(response);
+              swtr.appView.$overlay.hide();
+              if(response.type === 'image') {
+                self.initImageAnno(url);
+              }
+              else {
+                self.initTextAnno(url);
+              }
+            },
+            error: function(error) {
+              console.log('error');
+              swtr.appView.$overlay.hide();
+              self.helpview.step(13);
             }
-            else {
-              //window.location.href = '/annotate?where=' + url;
-              self.initTextAnno(url);
-            }
-          },
-          error: function(error) {
-            console.log('error');
-            swtr.appView.$overlay.hide();
-            self.helpview.step(13);
-          }
-        });
+          });
+        }
       }
+      this.updateURLs(url);
     },
     initImageAnno: function(url) {
       this.$txt_wrapper.hide();

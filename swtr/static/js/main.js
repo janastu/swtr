@@ -270,7 +270,9 @@
     routes: {
       'home': 'home',
       'linked-data': 'linkedData',
-      'play': 'play'
+      'linked-data?:params': 'linkedData',
+      'play': 'play',
+      'play?:params': 'play'
       // 'search': 'search'
     },
     components: {
@@ -280,32 +282,43 @@
     },
     home: function() {
       this.hideAll();
-      this.show('home-page');
+      this.show('home');
     },
-    linkedData: function() {
+    linkedData: function(params) {
+      console.log('linked-data params', params);
       this.hideAll();
-      this.show('linked-data-page');
+      this.show('linked-data', params);
     },
-    play: function() {
+    play: function(params) {
+      console.log('play params', params);
       this.hideAll();
-      this.show('play-page');
+      this.show('play', params);
     },
     search: function() {
       this.hideAll();
-      this.show('search-page');
+      this.show('search');
     },
     hideAll: function() {
       $('.page').hide();
     },
-    show: function(id) {
+    show: function(id, params) {
       if(this.mounted_component) {
         this.mounted_component.destroy();
       }
-      if(id !== 'home-page') {
-        var component = id.split('-page')[0];
-        this.mounted_component = new this.components[component];
+      if(params) {
+        var pairs = params.split('&');
+        params = {};
+        pairs.map(function(item) {
+          var pair = item.split('=');
+          params[pair[0]] = pair[1];
+        });
       }
-      $('#' + id).show();
+      //console.log('loading page ', id, 'with params', params);
+
+      if(id !== 'home') {
+        this.mounted_component = new this.components[id](params);
+      }
+      $('#' + id + '-page').show();
       this.highlight(id);
       //console.log('shown', id);
     },

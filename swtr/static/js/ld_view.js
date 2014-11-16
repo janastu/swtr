@@ -32,7 +32,8 @@
 
   var LDView = Backbone.View.extend({
     id: 'linked-data-container',
-    initialize: function() {
+    initialize: function(args) {
+      this.params = args || {};
       var self = this;
       if(!swtr.LDs) {
         swtr.LDs = new LDSwts();
@@ -45,12 +46,27 @@
           what: 'img-anno',
           success: function(data) {
             swtr.LDs.add(data);
+            // COMMENT: does it need to be swtr.tagCloudView? can't it be
+            // this.tagCloudView? does it have a reason to be in the global
+            // scope?
             if(!swtr.tagCloudView) {
               $('#spinner').remove();
               swtr.tagCloudView = new TagCloudView({collection: swtr.LDs});
             }
           }
         });
+      }
+
+      if(this.params) {
+        this.loadState(this.params);
+      }
+    },
+    loadState: function(params) {
+      if(params.user) {
+        swtr.tagCloudView.filterUser(params.user);
+      }
+      else if(params.tag) {
+        swtr.tagCloudView.filterTag(params.tag);
       }
     },
     destroy: function() {
@@ -80,6 +96,9 @@
     userTagClicked: function(e) {
       anno.reset();
       var user = $(e.currentTarget).text();
+      this.filterUser(user);
+    },
+    filterUser: function(user) {
       var swts = swtr.LDs.filter(function(swt) {
         if(swt.get('who') == user) {
           return swt;
@@ -94,6 +113,9 @@
     tagsTagClicked: function(e) {
       anno.reset();
       var tag = $(e.currentTarget).text();
+      this.filterTag(tag);
+    },
+    filterTag: function(tag) {
       var swts = swtr.LDs.filter(function(swt) {
         if(swt.get('how').tags){
           if(_.contains(swt.get('how').tags, tag)) {
