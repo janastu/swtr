@@ -38,7 +38,7 @@
       if(!swtr.LDs) {
         swtr.LDs = new LDSwts();
       }
-      if(!swtr.LDs.length) {
+      if(swtr.LDs.length == 0) {
         console.log(swtr.LDs);
         this.loader_template = _.template($('#loader-template').html());
         $('#linked-data-page').prepend(this.loader_template());
@@ -52,13 +52,13 @@
             if(!swtr.tagCloudView) {
               $('#spinner').remove();
               swtr.tagCloudView = new TagCloudView({collection: swtr.LDs});
+              if(!(_.isEmpty(self.params))) {
+                // If the params are not empty then load the state.
+                self.loadState(self.params);
+              }
             }
           }
         });
-      }
-
-      if(_.isEmpty(this.params)) {
-        this.loadState(this.params);
       }
     },
     loadState: function(params) {
