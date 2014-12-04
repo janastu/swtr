@@ -53,7 +53,7 @@
             // this.tagCloudView? does it have a reason to be in the global
             // scope?
             if(!swtr.tagCloudView) {
-              $('#spinner').remove();
+              $('#spinner').hide();
               swtr.tagCloudView = new TagCloudView({collection: swtr.LDs});
               if(!(_.isEmpty(self.params))) {
                 // If the params are not empty then load the state.
@@ -84,10 +84,12 @@
     },
     chooseContext: function(e) {
       if(_.contains(swtr.allowedContext, $(e.currentTarget).text().trim())) {
+        $("#spinner").show();
+        $("#no-view").hide();
         swtr.LDs.getAll({
           what: $(e.currentTarget).text().trim(),
           success: function(data) {
-            $("#no-view").hide();
+            $("#spinner").hide();
             swtr.LDs.reset();
             swtr.LDs.add(data);
           }
