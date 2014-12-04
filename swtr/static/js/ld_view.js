@@ -31,7 +31,10 @@
   });
 
   var LDView = Backbone.View.extend({
-    id: 'linked-data-container',
+    el: '#linked-data-page',
+    events: {
+      'click #context-menu>li': 'chooseContext'
+    },
     initialize: function(args) {
       this.params = args || {};
       var self = this;
@@ -60,6 +63,16 @@
           }
         });
       }
+      $.get(swtr.swtstoreURL() + swtr.endpoints.context, function(data) {
+        var template = _.template($("#context-menu-template").html());
+        data = JSON.parse(data);
+        _.each(data, function(datum) {
+          if(datum.name.startsWith('#')) {
+            return false;
+          }
+          $("#context-menu").append(template(datum));
+        });
+      });
     },
     loadState: function(params) {
       if(params.user) {
@@ -67,6 +80,25 @@
       }
       else if(params.tag) {
         swtr.tagCloudView.filterTag(params.tag);
+      }
+    },
+    chooseContext: function(e) {
+      if(_.contains(swtr.allowedContext, $(e.currentTarget).text().trim())) {
+        swtr.LDs.getAll({
+          what: $(e.currentTarget).text().trim(),
+          success: function(data) {
+            $("#no-view").hide();
+            swtr.LDs.reset();
+            swtr.LDs.add(data);
+          }
+        });
+      }
+      else {
+        $("#tag-cloud").hide();
+        if($("#no-view").is(':hidden')) {
+          $("#no-view").removeClass("hidden");
+        }
+        $("#no-view").show();
       }
     },
     destroy: function() {
@@ -92,6 +124,7 @@
       this.tags_tag_el = $('#tags-tag-cloud');
       this.template = _.template($('#linked-data-list-template').html());
       this.render();
+      this.listenTo(this.collection, "reset", this.render);
     },
     userTagClicked: function(e) {
       anno.reset();
