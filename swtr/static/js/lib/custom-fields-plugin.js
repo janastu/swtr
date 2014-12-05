@@ -6,6 +6,10 @@ annotorious.plugin.CustomFields = function(opt_config_options) {
     // add the our editor interface's template to the annotorious editor
     annotorious.editor.addField(editorTemplate);
 
+    annotorious.popup.addField(function(annotation) {
+      return (annotation.id) ? "<p>id:" + annotation.id + "</p>" : '';
+    });
+
     // next prepare the fields for the annotation popups..
     annotorious.popup.addField(function(annotation) {
       // HACK! to get around disabling annotorious' default text box in the

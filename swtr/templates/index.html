@@ -164,19 +164,19 @@
 
       <!-- linked data page -->
       <div id="linked-data-page" class="page">
-        <div class="btn-group well">
-          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-            Choose a context <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu" id="context-menu" role="menu">
-            <!-- <li><a href="#">img-anno</a></li> -->
-            <!-- <li><a href="#">txt-anno</a></li> -->
-          </ul>
-        </div>
-        <div class="hidden alert alert-danger" role="alert" id="no-view">
-          <h4>Oh Snap!</h4>
-          <p>The chosen context cannot be visualized at the moment. Try again later!</p>
-        </div>
+        <!-- <div class="btn-group well"> -->
+        <!--   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"> -->
+        <!--     Choose a context <span class="caret"></span> -->
+        <!--   </button> -->
+        <!--   <ul class="dropdown-menu" id="context-menu" role="menu"> -->
+        <!--     <\!-- <li><a href="#">img-anno</a></li> -\-> -->
+        <!--     <\!-- <li><a href="#">txt-anno</a></li> -\-> -->
+        <!--   </ul> -->
+        <!-- </div> -->
+        <!-- <div class="hidden alert alert-danger" role="alert" id="no-view"> -->
+        <!--   <h4>Oh Snap!</h4> -->
+        <!--   <p>The chosen context cannot be visualized at the moment. Try again later!</p> -->
+        <!-- </div> -->
         <div id="tag-cloud" class="row">
           <div class="panel-group" id="accordion">
             <div class="col-md-6">
@@ -300,6 +300,7 @@
     <script type="text/template" id="popup-template">
       <span class="annotorious-popup-text">
         <ul class="custom-style-popup">
+          <li class="custom-popup-line" ><span>id: </span><%= id %></li>
           <li class="custom-popup-line" ><span>Title: </span><%= Label %></li>
           <li class="custom-popup-line"><span>Comment: </span><%= Comment %></li>
           <li class="custom-popup-line"><span>Tags: </span><%= Tags %></li>

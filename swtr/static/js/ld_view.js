@@ -42,7 +42,6 @@
         swtr.LDs = new LDSwts();
       }
       if(swtr.LDs.length == 0) {
-        console.log(swtr.LDs);
         this.loader_template = _.template($('#loader-template').html());
         $('#linked-data-page').prepend(this.loader_template());
         swtr.LDs.getAll({
@@ -63,16 +62,16 @@
           }
         });
       }
-      $.get(swtr.swtstoreURL() + swtr.endpoints.context, function(data) {
-        var template = _.template($("#context-menu-template").html());
-        data = JSON.parse(data);
-        _.each(data, function(datum) {
-          if(datum.name.startsWith('#')) {
-            return false;
-          }
-          $("#context-menu").append(template(datum));
-        });
-      });
+      // $.get(swtr.swtstoreURL() + swtr.endpoints.context, function(data) {
+      //   var template = _.template($("#context-menu-template").html());
+      //   data = JSON.parse(data);
+      //   _.each(data, function(datum) {
+      //     if(datum.name.startsWith('#')) {
+      //       return false;
+      //     }
+      //     $("#context-menu").append(template(datum));
+      //   });
+      // });
     },
     loadState: function(params) {
       if(params.user) {
@@ -271,10 +270,10 @@
         this.setCustomField = true;
       }
       anno.makeAnnotatable($(e.currentTarget)[0]);
-      console.log(swts);
       _.each(swts, function(swt) {
         var anno_obj = swt.toJSON();
         anno_obj.how['editable'] = false;
+        anno_obj.how['id'] = anno_obj.id;
         anno.addAnnotation(anno_obj.how);
       });
       anno.hideSelectionWidget();
