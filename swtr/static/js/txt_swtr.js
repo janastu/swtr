@@ -5,11 +5,13 @@
     this.annotator = new Annotator(document.body);
     this.annotator.addPlugin("Tags");
     this.annotator.addPlugin("Permissions", {'admin': ['__nobody__'] });
+    this.annotator.addPlugin("Unsupported");
+    //this.annotator.addPlugin("Markdown");
     //this.annotator.addPlugin("AnnotoriousImagePlugin");
 
     this.annotator.subscribe("annotationCreated", swtr.tellParentCreate);
     this.annotator.subscribe("annotationUpdated", swtr.tellParentUpdate);
-    console.log('inited annotator');
+    //console.log('inited annotator');
 
     var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
     var eventer = window[eventMethod];
@@ -20,7 +22,7 @@
       var key = e.message ? "message" : "data";
       var data = e[key];
       //run function//
-      console.log(data + " from iframe");
+      //console.log(data + " from iframe");
 
       var annos = JSON.parse(data);
 
@@ -46,7 +48,7 @@
       event: 'annotationCreated',
       data: annotation
     };
-    console.log('createParent');
+    //console.log('createParent');
     parent.postMessage(JSON.stringify(payload), '*');
   };
 
@@ -57,7 +59,7 @@
       event: 'annotationUpdated',
       data: annotation
     };
-    console.log('updateParent');
+    //console.log('updateParent');
     parent.postMessage(JSON.stringify(payload), '*');
   };
 
@@ -86,7 +88,7 @@
         }
       }*/
     });
-    console.log(images.length + ' images found in this page');
+    //console.log(images.length + ' images found in this page');
   };
 
   swtr.imgClicked = function(event) {
