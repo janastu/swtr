@@ -227,7 +227,7 @@
       swt.how = annotation;
       swt.what = 'txt-anno';
       swt.who = swtr.who;
-      swt.where = this.$txt.attr('src').split('=')[1];
+      swt.where = this.$txt.attr('src').split('where=')[1];
 
       // add the swt to the cache
       this.txt_anno_swts.add(swt);
