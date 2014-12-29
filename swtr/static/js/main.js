@@ -182,7 +182,6 @@
         if(swtr.app_router.mounted_component.loaded_url) {
           this.saveState();
         }
-        debugger;
         console.log('oauth.authorize');
         this.oauth.authorize();
       }
