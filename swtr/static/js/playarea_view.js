@@ -108,6 +108,7 @@
       if(!$('#user-input').val()) {
         $('#user-input').val(url);
       }
+      swtr.app_router.navigate('play?url=' + encodeURIComponent(url));
     },
     // load a URL for annotation (can be of image or html resource for now)
     loadURL: function(url, type) {

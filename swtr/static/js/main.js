@@ -272,7 +272,7 @@
       'linked-data': 'linkedData',
       'linked-data?:params': 'linkedData',
       'play': 'play',
-      'play?:params': 'play'
+      'play?*params': 'play'
       // 'search': 'search'
     },
     components: {
@@ -301,17 +301,39 @@
     hideAll: function() {
       $('.page').hide();
     },
+    // parse query string params..
+    // example: ?url=http://hampi.in&tags=Hampi,Dasara
+    parseQS: function(params) {
+      // split by '&' to get respective key values
+      var pairs = params.split('&');
+      params = {};
+      pairs.map(function(item) {
+        var pair = item.split('=');
+        // HACK: to get around the problem of Backbone decoding URLs before
+        // hand. As a result, a QS with '=' in its value gets wrongly split
+        // into multiple values
+        // example ?url=http://youtube.com/watch?v=xyz
+        // if length is greater than 2; then we know the value has '=' in it.
+        // we reconstruct them later.
+        // TODO: update to newer Backbone version; It has a lot of Router and
+        // Query String goodies. A lot of our headache will go away!
+        if(pair.length > 2) {
+          for(var i=2; i < pair.length; i++) {
+            pair[1] += '=' + pair[i];
+          }
+        }
+        params[pair[0]] = pair[1];
+      });
+
+      return params;
+    },
+    // show a page and its corresponding component..
     show: function(id, params) {
       if(this.mounted_component) {
         this.mounted_component.destroy();
       }
       if(params) {
-        var pairs = params.split('&');
-        params = {};
-        pairs.map(function(item) {
-          var pair = item.split('=');
-          params[pair[0]] = pair[1];
-        });
+        params = this.parseQS(params);
       }
       //console.log('loading page ', id, 'with params', params);
 
@@ -447,4 +469,5 @@
   window.onload = function() {
     swtr.init();
   };
+
 })(window);
