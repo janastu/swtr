@@ -55,10 +55,10 @@
       </div>
     </header>
 
-    <div id="swtr-root" class="container">
+    <div id="swtr-root" class="container-fluid">
       <div id="helpview-container"></div>
 
-      <div id="home-page" class="page">
+      <div id="home-page" class="page container">
         <div class="jumbotron">
           <!--h1> CLink: Community Linked Open Cultuur Data </h1-->
           <h1> swtr: the canonical swt web app!</h1>
@@ -259,14 +259,14 @@
     <!-- underscore.js templates -->
     <script type="text/template" id="helpview-template">
       <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-offset-2 col-md-8">
           <div id="helpview" class="bg-info">
             <span class="label label-primary">Tip</span>
             <span id="helpview-text"></span>
             <a class="close">&times;</a>
           </div>
         </div>
-        <div class="col-md-4"></div>
+        <div class="col-md-2"></div>
       </div>
     </script>
     <script type="text/template" id="sweet-template">
@@ -311,21 +311,22 @@
     <script type="text/template" id="play-page-template">
       <!-- second row: image URL input box and Load button -->
         <div class="row" id="user-input-row">
-          <div class="col-md-8">
+          <div class="col-md-offset-2 col-md-8">
             <form class="form-inline" role="form">
-              <div class="form-group col-md-11">
+              <div class="form-group col-md-10">
                 <label class="sr-only" for="user-input">Enter URL of an image or web page</label>
                 <input class="form-control" type="text"
                   placeholder="Enter URL of an image or web page" id="user-input">
               </div>
               <button type="submit" class="btn btn-info" id="user-input-submit">Load</button>
+              <button class="btn btn-primary" id="sweet">Publish</button>
             </form>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-2">
           </div>
         </div> <!-- end second row -->
         <!-- third row - control panel? -->
-        <div class="row" id="control-panel">
+        <!--div class="row" id="control-panel">
           <div class="col-md-8">
             <form class="form-inline" role="form">
               <div class="form-group">
@@ -334,7 +335,7 @@
             </form>
           </div>
           <div class="col-md-4"></div>
-        </div> <!-- end third row -- >
+        </div--> <!-- end third row -- >
         <!-- fourth row: the image annotation window -->
         <div class="row">
           <div id="img-annotation-wrapper" class="col-md-12 col-xs-12 col-lg-12 col-sm-12 well">
