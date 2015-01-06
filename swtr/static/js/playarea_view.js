@@ -50,7 +50,10 @@
         if(data['event'] === 'imgClicked') {
           self.imgClickedFrmTxtAnno(data);
         }
-      },false);
+        if(data['event'] === 'updatedURL') {
+          self.updateURLs(data.data.url);
+        }
+      }, false);
 
       // if params are passed..load the component to that state..
       if(this.params.url) {
@@ -105,9 +108,7 @@
     // function to update the urls in the UI if an image is loaded internally
     // and not from user UI.
     updateURLs: function(url) {
-      if(!$('#user-input').val()) {
-        $('#user-input').val(url);
-      }
+      $('#user-input').val(url);
       swtr.app_router.navigate('play?url=' + encodeURIComponent(url));
     },
     // load a URL for annotation (can be of image or html resource for now)
