@@ -104,7 +104,7 @@
     },
     destroy: function() {
       this.cleanUp();
-      this.remove();
+      //this.remove();
     },
     cleanUp: function() {
       if(!$('#tag-cloud').is(':visible')) {
