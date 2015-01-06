@@ -108,6 +108,7 @@
       if(!$('#user-input').val()) {
         $('#user-input').val(url);
       }
+      swtr.app_router.navigate('play?url=' + encodeURIComponent(url));
     },
     // load a URL for annotation (can be of image or html resource for now)
     loadURL: function(url, type) {
@@ -226,7 +227,7 @@
       swt.how = annotation;
       swt.what = 'txt-anno';
       swt.who = swtr.who;
-      swt.where = this.$txt.attr('src').split('=')[1];
+      swt.where = this.$txt.attr('src').split('where=')[1];
 
       // add the swt to the cache
       this.txt_anno_swts.add(swt);

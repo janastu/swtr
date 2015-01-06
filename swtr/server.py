@@ -160,20 +160,25 @@ def getMediaType():
 def annotate_webpage():
 
     where = request.args.get('where')
-    response = requests.get(where)
+    # add X-Forwarded-For header so content based on IPs can get served
+    # correctly
+    headers = {'X-Forwarded-For': request.remote_addr}
+    response = requests.get(where, headers=headers)
     content = response.text
+
     if imghdr.what('ignore', content) is None:
         root = lxml.html.parse(StringIO.StringIO(content)).getroot()
         root.make_links_absolute(where,
                                  resolve_base_href=True)
 
-        addScript("//code.jquery.com/jquery-1.11.0.min.js", root)
-        addScript(url_for('static', filename="js/annotator-full.min.js"),
+        addScript('//code.jquery.com/jquery-1.11.0.min.js', root)
+        #addScript(url_for('static', filename='js/lib/showdown.js'), root)
+        addScript(url_for('static', filename='js/annotator-full.min.js'),
                   root)
-        addScript(url_for('static',
-                  filename="js/annotorious.okfn.0.3.js"),
-                  root)
-        addScript(url_for('static', filename="js/txt_swtr.js"), root)
+        #addScript(url_for('static',
+        #          filename="js/annotorious.okfn.0.3.js"),
+        #          root)
+        addScript(url_for('static', filename='js/txt_swtr.js'), root)
         addCSS(url_for('static', filename='css/annotator.min.css'), root)
 
         response = make_response()
