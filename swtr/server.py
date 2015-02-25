@@ -2,18 +2,25 @@
 
 from flask import Flask, session, request, make_response, url_for, redirect,\
     render_template, jsonify, abort
+from logging import FileHandler
+from datetime import datetime, timedelta
 import lxml.html
 import requests
 import json
 import StringIO
 import imghdr
-from datetime import datetime, timedelta
-
 import config
+import logging
+import os
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = config.secret_key
+
+# Setup error logging for the application.
+fil = FileHandler(os.path.join(os.path.dirname(__file__), 'logs/', 'logme'), mode='a')
+fil.setLevel(logging.ERROR)
+app.logger.addHandler(fil)
 
 
 @app.route('/', methods=['GET'])
@@ -277,6 +284,7 @@ def addCSS(src, el):
     style.set("href", src)
     style.set("rel", "stylesheet")
     style.set("type", "text/css")
+
 
 
 # if the app is run directly from command-line
