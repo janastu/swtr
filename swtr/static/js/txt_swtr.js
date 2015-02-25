@@ -103,9 +103,20 @@
     return false;
   };
 
+  swtr.updateURL = function() {
+    var target_url = window.location.href.split('where=')[1];
+    //console.log('update URL', decodeURIComponent(target_url));
+    var payload = {
+      event: 'updatedURL',
+      data: {url: decodeURIComponent(target_url)}
+    };
+    parent.postMessage(JSON.stringify(payload), '*');
+  };
+
   window.onload = function() {
     swtr.init();
     swtr.prepareImgs();
+    swtr.updateURL();
   };
 
 })(window);

@@ -5,6 +5,7 @@ from flask import Flask, session, request, make_response, url_for, redirect,\
 from logging import FileHandler
 from datetime import datetime, timedelta
 import lxml.html
+from urllib import quote_plus
 import requests
 import json
 import StringIO
@@ -18,9 +19,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = config.secret_key
 
 # Setup error logging for the application.
-if not os.path.exists(os.path.join(os.path.dirname(__file__, 'logs/'))):
+if not os.path.exists(os.path.join(os.path.dirname(__file__),'logs/')):
     """ Create the directory if not exists"""
-    os.makedirs(os.path.join(os.path.dirname(__file__, 'logs/')), mode=0744)
+    os.makedirs(os.path.join(os.path.dirname(__file__),'logs/'), mode=0744)
 fil = FileHandler(os.path.join(os.path.dirname(__file__), 'logs/', 'logme'), mode='a')
 fil.setLevel(logging.ERROR)
 app.logger.addHandler(fil)
@@ -93,7 +94,7 @@ def authenticateWithOAuth():
         print auth_tok['error']
         return make_response(auth_tok['error'], 200)
 
-    # set sessions et al
+    # set sessions etc
     session['auth_tok'] = auth_tok
     session['auth_tok']['issued'] = datetime.utcnow()
     return redirect(url_for('index'))
@@ -170,17 +171,46 @@ def getMediaType():
 def annotate_webpage():
 
     where = request.args.get('where')
-    # add X-Forwarded-For header so content based on IPs can get served
+    # add extra headers and hope that content based on IPs can get served
     # correctly
-    headers = {'X-Forwarded-For': request.remote_addr}
+    # ex: google, youtube serving the right page from where the client
+    # requested and not where this code is hosted
+    headers = {
+        'X-Forwarded-For': request.remote_addr,
+        'Accept-Language': request.headers.get('Accept-Language')
+    }
+
     response = requests.get(where, headers=headers)
     content = response.text
 
     if imghdr.what('ignore', content) is None:
-        root = lxml.html.parse(StringIO.StringIO(content)).getroot()
+        response = make_response()
+        try:
+            root = lxml.html.parse(StringIO.StringIO(content)).getroot()
+        except Exception, e:
+            print e
+            response.data = 'The webpage you requested has some errors, so it\
+                          cannot be displayed. Sorry for the inconvenience.'
+            return response
+
         root.make_links_absolute(where,
                                  resolve_base_href=True)
 
+        # rewrite all the links of the page to redirect via this endpoint
+        # so that they become swtr browsable.
+        #root.rewrite_links(relocate_href, resolve_base_href=True)
+        for elem, attr, link, pos in root.iterlinks():
+            if elem.tag == 'a' and attr == 'href':
+                print link
+                # url encode the link; and encode it utf-8 anyway to handle
+                # links in other characters
+                target = quote_plus(link.encode('utf-8'))
+                new_link = '{0}/webpage?where={1}'.format(config.app_url,
+                                                          target)
+                print new_link
+                elem.set('href', new_link)
+
+        # inject the required JS + CSS for annotating the webpage
         addScript('//code.jquery.com/jquery-1.11.0.min.js', root)
         #addScript(url_for('static', filename='js/lib/showdown.js'), root)
         addScript(url_for('static', filename='js/annotator-full.min.js'),
@@ -191,7 +221,6 @@ def annotate_webpage():
         addScript(url_for('static', filename='js/txt_swtr.js'), root)
         addCSS(url_for('static', filename='css/annotator.min.css'), root)
 
-        response = make_response()
         response.data = lxml.html.tostring(root)
         return response
 
