@@ -89,7 +89,6 @@ def authenticateWithOAuth():
     auth_tok = json.loads(resp.text)
 
     if 'error' in auth_tok:
-        print auth_tok['error']
         return make_response(auth_tok['error'], 200)
 
     # set sessions etc
@@ -198,7 +197,6 @@ def annotate_webpage():
         #root.rewrite_links(relocate_href, resolve_base_href=True)
         for elem, attr, link, pos in root.iterlinks():
             if elem.tag == 'a' and attr == 'href':
-                print link
                 # url encode the link; and encode it utf-8 anyway to handle
                 # links in other characters
                 target = quote_plus(link.encode('utf-8'))
