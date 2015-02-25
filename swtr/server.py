@@ -18,6 +18,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = config.secret_key
 
 # Setup error logging for the application.
+if not os.path.exists(os.path.join(os.path.dirname(__file__, 'logs/'))):
+    """ Create the directory if not exists"""
+    os.makedirs(os.path.join(os.path.dirname(__file__, 'logs/')), mode=0744)
 fil = FileHandler(os.path.join(os.path.dirname(__file__), 'logs/', 'logme'), mode='a')
 fil.setLevel(logging.ERROR)
 app.logger.addHandler(fil)
