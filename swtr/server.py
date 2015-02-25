@@ -46,11 +46,11 @@ def index():
             check = datetime.utcnow() - auth_tok['issued']
 
             if check > timedelta(seconds=expires_in):
-                print 'access token expired'
                 # TODO: try to refresh the token before signing out the user
                 auth_tok = {'access_token': '', 'refresh_token': ''}
             else:
-                print 'access token did not expire'
+                """access token did not expire"""
+                pass
 
         # if issued key is not there, reset the session
         except KeyError:
@@ -87,8 +87,6 @@ def authenticateWithOAuth():
     oauth_token_x_endpoint = config.swtstoreURL + '/oauth/token'
     resp = requests.post(oauth_token_x_endpoint, data=payload)
     auth_tok = json.loads(resp.text)
-    print 'recvd auth token from swtstore'
-    print auth_tok
 
     if 'error' in auth_tok:
         print auth_tok['error']
@@ -188,7 +186,6 @@ def annotate_webpage():
         try:
             root = lxml.html.parse(StringIO.StringIO(content)).getroot()
         except Exception, e:
-            print e
             response.data = 'The webpage you requested has some errors, so it\
                           cannot be displayed. Sorry for the inconvenience.'
             return response
@@ -207,7 +204,6 @@ def annotate_webpage():
                 target = quote_plus(link.encode('utf-8'))
                 new_link = '{0}/webpage?where={1}'.format(config.app_url,
                                                           target)
-                print new_link
                 elem.set('href', new_link)
 
         # inject the required JS + CSS for annotating the webpage
