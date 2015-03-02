@@ -179,7 +179,7 @@
       // if user is Guest.. sign them in..
       if(swtr.who === 'Guest') {
         // check if user has loaded any URL to annotate
-        if(swtr.app_router.mounted_component.loaded_url) {
+        if(swtr.app_router.mounted_component !== undefined && swtr.app_router.mounted_component.loaded_url) {
           this.saveState();
         }
         console.log('oauth.authorize');
