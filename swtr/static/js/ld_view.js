@@ -114,6 +114,7 @@
     }
   });
 
+
   var TagCloudView = Backbone.View.extend({
     el: $('#tag-cloud'),
     events: {
@@ -209,6 +210,7 @@
     el: $('#gallery'),
     events: {
       'click img': 'onImgClick'
+
     },
     setCustomField: false,
     initialize: function() {
@@ -248,6 +250,8 @@
         scrollTop: $('#gallery').offset().top
       }, 1000);
 
+     $(' [data-toggle="tooltip"]').tooltip(); // calling bootstrap tooltip for annotate button in gallery-item
+
     },
     setUp: function() {
       $('#tag-list').collapse('hide');
@@ -279,7 +283,15 @@
       });
       anno.hideSelectionWidget();
       this.$(".annotorious-item-unfocus").css("opacity", '0.6');
+
+      //adds a list view of annotations 
+     /* $('#anno-list li').remove();
+      var template = _.template($('#anno-list-item').html());
+      _.each(swts, function(swt) {
+        $('#anno-list').append(template(swt.attributes));
+      });*/
     }
+
   });
 
   swtr.LDView = LDView;

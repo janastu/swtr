@@ -177,9 +177,9 @@
         <!--   <h4>Oh Snap!</h4> -->
         <!--   <p>The chosen context cannot be visualized at the moment. Try again later!</p> -->
         <!-- </div> -->
-        <div id="tag-cloud" class="row">
+      <div id="tag-cloud" class="col-md-3 col-lg-3 ">
           <div class="panel-group" id="accordion">
-            <div class="col-md-6">
+            <div class="">
               <div class="panel panel-default">
                 <div class="panel-heading">
                   <a data-toggle="collapse" data-parent="#accordion" href="#tag-list">
@@ -195,7 +195,7 @@
                 </div>
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="">
               <div class="panel panel-default">
                 <div class="panel-heading">
                   <a data-toggle="collapse" data-parent="#accordion" href="#user-list">
@@ -213,7 +213,11 @@
             </div>
           </div>
         </div>
-        <div id="gallery" class="row">
+        <div id="gallery" class="col-md-6 col-lg-6 ">
+        </div>
+        <div id="anno-list-view" class="col-md-3 col-lg-3">
+          <ul id="anno-list" class="list-group">
+          </ul>
         </div>
       </div>
 
@@ -275,6 +279,12 @@
         /<a href="<%= where %>"><%= where.substr(0, 30) + '...' %></a>
         <p><%= how %></p>
       </li>
+    </script>
+    <script type="text/template" id="anno-list-item">
+      <li class="list-group-item"><%= who %>: says <%= how.title%> <%=
+      how.text%> <%= how.comment %> and tagged <%= how.tags %> on <%= created %> about <a
+        href="<%= how.src %>">Source</a> </li>
+
     </script>
     <!--script type="text/template" id="dropdown-template">
         <div id="tags-input"></div>
@@ -431,16 +441,19 @@
       </ul>
     </script>
     <script type="text/template" id="gallery-item-template">
-      <div class="col-md-4 col-sm-6 ocd-item">
+      <div class="panel panel-default">
         <div class="pull-right" >
         <a href="/#play?url= <%= where %>"  class="btn"
-          role="button"><span class="glyphicon glyphicon-edit"></span> </a>
+          role="button" data-toggle="tooltip" data-placement="right"
+          title="Annotate" ><span class="glyphicon glyphicon-edit"></span> </a>
       </div>
-        <div class="media">
+        <div class="media panel-body">
           <img src="<%= how.src %>" class="responsive thumb-image">
         </div>
-        <div class="text">Author: <%= who %> </div>
-        <div class="text">Tags: <%= how.tags %> </div>
+        <div class="panel-footer">
+          <div class="text">Author: <%= who %> </div>
+          <div class="text">Tags: <%= how.tags %> </div>
+        </div>
       </div>
     </script>
     <script type="text/template" id="linked-data-list-template">
