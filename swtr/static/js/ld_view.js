@@ -238,7 +238,8 @@
             'tags': tags,
             'src': model.get('how').src
           },
-          'who':model.get('who')
+          'who':model.get('who'),
+          'where': model.get('where')
         }));
 
       }, this);
