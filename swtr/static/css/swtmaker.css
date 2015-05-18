@@ -89,7 +89,10 @@ body {
 .ocd-item .text{
   margin-top: 3px;
 }
-
+.annotate-btn {
+  position:relative;
+  top:-36px;
+}
 .thumb-image {
   background-position: center center;
   background-repeat: no-repeat;

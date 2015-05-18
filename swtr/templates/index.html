@@ -441,14 +441,16 @@
       </ul>
     </script>
     <script type="text/template" id="gallery-item-template">
-      <div class="panel panel-default">
-        <div class="pull-right" >
-        <a href="/#play?url= <%= where %>"  class="btn"
+      <div class="alert alert-info" >
+        <h4><small> click on image to see annotation</small></h4>
+        <a href="/#play?url= <%= where %>"  class="btn pull-right
+          annotate-btn"
           role="button" data-toggle="tooltip" data-placement="right"
           title="Annotate" ><span class="glyphicon glyphicon-edit"></span> </a>
       </div>
+      <div class="panel panel-default">
         <div class="media panel-body">
-          <img src="<%= how.src %>" class="responsive thumb-image">
+          <img src="<%= how.src %>" class="img-responsive ">
         </div>
         <div class="panel-footer">
           <div class="text">Author: <%= who %> </div>

@@ -108,7 +108,7 @@
     },
     cleanUp: function() {
       if(!$('#tag-cloud').is(':visible')) {
-        $('#gallery').hide();
+       // $('#gallery').hide();
         $('#tag-cloud').show();
       }
     }
