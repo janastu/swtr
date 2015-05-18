@@ -163,12 +163,12 @@ footer {
 #tag-cloud {
     display: none;
     position:fixed;
+    z-index:100;
 }
 
 #gallery {
    /* margin-top: 10em;*/
   position:relative;
-  left:350px;
 }
 
 #user-tag-cloud {
