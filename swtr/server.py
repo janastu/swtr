@@ -65,7 +65,8 @@ def index():
                            access_token=auth_tok['access_token'],
                            refresh_token=auth_tok['refresh_token'],
                            config=config,
-                           url=request.args.get('where'))
+                           url=request.args.get('where'),
+                           bookmark=quote_plus(config.app_url))
 
 
 @app.route('/authenticate', methods=['GET'])
