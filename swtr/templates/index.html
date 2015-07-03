@@ -183,6 +183,9 @@
         <!--   <p>The chosen context cannot be visualized at the moment. Try again later!</p> -->
         <!-- </div> -->
       <div id="tag-cloud" class="col-md-3 col-lg-3 ">
+        <div class="alert alert-info" >
+          <h4><small> Filter annotations by Tags or User</small></h4>
+        </div>
           <div class="panel-group" id="accordion">
             <div class="">
               <div class="panel panel-default">
@@ -218,7 +221,8 @@
             </div>
           </div>
         </div>
-        <div id="gallery" class="col-md-6 col-lg-6 ">
+        <div id="gallery" class="col-md-offset-3 col-lg-offset-3
+          col-md-6 col-lg-6 ">
         </div>
         <div id="anno-list-view" class="col-md-3 col-lg-3">
           <ul id="anno-list" class="list-group">
@@ -446,14 +450,16 @@
       </ul>
     </script>
     <script type="text/template" id="gallery-item-template">
-      <div class="panel panel-default">
-        <div class="pull-right" >
-        <a href="/#play?url=<%= where %>"  class="btn"
+      <div class="alert alert-info" >
+        <h4><small> Click on image to see annotation</small></h4>
+        <a href="/#play?url=<%= where %>"  class="btn pull-right
+          annotate-btn"
           role="button" data-toggle="tooltip" data-placement="right"
           title="Annotate" ><span class="glyphicon glyphicon-edit"></span> </a>
       </div>
+      <div class="panel panel-default">
         <div class="media panel-body">
-          <img src="<%= how.src %>" class="responsive thumb-image">
+          <img src="<%= how.src %>" class="img-responsive ">
         </div>
         <div class="panel-footer">
           <div class="text">Author: <%= who %> </div>
