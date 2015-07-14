@@ -490,17 +490,30 @@
     <script type="text/template" id="side-anno-template">
       <li>
       <div class="panel">
-      <div class="panel-heading anno-header"><strong class="swt-user">@<%= who
-          %></strong> on<span class="swt-title"> <%= how.title %></span> <a href="<%= where %>">
-          Image</a>  </div>
-      <div class="panel-body anno-body"><blockquote class="swt-comment"><%=
-          how.comment %></blockquote></div>
-      <div class="panel-footer anno-foot">  <% for(var tag in how.tags) { %>
-        <span class="tag-item"><%= how.tags[tag] %></span>
-        <% } %>
-    </div>
-  </div>
-      </li>
-      </script>
+        <div class="panel-heading anno-header"><strong class="swt-user">@<%= who
+            %></strong> on<span class="swt-title"> <%= how.title %></span> <a href="<%= where %>">
+            Image</a> <div class=""><span
+              class="publish-date"> 
+              <% var d = new Date(created), 
+              locale = "en-us",
+              fragments = [
+              d.toLocaleString(locale,
+              { month: "long" }),
+              d.getDate(),
+
+              d.getFullYear()
+              ]; 
+              print(fragments[0]+' '+fragments[1]+','+' '+fragments[2]);%>
+          </span></div>
+          <blockquote class="swt-comment"><%=
+            how.comment %></blockquote></div>
+        <div class="panel-footer anno-foot">  <% for(var tag in how.tags) { %>
+          <span class="tag-item"><%= how.tags[tag] %></span>
+          <% } %>
+      </div>
+ </div>
+        <div class="panel-body anno-body">    </div>
+    </li>
+  </script>
   </body>
 </html>

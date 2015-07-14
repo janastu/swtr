@@ -216,6 +216,12 @@ footer {
   border-left: 3px solid #d3d3d3;
 
 }
+.publish-date {
+  font-size: 12px;
+  line-height: 1;
+  color: #585858;
+}
+
 #user-tag-cloud {
   height: 400px;
   overflow-y:scroll;
