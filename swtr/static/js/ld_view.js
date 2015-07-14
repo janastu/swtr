@@ -185,7 +185,9 @@
       // var words = _.uniq(swtr.LDs.pluck('who'));
       var weights = swtr.LDs.countBy('who');
       _.each(weights, function(weight, who) {
+        if(weight >= 10) {
         $(this.user_tag_el).append(this.template({weight: weight, who: who}));
+        }
       }, this);
     },
     renderTagsTagCloud: function() {
@@ -200,7 +202,9 @@
       });
       tags = _.countBy(_.flatten(tags));
       _.each(tags, function(weight, who) {
+        if(weight >= 10) {
         $(this.tags_tag_el).append(this.template({weight: weight, who: who}));
+        }
       }, this);
 
     }
@@ -209,13 +213,17 @@
   var GalleryView = Backbone.View.extend({
     el: $('#gallery'),
     events: {
-      'click img': 'onImgClick'
+      'click img': 'onImgClick',
+      'mouseover img': 'sideAnno'
+      //'mouseout img': 'cleanSideAnno'
 
     },
     setCustomField: false,
     initialize: function() {
       this.template = _.template($('#gallery-item-template').html());
       this.cover_template = _.template($('#ocd-item-cover-template').html());
+      this.$sidePanel = $('#anno-list');
+      this.side_panel_template = _.template($('#side-anno-template').html());
       this.render();
     },
     render: function() {
@@ -238,13 +246,15 @@
         $(this.el).append(this.template({
           'how': {
             'tags': tags,
-            'src': model.get('how').src
+          'src': model.get('how').src
           },
           'who':model.get('who'),
           'where': model.get('where')
         }));
-
       }, this);
+
+
+
 
       $('html, body').animate({
         scrollTop: $('#gallery').offset().top
@@ -264,7 +274,27 @@
       $(this.el).html('');
 
     },
+    cleanSideAnno: function(e) {
+    },
+    sideAnno: function(e) {
+      console.log(e.currentTarget, "testinghover");
+      var swts = swtr.LDs.filter(function(k) {
+        if(k.get('where') == $(e.currentTarget).attr('src')) {
+          return k;
+        }
+      });
+      if(!this.setCustomField) {
+        anno.addPlugin("CustomFields", {});
+        this.setCustomField = true;
+      }
+      this.$sidePanel.html('');
+      _.each(swts, function(swt) {
+        console.log(swt, this.$sidePanel);
+        this.$sidePanel.append(this.side_panel_template(swt.toJSON()));
+      }, this);
+    },
     onImgClick: function(e){
+      console.log("from click", e.currentTarget);
       var swts = swtr.LDs.filter(function(k) {
         if(k.get('where') == $(e.currentTarget).attr('src')) {
           return k;
@@ -277,10 +307,11 @@
       anno.makeAnnotatable($(e.currentTarget)[0]);
       _.each(swts, function(swt) {
         var anno_obj = swt.toJSON();
-        anno_obj.how['editable'] = false;
-        anno_obj.how['id'] = anno_obj.id;
-        anno.addAnnotation(anno_obj.how);
-      });
+          anno_obj.how['editable'] = false;
+          anno_obj.how['id'] = anno_obj.id;
+          anno.addAnnotation(anno_obj.how);
+      }, this);
+      
       anno.hideSelectionWidget();
       this.$(".annotorious-item-unfocus").css("opacity", '0.6');
 

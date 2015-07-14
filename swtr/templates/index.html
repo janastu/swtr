@@ -98,9 +98,11 @@
               </a>
             </div>
             <div class="col-md-4">
-              <a href="javascript:(function()%7Bwindow.location%3D'{{ bookmark }}%2F%23%2Fplay%3Furl%3D'%2BencodeURIComponent(document.location)%7D)()" class="btn btn-info btn-lg" data-toggle="tooltip" data-placement="left" title="I'm a bookmarklet. Drag me to your bookmarks.">
-                <span class="glyphicon glyphicon-bookmark"></span>
-                Annotate with swtr</a>
+              <a href="javascript:(function()%7Bwindow.location%3D'{{ bookmark
+                }}%2F%23%2Fplay%3Furl%3D'%2BencodeURIComponent(document.location)%7D
+                )()" class="btn btn-info btn-lg" data-toggle="tooltip" data-placement="left" title="I'm a bookmarklet. Drag me to your bookmarks.">
+                Annotate with swtr
+              </a>
             </div>
           </div>
         </div>
@@ -463,7 +465,10 @@
         </div>
         <div class="panel-footer">
           <div class="text">Author: <%= who %> </div>
-          <div class="text">Tags: <%= how.tags %> </div>
+          <div class="text">Tags: <% for(var tag in how.tags) { %>
+        <span class="tag-item"><%= how.tags[tag] %></span>
+        <% } %>
+ </div>
         </div>
       </div>
     </script>
@@ -482,5 +487,20 @@
     <script type="text/template" id="context-menu-template">
       <li><a href='#'> <%= name %> </a></li>
     </script>
+    <script type="text/template" id="side-anno-template">
+      <li>
+      <div class="panel">
+      <div class="panel-heading anno-header"><strong class="swt-user">@<%= who
+          %></strong> on<span class="swt-title"> <%= how.title %></span> <a href="<%= where %>">
+          Image</a>  </div>
+      <div class="panel-body anno-body"><blockquote class="swt-comment"><%=
+          how.comment %></blockquote></div>
+      <div class="panel-footer anno-foot">  <% for(var tag in how.tags) { %>
+        <span class="tag-item"><%= how.tags[tag] %></span>
+        <% } %>
+    </div>
+  </div>
+      </li>
+      </script>
   </body>
 </html>
