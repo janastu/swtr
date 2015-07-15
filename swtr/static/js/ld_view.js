@@ -184,10 +184,11 @@
     renderUserTagCloud: function() {
       // var words = _.uniq(swtr.LDs.pluck('who'));
       var weights = swtr.LDs.countBy('who');
+      var weights = _.sortBy(swtr.LDs.groupBy('who'), function(
+
       _.each(weights, function(weight, who) {
-        if(weight >= 10) {
+        console.log(weight, who);
         $(this.user_tag_el).append(this.template({weight: weight, who: who}));
-        }
       }, this);
     },
     renderTagsTagCloud: function() {
@@ -201,10 +202,10 @@
         tags.push(sweet.get('how').tags);
       });
       tags = _.countBy(_.flatten(tags));
-      _.each(tags, function(weight, who) {
-        if(weight >= 10) {
-        $(this.tags_tag_el).append(this.template({weight: weight, who: who}));
-        }
+    
+      _.each(tags, function(weight, tag) {
+        console.log(tag, weight);
+        $(this.tags_tag_el).append(this.template({weight: weight, tag: tag}));
       }, this);
 
     }
