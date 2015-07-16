@@ -183,12 +183,16 @@
     },
     renderUserTagCloud: function() {
       // var words = _.uniq(swtr.LDs.pluck('who'));
-      var weights = swtr.LDs.countBy('who');
-      var weights = _.sortBy(swtr.LDs.groupBy('who'), function(
-
-      _.each(weights, function(weight, who) {
-        console.log(weight, who);
-        $(this.user_tag_el).append(this.template({weight: weight, who: who}));
+      //var weights = swtr.LDs.countBy('who');
+      var weights = _.map(swtr.LDs.countBy('who'), function(weight, who) {
+        console.log(weight, who, typeof(name));
+        return ({weight:weight, who:who});
+      });
+      _.each(_.sortBy(weights, function(item) {
+        return -item.weight; //returns sorted items in descending order of weights
+      }),
+          function(item) {
+        $(this.user_tag_el).append(this.template(item));
       }, this);
     },
     renderTagsTagCloud: function() {
@@ -201,11 +205,16 @@
       _.each(sweetsWithTags, function(sweet) {
         tags.push(sweet.get('how').tags);
       });
-      tags = _.countBy(_.flatten(tags));
+      tags = _.map(_.countBy(_.flatten(tags)), function(weight, tag) {
+        return ({weight: weight, who: tag});
+      });
+      console.log(tags);
     
-      _.each(tags, function(weight, tag) {
-        console.log(tag, weight);
-        $(this.tags_tag_el).append(this.template({weight: weight, tag: tag}));
+      _.each(_.sortBy(tags, function(item) {
+        return -item.weight;
+      }), 
+          function(item) {
+        $(this.tags_tag_el).append(this.template(item));
       }, this);
 
     }
