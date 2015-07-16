@@ -12,23 +12,24 @@
       // setting up params
       var what = options.what;
       url = swtr.swtstoreURL() + swtr.endpoints.get + '?what=' +
-        encodeURIComponent(what) + '&access_token=' + swtr.access_token;
-      // get them!
-      this.sync('read', this, {
-        url: url,
-        success: function() {
-          if(typeof options.success === 'function') {
-            options.success.apply(this, arguments);
-          }
-        },
-        error: function() {
-          if(typeof options.error === 'function') {
-            options.error.apply(this, arguments);
-          }
-        }
-      });
+    encodeURIComponent(what) + '&access_token=' + swtr.access_token;
+  // get them!
+  this.sync('read', this, {
+    url: url,
+    success: function() {
+      if(typeof options.success === 'function') {
+        options.success.apply(this, arguments);
+      }
+    },
+    error: function() {
+      if(typeof options.error === 'function') {
+        options.error.apply(this, arguments);
+      }
     }
   });
+    },
+  });
+
 
   var LDView = Backbone.View.extend({
     el: '#linked-data-page',
@@ -139,8 +140,10 @@
           return swt;
         }
       });
-      swts = _.uniq(swts, function(swt) {
+      swts = _.sortBy(_.uniq(swts, function(swt) {
         return swt.get('where');
+      }), function(item) {
+        return -Date.parse(item.get("created"));
       });
       this.setGalleryView(swts);
       // $(this.el).hide();
@@ -158,9 +161,12 @@
             }
         }
       });
-      swts = _.uniq(swts, function(swt) {
+      swts = _.sortBy(_.uniq(swts, function(swt) {
         return swt.get('where');
+      }), function(item) {
+        return - Date.parse(item.get('created'));
       });
+
 
       // this.setGalleryView(_.uniq(swts, 'where'));
       this.setGalleryView(swts);
@@ -185,7 +191,6 @@
       // var words = _.uniq(swtr.LDs.pluck('who'));
       //var weights = swtr.LDs.countBy('who');
       var weights = _.map(swtr.LDs.countBy('who'), function(weight, who) {
-        console.log(weight, who, typeof(name));
         return ({weight:weight, who:who});
       });
       _.each(_.sortBy(weights, function(item) {
@@ -211,7 +216,7 @@
       console.log(tags);
     
       _.each(_.sortBy(tags, function(item) {
-        return -item.weight;
+        return -item.weight; //returns sorted list in descending order by weight
       }), 
           function(item) {
         $(this.tags_tag_el).append(this.template(item));
@@ -224,7 +229,9 @@
     el: $('#gallery'),
     events: {
       'click img': 'onImgClick',
-      'mouseover img': 'sideAnno'
+      'mouseover img': 'sideAnno',
+      'click .tag-item': 'tagsTagClicked'
+    
       //'mouseout img': 'cleanSideAnno'
 
     },
@@ -331,6 +338,28 @@
       _.each(swts, function(swt) {
         $('#anno-list').append(template(swt.attributes));
       });*/
+    },
+    tagsTagClicked: function(e) {
+      anno.reset();
+      var tag = $(e.currentTarget).text();
+      this.filterTag(tag);
+    },
+    filterTag: function(tag) {
+      var swts = swtr.LDs.filter(function(swt) {
+        if(swt.get('how').tags){
+          if(_.contains(swt.get('how').tags, tag)) {
+              return swt;
+            }
+        }
+      });
+      swts = _.sortBy(_.uniq(swts, function(swt) {
+        return swt.get('where');
+      }), function(item) {
+        return - Date.parse(item.get('created'));
+      });
+
+        this.collection.set(swts);
+        this.render();
     }
 
   });
