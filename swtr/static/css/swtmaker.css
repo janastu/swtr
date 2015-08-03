@@ -199,6 +199,10 @@ footer {
   border-radius: 12px;
   padding: 5px;
   background-color: rgba(200, 200, 200, 0.5);
+  cursor:pointer;
+}
+.panel-footer .swt-user {
+  cursor: pointer;
 }
 .swt-user {
   color: #043e69;

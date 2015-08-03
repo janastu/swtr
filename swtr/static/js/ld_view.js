@@ -230,7 +230,8 @@
     events: {
       'click img': 'onImgClick',
       'mouseover img': 'sideAnno',
-      'click .tag-item': 'tagsTagClicked'
+      'click .tag-item': 'tagsTagClicked',
+      'click .swt-user': 'userClicked'
     
       //'mouseout img': 'cleanSideAnno'
 
@@ -291,8 +292,6 @@
       $(this.el).html('');
 
     },
-    cleanSideAnno: function(e) {
-    },
     sideAnno: function(e) {
       console.log(e.currentTarget, "testinghover");
       var swts = swtr.LDs.filter(function(k) {
@@ -342,26 +341,14 @@
     tagsTagClicked: function(e) {
       anno.reset();
       var tag = $(e.currentTarget).text();
-      this.filterTag(tag);
+      console.log(tag);
+      swtr.tagCloudView.filterTag(tag);
     },
-    filterTag: function(tag) {
-      var swts = swtr.LDs.filter(function(swt) {
-        if(swt.get('how').tags){
-          if(_.contains(swt.get('how').tags, tag)) {
-              return swt;
-            }
-        }
-      });
-      swts = _.sortBy(_.uniq(swts, function(swt) {
-        return swt.get('where');
-      }), function(item) {
-        return - Date.parse(item.get('created'));
-      });
-
-        this.collection.set(swts);
-        this.render();
+    userClicked: function(e) {
+      anno.reset();
+      var user = $(e.currentTarget).text().slice(8); //chopping the template text from data
+      swtr.tagCloudView.filterUser(user);
     }
-
   });
 
   swtr.LDView = LDView;
