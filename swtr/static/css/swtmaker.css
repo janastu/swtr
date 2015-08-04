@@ -194,7 +194,9 @@ footer {
 }
 .tag-item{
   margin: 1px;
-  display: inline;
+  display: inline-block;
+  line-height:10px;
+  font-weight: bold;
   text-align: center;
   border-radius: 12px;
   padding: 5px;
@@ -203,6 +205,9 @@ footer {
 }
 .panel-footer .swt-user {
   cursor: pointer;
+}
+.panel-body img {
+  margin: 0 auto;
 }
 .swt-user {
   color: #043e69;
