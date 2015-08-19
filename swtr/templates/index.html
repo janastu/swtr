@@ -269,6 +269,17 @@
     <script src="{{ url_for('static', filename='js/helpview.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
+    <script>
+      window.swtr = window.swtr || {};
+      swtr.LDs = new swtr.LDSwts({{ sweets|tojson }});
+      <!-- swtr.LDs.getAll({ -->
+      <!--   what: 'img-anno', -->
+      <!--   success: function(data) { -->
+      <!--     swtr.LDs.add(data); -->
+      <!--     new swtr.LDView(); -->
+      <!--   } -->
+      <!-- }); -->
+    </script>
     <!-- underscore.js templates -->
     <script type="text/template" id="helpview-template">
       <div class="row">
