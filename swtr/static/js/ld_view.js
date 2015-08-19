@@ -12,23 +12,24 @@
       // setting up params
       var what = options.what;
       url = swtr.swtstoreURL() + swtr.endpoints.get + '?what=' +
-        encodeURIComponent(what) + '&access_token=' + swtr.access_token;
-      // get them!
-      this.sync('read', this, {
-        url: url,
-        success: function() {
-          if(typeof options.success === 'function') {
-            options.success.apply(this, arguments);
-          }
-        },
-        error: function() {
-          if(typeof options.error === 'function') {
-            options.error.apply(this, arguments);
-          }
-        }
-      });
+    encodeURIComponent(what) + '&access_token=' + swtr.access_token;
+  // get them!
+  this.sync('read', this, {
+    url: url,
+    success: function() {
+      if(typeof options.success === 'function') {
+        options.success.apply(this, arguments);
+      }
+    },
+    error: function() {
+      if(typeof options.error === 'function') {
+        options.error.apply(this, arguments);
+      }
     }
   });
+    },
+  });
+
 
   swtr.LDView = Backbone.View.extend({
     el: '#linked-data-page',
@@ -141,8 +142,10 @@
           return swt;
         }
       });
-      swts = _.uniq(swts, function(swt) {
+      swts = _.sortBy(_.uniq(swts, function(swt) {
         return swt.get('where');
+      }), function(item) {
+        return -Date.parse(item.get("created"));
       });
       this.setGalleryView(swts);
       // $(this.el).hide();
@@ -160,9 +163,12 @@
             }
         }
       });
-      swts = _.uniq(swts, function(swt) {
+      swts = _.sortBy(_.uniq(swts, function(swt) {
         return swt.get('where');
+      }), function(item) {
+        return - Date.parse(item.get('created'));
       });
+
 
       // this.setGalleryView(_.uniq(swts, 'where'));
       this.setGalleryView(swts);
@@ -185,9 +191,15 @@
     },
     renderUserTagCloud: function() {
       // var words = _.uniq(swtr.LDs.pluck('who'));
-      var weights = swtr.LDs.countBy('who');
-      _.each(weights, function(weight, who) {
-        $(this.user_tag_el).append(this.template({weight: weight, who: who}));
+      //var weights = swtr.LDs.countBy('who');
+      var weights = _.map(swtr.LDs.countBy('who'), function(weight, who) {
+        return ({weight:weight, who:who});
+      });
+      _.each(_.sortBy(weights, function(item) {
+        return -item.weight; //returns sorted items in descending order of weights
+      }),
+          function(item) {
+        $(this.user_tag_el).append(this.template(item));
       }, this);
     },
     renderTagsTagCloud: function() {
@@ -200,9 +212,16 @@
       _.each(sweetsWithTags, function(sweet) {
         tags.push(sweet.get('how').tags);
       });
-      tags = _.countBy(_.flatten(tags));
-      _.each(tags, function(weight, who) {
-        $(this.tags_tag_el).append(this.template({weight: weight, who: who}));
+      tags = _.map(_.countBy(_.flatten(tags)), function(weight, tag) {
+        return ({weight: weight, who: tag});
+      });
+      console.log(tags);
+    
+      _.each(_.sortBy(tags, function(item) {
+        return -item.weight; //returns sorted list in descending order by weight
+      }), 
+          function(item) {
+        $(this.tags_tag_el).append(this.template(item));
       }, this);
 
     }
@@ -211,13 +230,20 @@
   var GalleryView = Backbone.View.extend({
     el: $('#gallery'),
     events: {
-      'click img': 'onImgClick'
+      'click img': 'onImgClick',
+      'mouseover img': 'sideAnno',
+      'click .tag-item': 'tagsTagClicked',
+      'click .swt-user': 'userClicked'
+    
+      //'mouseout img': 'cleanSideAnno'
 
     },
     setCustomField: false,
     initialize: function() {
       this.template = _.template($('#gallery-item-template').html());
       this.cover_template = _.template($('#ocd-item-cover-template').html());
+      this.$sidePanel = $('#anno-list');
+      this.side_panel_template = _.template($('#side-anno-template').html());
       this.render();
     },
     render: function() {
@@ -240,13 +266,15 @@
         $(this.el).append(this.template({
           'how': {
             'tags': tags,
-            'src': model.get('how').src
+          'src': model.get('how').src
           },
           'who':model.get('who'),
           'where': model.get('where')
         }));
-
       }, this);
+
+
+
 
       $('html, body').animate({
         scrollTop: $('#gallery').offset().top
@@ -266,7 +294,25 @@
       $(this.el).html('');
 
     },
+    sideAnno: function(e) {
+      console.log(e.currentTarget, "testinghover");
+      var swts = swtr.LDs.filter(function(k) {
+        if(k.get('where') == $(e.currentTarget).attr('src')) {
+          return k;
+        }
+      });
+      if(!this.setCustomField) {
+        anno.addPlugin("CustomFields", {});
+        this.setCustomField = true;
+      }
+      this.$sidePanel.html('');
+      _.each(swts, function(swt) {
+        console.log(swt, this.$sidePanel);
+        this.$sidePanel.append(this.side_panel_template(swt.toJSON()));
+      }, this);
+    },
     onImgClick: function(e){
+      console.log("from click", e.currentTarget);
       var swts = swtr.LDs.filter(function(k) {
         if(k.get('where') == $(e.currentTarget).attr('src')) {
           return k;
@@ -279,10 +325,11 @@
       anno.makeAnnotatable($(e.currentTarget)[0]);
       _.each(swts, function(swt) {
         var anno_obj = swt.toJSON();
-        anno_obj.how['editable'] = false;
-        anno_obj.how['id'] = anno_obj.id;
-        anno.addAnnotation(anno_obj.how);
-      });
+          anno_obj.how['editable'] = false;
+          anno_obj.how['id'] = anno_obj.id;
+          anno.addAnnotation(anno_obj.how);
+      }, this);
+      
       anno.hideSelectionWidget();
       this.$(".annotorious-item-unfocus").css("opacity", '0.6');
 
@@ -292,8 +339,18 @@
       _.each(swts, function(swt) {
         $('#anno-list').append(template(swt.attributes));
       });*/
+    },
+    tagsTagClicked: function(e) {
+      anno.reset();
+      var tag = $(e.currentTarget).text();
+      console.log(tag);
+      swtr.tagCloudView.filterTag(tag);
+    },
+    userClicked: function(e) {
+      anno.reset();
+      var user = $(e.currentTarget).text().slice(8); //chopping the template text from data
+      swtr.tagCloudView.filterUser(user);
     }
-
   });
 
 

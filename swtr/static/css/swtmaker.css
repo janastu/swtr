@@ -170,6 +170,61 @@ footer {
    /* margin-top: 10em;*/
   position:relative;
 }
+#anno-list-view {
+  position: fixed;
+  right: 0px;
+  height:400px;
+  overflow: auto;
+}
+#anno-list-view ul {
+  list-style: none;
+}
+#anno-list-view ul li {
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-bottom: 10px;
+}
+.anno-header {
+}
+.anno-body {
+  margin-top:10px;
+}
+.anno-foot {
+  margin-top: 10px;
+}
+.tag-item{
+  margin: 1px;
+  display: inline;
+  text-align: center;
+  border-radius: 12px;
+  padding: 5px;
+  background-color: rgba(200, 200, 200, 0.5);
+  cursor:pointer;
+}
+.panel-footer .swt-user {
+  cursor: pointer;
+}
+.swt-user {
+  color: #043e69;
+  font-size: 16px;
+}
+.swt-title {
+  color: #777;
+  font-style: italic;
+}
+.swt-comment {
+  color: #777;
+  font-family: Georgia,"Bitstream Charter",Times,"Times New Roman",serif;
+  font-style: italic;
+  padding: 0 .615em;
+  border-left: 3px solid #d3d3d3;
+
+}
+.publish-date {
+  font-size: 12px;
+  line-height: 1;
+  color: #585858;
+}
 
 #user-tag-cloud {
   height: 400px;
