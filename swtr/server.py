@@ -61,12 +61,14 @@ def index():
 
     #print 'existing tokens'
     #print auth_tok
-    return render_template('index.html',
-                           access_token=auth_tok['access_token'],
+    payload = {'what': 'img-anno',
+               'access_token': auth_tok['access_token']}
+    req = requests.get(config.swtstoreURL + '/api/sweets/q', params=payload)
+    sweets = req.json()
+    return render_template('index.html', access_token=auth_tok['access_token'],
                            refresh_token=auth_tok['refresh_token'],
-                           config=config,
-                           url=request.args.get('where'),
-                           bookmark=quote_plus(config.app_url))
+                           config=config, url=request.args.get('where'),
+                           bookmark=quote_plus(config.app_url), sweets=sweets)
 
 
 @app.route('/authenticate', methods=['GET'])

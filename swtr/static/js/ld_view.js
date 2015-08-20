@@ -1,7 +1,7 @@
 (function(window) {
   window.swtr = window.swtr || {};
 
-  var LDSwts = Backbone.Collection.extend({
+  swtr.LDSwts = Backbone.Collection.extend({
     getAll: function(options) {
       //get all sweets of ocd-anno type
       // error checking
@@ -31,38 +31,40 @@
   });
 
 
-  var LDView = Backbone.View.extend({
+  swtr.LDView = Backbone.View.extend({
     el: '#linked-data-page',
     events: {
       'click #context-menu>li': 'chooseContext'
     },
     initialize: function(args) {
+      console.log(args);
       this.params = args || {};
       var self = this;
-      if(!swtr.LDs) {
-        swtr.LDs = new LDSwts();
-      }
-      if(swtr.LDs.length == 0) {
-        this.loader_template = _.template($('#loader-template').html());
-        $('#linked-data-page').prepend(this.loader_template());
-        swtr.LDs.getAll({
-          what: 'img-anno',
-          success: function(data) {
-            swtr.LDs.add(data);
+      // if(!swtr.LDs) {
+      //   // swtr.LDs = new LDSwts();
+      // }
+      // if(swtr.LDs.length == 0) {
+      // this.loader_template = _.template($('#loader-template').html());
+      // $('#linked-data-page').prepend(this.loader_template());
+        //   swtr.LDs.getAll({
+        //   what: 'img-anno',
+        //   success: function(data) {
+        //     swtr.LDs.add(data);
             // COMMENT: does it need to be swtr.tagCloudView? can't it be
             // this.tagCloudView? does it have a reason to be in the global
             // scope?
-            if(!swtr.tagCloudView) {
-              $('#spinner').hide();
-              swtr.tagCloudView = new TagCloudView({collection: swtr.LDs});
-              if(!(_.isEmpty(self.params))) {
+      if(!swtr.tagCloudView) {
+        // $('#spinner').hide();
+        swtr.tagCloudView = new TagCloudView({collection: swtr.LDs});
+        if(!(_.isEmpty(self.params))) {
                 // If the params are not empty then load the state.
-                self.loadState(self.params);
-              }
-            }
-          }
-        });
+          self.loadState(self.params);
+        }
       }
+    //}
+  //});
+      //}
+
       // $.get(swtr.swtstoreURL() + swtr.endpoints.context, function(data) {
       //   var template = _.template($("#context-menu-template").html());
       //   data = JSON.parse(data);
@@ -331,7 +333,7 @@
       anno.hideSelectionWidget();
       this.$(".annotorious-item-unfocus").css("opacity", '0.6');
 
-      //adds a list view of annotations 
+      //adds a list view of annotations
      /* $('#anno-list li').remove();
       var template = _.template($('#anno-list-item').html());
       _.each(swts, function(swt) {
@@ -351,5 +353,5 @@
     }
   });
 
-  swtr.LDView = LDView;
+
 })(window);
