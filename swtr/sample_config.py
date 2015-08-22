@@ -22,3 +22,8 @@ app_secret = 'the app_secret or client_secret'
 # the endpoint passes the client secret and the recvd code for the final call
 # to recieve the OAuth token. For this app, the endpoint is /authenticate
 redirect_uri = 'http://yourapplication.domain/authenticate'
+
+
+# Api endpiont for the the /search/ocd
+ocd_search_endpoit = 'http://api.opencultuurdata.nl/v0/search'
+ocd_resolve_enpoint = 'http://api.opencultuurdata.nl/v0/resolve/'

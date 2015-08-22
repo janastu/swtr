@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, session, request, make_response, url_for, redirect,\
-    render_template, jsonify, abort
+    render_template, jsonify, abort, current_app, request
 from logging import FileHandler
 from datetime import datetime, timedelta
 import lxml.html
@@ -13,18 +13,33 @@ import imghdr
 import config
 import logging
 import os
+from flask_cors import CORS
 
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = config.secret_key
+def create_app():
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = config.secret_key
+    
+    # Setup error logging for the application.
+    if not os.path.exists(os.path.join(os.path.dirname(__file__),'logs/')):
+        """ Create the directory if not exists"""
+        os.makedirs(os.path.join(os.path.dirname(__file__),'logs/'), mode=0744)
+    fil = FileHandler(os.path.join(os.path.dirname(__file__), 'logs/', 'logme'), mode='a')
+    fil.setLevel(logging.ERROR)
+    app.logger.addHandler(fil)
+    
+    for cfg_path in ['config.py', 'local_config.py']:
+        if os.path.exists(cfg_path):
+            try:
+                app.config.from_pyfile(cfg_path)
+            except IOError:
+                app.logger.warning("Could not load local_config.py")
 
-# Setup error logging for the application.
-if not os.path.exists(os.path.join(os.path.dirname(__file__),'logs/')):
-    """ Create the directory if not exists"""
-    os.makedirs(os.path.join(os.path.dirname(__file__),'logs/'), mode=0744)
-fil = FileHandler(os.path.join(os.path.dirname(__file__), 'logs/', 'logme'), mode='a')
-fil.setLevel(logging.ERROR)
-app.logger.addHandler(fil)
+    # this opens all endpoints for cross site requests, if we need to be more
+    # specific, it can be done too (through config)
+    cors = CORS(app, allow_headers=('Content-Type', 'Authorization'))
+    return app
+
 
 
 @app.route('/', methods=['GET'])
@@ -35,7 +50,7 @@ def index():
         auth_tok = session['auth_tok']
 
         # check if it has expired
-        oauth_token_expires_in_endpoint = config.swtstoreURL +\
+        oauth_token_expires_in_endpoint = current_app.config.get('swtstoreURL') +\
             '/oauth/token-expires-in'
         resp = requests.get(oauth_token_expires_in_endpoint)
         expires_in = json.loads(resp.text)['expires_in']
@@ -63,7 +78,7 @@ def index():
     #print auth_tok
     payload = {'what': 'img-anno',
                'access_token': auth_tok['access_token']}
-    req = requests.get(config.swtstoreURL + '/api/sweets/q', params=payload)
+    req = requests.get(current_app.config.get('swtstoreURL') + '/api/sweets/q', params=payload)
     sweets = req.json()
     return render_template('index.html', access_token=auth_tok['access_token'],
                            refresh_token=auth_tok['refresh_token'],
@@ -87,7 +102,7 @@ def authenticateWithOAuth():
     }
 
     # token exchange endpoint
-    oauth_token_x_endpoint = config.swtstoreURL + '/oauth/token'
+    oauth_token_x_endpoint = current_app.config.get('swtstoreURL') + '/oauth/token'
     resp = requests.post(oauth_token_x_endpoint, data=payload)
     auth_tok = json.loads(resp.text)
 
@@ -99,6 +114,31 @@ def authenticateWithOAuth():
     session['auth_tok']['issued'] = datetime.utcnow()
     return redirect(url_for('index'))
 
+
+@app.route('/bootstrap', methods=['GET'])
+def bootstrap():
+    """Return to the JS client the info it needs to access the API
+    (which normally gets included in the HTML page)"""
+    
+    auth_tok = session.get('auth_tok', {})
+    out = {
+        swtstoreURL: current_app.config.get('swtstoreURL'),
+        endpoints: {
+          'get': '/api/sweets/q',
+          'post': '/api/sweets',
+          'context': '/api/contexts',
+          'auth': '/oauth/authorize',
+          'login': '/auth/login',
+          'logout': '/auth/logout',
+          'annotate_webpage': url_for("annotate_webpage")
+        },
+        allowedContext: ['img-anno'],
+        access_token: auth_tok.get('access_token', ''),
+        refresh_token: auth_tok.get('refresh_token', ''),
+        app_id: current_app.config.get('app_id'),
+        auth_redirect_uri: current_app.config.get('redirect_uri')
+    }
+    return jsonify(out)
 
 # endpoint to search the Open Cuultur Data APIs
 # takes in `query`, `size`, and `from` parameters in query string
@@ -126,7 +166,7 @@ def searchOCD():
         'size': size,
         'from': offset
     }
-    resp = requests.post('http://api.opencultuurdata.nl/v0/search',
+    resp = requests.post(current_app.config.get('ocd_search_endpoint', 'http://api.opencultuurdata.nl/v0/search'),
                          data=json.dumps(payload))
 
     response = make_response()
@@ -144,7 +184,7 @@ def resolveOCDMediaURLs():
     if not media_hash:
         abort(400)
 
-    resp = requests.get('http://api.opencultuurdata.nl/v0/resolve/' +
+    resp = requests.get(current_app.config.get('ocd_resolve_endpoint', 'http://api.opencultuurdata.nl/v0/resolve/') +
                         media_hash)
 
     return jsonify(url=resp.url)
@@ -152,6 +192,7 @@ def resolveOCDMediaURLs():
 
 @app.route('/media-type', methods=['GET'])
 def getMediaType():
+    """Contact the remote resource and find out its type"""
 
     where = request.args.get('where') or None
 
@@ -220,6 +261,71 @@ def annotate_webpage():
 
         response.data = lxml.html.tostring(root)
         return response
+
+base_re = re.compile('<\s*base[^>]*>')
+head_re = re.compile('<\s*base[^>]*>')
+firsttag_re = re.compile('<[^>]*>')
+
+@app.route('/annotate2', methods=['GET'])
+def annotate():
+    """Load the page from a remote resource and modify it (inject
+    js libraries). To save CPU we do simple string replacement
+    """
+    
+    where = request.args.get('where')
+    response = requests.get(where)
+    
+    if response.status != 200:
+        return make_response('The page you wanted to annotate has problems', response.status)
+    
+    content = response.text
+    
+    # insert base tag (if not present)
+    if not base_re.search(content, flags=re.IGNORECASE):
+        h = head_re.search(content, flags=re.IGNORECASE)
+        if h:
+            c = [content[0:h.endpos]]
+            c.append('<base href="' + where + '" />')
+            c.append(content[h.endpos+1:])
+            content = ''.join(c)
+        else:
+            t = firsttag_re.search(content, flags=re.IGNORECASE)
+            if t:
+                c = [content[0:t.endpos]]
+                c.append('<base href="' + where + '" />')
+                c.append(content[t.endpos+1:])
+                content = ''.join(c)
+            else:
+                return abort("Something went wrong", 400)
+    
+    # inject javascript into the page
+    b = base_re.search(content, flags=re.IGNORECASE)
+    
+    if not b:
+        return abort("Something went wrong", 400)
+    
+    # todo: this inject could conflict with the existing libraries on the page; 
+    # to make it super-secure, we would hvae to use require.js and load them
+    # into a separate namespace (and the CSS should be modified too)
+    inject_js = """
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="%(root)/js/annotator-full.min.js"></script>
+    <script type="text/javascript" src="%(root)/js/lib/backbone-1.0.0.min.js"></script>
+    <script type="text/javascript" src="%(root)/js/annotorious.okfn.0.3.js"></script>
+    <link href="%(root)/css/annotator.min.css" media="all" rel="stylesheet">
+    <link href="%(root)/css/swtmaker.css" media="all" rel="stylesheet">
+    <link href="%(root)/css/annotorious.css" media="all" rel="stylesheet">
+    """ % ({root: current_app.config.get('app_url')})
+    
+    c = [content[0:b.endpos]]
+    c.append(inject_js)
+    c.append(content[b.endpos+1:])
+    content= ''.join(c)
+
+    # TODO: modify content length    
+    response.data = content
+    return response
+    
 
 
 @app.route('/annotate', methods=['GET'])
@@ -319,4 +425,5 @@ def addCSS(src, el):
 # if the app is run directly from command-line
 # assume its being run locally in a dev environment
 if __name__ == '__main__':
+    app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5000)

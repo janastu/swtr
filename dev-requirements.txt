@@ -1,0 +1,9 @@
+flask-cors
+flask-testing
+httpretty
+coveralls
+pep257
+pytest
+pytest-cache
+pytest-cov
+pytest-pep8
