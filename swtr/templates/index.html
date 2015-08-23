@@ -238,7 +238,7 @@
     <script>
       window.swtr = window.swtr || {};
 
-      swtr.swtstoreURL = function() { return '{{ config.swtstoreURL }}'; }
+      swtr.swtstoreURL = function() { return '{{ config.SWTSTORE_URL }}'; }
       swtr.endpoints = {
       'get': '/api/sweets/q',
       'post': '/api/sweets',
@@ -251,8 +251,8 @@
       swtr.allowedContext = ['img-anno']
       swtr.access_token = '{{ access_token }}';
       swtr.refresh_token = '{{ refresh_token }}';
-      swtr.app_id = '{{ config.app_id }}';
-      swtr.oauth_redirect_uri = '{{ config.redirect_uri }}';
+      swtr.app_id = '{{ config.APP_ID }}';
+      swtr.oauth_redirect_uri = '{{ config.REDIRECT_URI }}';
     </script>
     <script src="{{ url_for('static', filename='js/lib/jquery-1.10.2.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/lib/d3.js') }}"></script>

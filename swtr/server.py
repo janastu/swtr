@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, session, request, make_response, url_for, redirect,\
-    render_template, jsonify, abort
+    render_template, jsonify, abort, current_app, request, Blueprint
 from logging import FileHandler
 from datetime import datetime, timedelta
 import lxml.html
@@ -10,24 +10,40 @@ import requests
 import json
 import StringIO
 import imghdr
-import config
 import logging
 import os
+import re
+from flask_cors import CORS
+
+bp = Blueprint('swtr', __name__)
+
+def create_app(blueprint=bp):
+    app = Flask(__name__)
+    app.register_blueprint(blueprint)
+    
+    # Setup error logging for the application.
+    if not os.path.exists(os.path.join(os.path.dirname(__file__),'logs/')):
+        """ Create the directory if not exists"""
+        os.makedirs(os.path.join(os.path.dirname(__file__),'logs/'), mode=0744)
+    fil = FileHandler(os.path.join(os.path.dirname(__file__), 'logs/', 'logme'), mode='a')
+    fil.setLevel(logging.ERROR)
+    app.logger.addHandler(fil)
+    
+    for cfg_path in ['config.py', 'local_config.py']:
+        if os.path.exists(cfg_path):
+            try:
+                app.config.from_pyfile(cfg_path)
+            except IOError:
+                app.logger.warning("Could not load local_config.py")
+
+    # this opens all endpoints for cross site requests, if we need to be more
+    # specific, it can be done too (through config)
+    cors = CORS(app, allow_headers=('Content-Type', 'Authorization'))
+    return app
 
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = config.secret_key
 
-# Setup error logging for the application.
-if not os.path.exists(os.path.join(os.path.dirname(__file__),'logs/')):
-    """ Create the directory if not exists"""
-    os.makedirs(os.path.join(os.path.dirname(__file__),'logs/'), mode=0744)
-fil = FileHandler(os.path.join(os.path.dirname(__file__), 'logs/', 'logme'), mode='a')
-fil.setLevel(logging.ERROR)
-app.logger.addHandler(fil)
-
-
-@app.route('/', methods=['GET'])
+@bp.route('/', methods=['GET'])
 def index():
 
     # if auth_tok is in session already..
@@ -35,7 +51,7 @@ def index():
         auth_tok = session['auth_tok']
 
         # check if it has expired
-        oauth_token_expires_in_endpoint = config.swtstoreURL +\
+        oauth_token_expires_in_endpoint = current_app.config.get('SWTSTORE_URL') +\
             '/oauth/token-expires-in'
         resp = requests.get(oauth_token_expires_in_endpoint)
         expires_in = json.loads(resp.text)['expires_in']
@@ -63,15 +79,15 @@ def index():
     #print auth_tok
     payload = {'what': 'img-anno',
                'access_token': auth_tok['access_token']}
-    req = requests.get(config.swtstoreURL + '/api/sweets/q', params=payload)
+    req = requests.get(current_app.config.get('SWTSTORE_URL', 'SWTSTORE_URL') + '/api/sweets/q', params=payload)
     sweets = req.json()
     return render_template('index.html', access_token=auth_tok['access_token'],
                            refresh_token=auth_tok['refresh_token'],
-                           config=config, url=request.args.get('where'),
-                           bookmark=quote_plus(config.app_url), sweets=sweets)
+                           config=current_app.config, url=request.args.get('where'),
+                           bookmark=quote_plus(current_app.config.APP_URL), sweets=sweets)
 
 
-@app.route('/authenticate', methods=['GET'])
+@bp.route('/authenticate', methods=['GET'])
 def authenticateWithOAuth():
     auth_tok = None
     code = request.args.get('code')
@@ -79,15 +95,15 @@ def authenticateWithOAuth():
     # prepare the payload
     payload = {
         'scopes': 'email sweet',
-        'client_secret': config.app_secret,
+        'client_secret': current_app.config.APP_SECRET,
         'code': code,
-        'redirect_uri': config.redirect_uri,
+        'redirect_uri': current_app.config.REDIRECT_URI,
         'grant_type': 'authorization_code',
-        'client_id': config.app_id
+        'client_id': current_app.config.APP_ID
     }
 
     # token exchange endpoint
-    oauth_token_x_endpoint = config.swtstoreURL + '/oauth/token'
+    oauth_token_x_endpoint = current_app.config.get('SWTSTORE_URL', 'SWTSTORE_URL') + '/oauth/token'
     resp = requests.post(oauth_token_x_endpoint, data=payload)
     auth_tok = json.loads(resp.text)
 
@@ -100,10 +116,35 @@ def authenticateWithOAuth():
     return redirect(url_for('index'))
 
 
+@bp.route('/bootstrap', methods=['GET'])
+def bootstrap():
+    """Return to the JS client the info it needs to access the API
+    (which normally gets included in the HTML page)"""
+    
+    auth_tok = session.get('auth_tok', {})
+    out = {
+        'SWTSTORE_URL': current_app.config.get('SWTSTORE_URL', 'SWTSTORE_URL'),
+        'endpoints': {
+          'get': '/api/sweets/q',
+          'post': '/api/sweets',
+          'context': '/api/contexts',
+          'auth': '/oauth/authorize',
+          'login': '/auth/login',
+          'logout': '/auth/logout',
+          'annotate_webpage': url_for("swtr.annotate_webpage")
+        },
+        'allowedContext': ['img-anno'],
+        'access_token': auth_tok.get('access_token', ''),
+        'refresh_token': auth_tok.get('refresh_token', ''),
+        'app_id': current_app.config.get('APP_ID', 'APP_ID'),
+        'auth_redirect_uri': current_app.config.get('REDIRECT_URI', '')
+    }
+    return jsonify(out)
+
 # endpoint to search the Open Cuultur Data APIs
 # takes in `query`, `size`, and `from` parameters in query string
 # returns a JSON response
-@app.route('/search/ocd', methods=['GET'])
+@bp.route('/search/ocd', methods=['GET'])
 def searchOCD():
     query = request.args.get('query')
     #collection = flask.request.args.get('collection')
@@ -126,7 +167,7 @@ def searchOCD():
         'size': size,
         'from': offset
     }
-    resp = requests.post('http://api.opencultuurdata.nl/v0/search',
+    resp = requests.post(current_app.config.get('OCD_SEARCH_ENDPOINT', 'http://api.opencultuurdata.nl/v0/search'),
                          data=json.dumps(payload))
 
     response = make_response()
@@ -136,7 +177,7 @@ def searchOCD():
 
 
 # resolve OCD Media URLs: http://docs.opencultuurdata.nl/user/api.html#resolver
-@app.route('/resolve-ocd-media', methods=['GET'])
+@bp.route('/resolve-ocd-media', methods=['GET'])
 def resolveOCDMediaURLs():
 
     media_hash = request.args.get('hash') or None
@@ -144,14 +185,15 @@ def resolveOCDMediaURLs():
     if not media_hash:
         abort(400)
 
-    resp = requests.get('http://api.opencultuurdata.nl/v0/resolve/' +
+    resp = requests.get(current_app.config.get('OCD_RESOLVE_ENDPOINT', 'http://api.opencultuurdata.nl/v0/resolve/') +
                         media_hash)
 
     return jsonify(url=resp.url)
 
 
-@app.route('/media-type', methods=['GET'])
+@bp.route('/media-type', methods=['GET'])
 def getMediaType():
+    """Contact the remote resource and find out its type"""
 
     where = request.args.get('where') or None
 
@@ -167,7 +209,7 @@ def getMediaType():
         return jsonify({'type': 'image'})
 
 
-@app.route('/webpage', methods=['GET'])
+@bp.route('/webpage', methods=['GET'])
 def annotate_webpage():
 
     where = request.args.get('where')
@@ -203,7 +245,7 @@ def annotate_webpage():
                 # url encode the link; and encode it utf-8 anyway to handle
                 # links in other characters
                 target = quote_plus(link.encode('utf-8'))
-                new_link = '{0}/webpage?where={1}'.format(config.app_url,
+                new_link = '{0}/webpage?where={1}'.format(current_app.config.APP_URL,
                                                           target)
                 elem.set('href', new_link)
 
@@ -222,7 +264,8 @@ def annotate_webpage():
         return response
 
 
-@app.route('/annotate', methods=['GET'])
+
+@bp.route('/annotate', methods=['GET'])
 def annotate():
     # img = urllib2.urlopen(flask.request.args['where']).read()
     where = request.args.get('where')
@@ -230,24 +273,31 @@ def annotate():
     content = response.text
     if imghdr.what('ignore', content) is None:
         root = lxml.html.parse(StringIO.StringIO(content)).getroot()
-        root.make_links_absolute(where,
-                                 resolve_base_href=True)
+        
+        if root.find('.//base') is None:
+            head = root.find('.//head')
+            if head is None:
+                head = root.makeelement('head')
+                root.append(head)
+            base = root.makeelement('base')
+            head.append(base)
+            base.set("href", where)
 
         addScript("//code.jquery.com/jquery-1.11.0.min.js", root)
-        addScript(url_for('static', filename="js/annotator-full.min.js"),
+        addScript(current_app.config.get('APP_URL', '') + url_for('static', filename="js/annotator-full.min.js"),
                   root)
 
-        addCSS(url_for('static', filename='css/annotator.min.css'), root)
-        addCSS(url_for('static', filename='css/swtmaker.css'), root)
-        addCSS(url_for('static', filename='css/bootstrap.min.css'), root)
-        addScript(url_for('static',
+        addCSS(current_app.config.get('APP_URL', '') + url_for('static', filename='css/annotator.min.css'), root)
+        addCSS(current_app.config.get('APP_URL', '') + url_for('static', filename='css/swtmaker.css'), root)
+        addCSS(current_app.config.get('APP_URL', '') + url_for('static', filename='css/bootstrap.min.css'), root)
+        addScript(current_app.config.get('APP_URL', '') + url_for('static',
                           filename="js/lib/underscore-1.5.2.min.js"),
                   root)
-        addScript(url_for('static',
+        addScript(current_app.config.get('APP_URL', '') + url_for('static',
                           filename="js/lib/backbone-1.0.0.min.js"),
                   root)
-        addCSS(url_for('static', filename='css/annotorious.css'), root)
-        addScript(url_for('static',
+        addCSS(current_app.config.get('APP_URL', '') + url_for('static', filename='css/annotorious.css'), root)
+        addScript(current_app.config.get('APP_URL', '') + url_for('static',
                           filename="js/annotorious.okfn.0.3.js"),
                   root)
 
@@ -259,7 +309,7 @@ def annotate():
         configScript = root.makeelement('script')
         root.body.append(configScript)
         configScript.text = """window.swtr = window.swtr || {};
-        swtr.swtstoreURL = {}
+        swtr.SWTSTORE_URL = {}
         swtr.endpoints = {}
         'get': '/api/sweets/q',
         'post': '/api/sweets',
@@ -273,15 +323,15 @@ def annotate():
         swtr.app_id = '{}';swtr.app_secret = '{}';
         swtr.oauth_redirect_uri = '{}';""".format(
             '{}', 'function() {}return "{}"{}'.format('{',
-                                                      config.swtstoreURL, '};'),
+                                                      current_app.config.get('SWTSTORE_URL'), '};'),
             '{', '}', auth_tok['access_token'], auth_tok['refresh_token'],
-            config.app_id, config.app_secret,
-            config.redirect_uri)
+            current_app.config.get('app_id'), current_app.config.get('APP_SECRET'),
+            current_app.config.get('REDIRECT_URI'))
         configScript.set("type", "text/javascript")
 
-        addScript(url_for('static', filename="js/oauth.js"), root)
+        addScript(current_app.config.get('APP_URL', '') + url_for('static', filename="js/oauth.js"), root)
 
-        addScript(url_for('static', filename="js/app.js"), root)
+        addScript(current_app.config.get('APP_URL', '') + url_for('static', filename="js/app.js"), root)
 
         response = make_response()
         response.data = lxml.html.tostring(root)
@@ -296,7 +346,7 @@ def annotate():
         return render_template('index.html',
                                access_token=auth_tok['access_token'],
                                refresh_token=auth_tok['refresh_token'],
-                               config=config,
+                               config=current_app.config,
                                url=request.args.get('where'))
 
 
@@ -319,4 +369,5 @@ def addCSS(src, el):
 # if the app is run directly from command-line
 # assume its being run locally in a dev environment
 if __name__ == '__main__':
+    app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5000)
