@@ -123,21 +123,21 @@ def bootstrap():
     
     auth_tok = session.get('auth_tok', {})
     out = {
-        swtstoreURL: current_app.config.get('swtstoreURL'),
-        endpoints: {
+        'swtstoreURL': current_app.config.get('swtstoreURL'),
+        'endpoints': {
           'get': '/api/sweets/q',
           'post': '/api/sweets',
           'context': '/api/contexts',
           'auth': '/oauth/authorize',
           'login': '/auth/login',
           'logout': '/auth/logout',
-          'annotate_webpage': url_for("annotate_webpage")
+          'annotate_webpage': url_for("swtr.annotate_webpage")
         },
-        allowedContext: ['img-anno'],
-        access_token: auth_tok.get('access_token', ''),
-        refresh_token: auth_tok.get('refresh_token', ''),
-        app_id: current_app.config.get('app_id'),
-        auth_redirect_uri: current_app.config.get('redirect_uri')
+        'allowedContext': ['img-anno'],
+        'access_token': auth_tok.get('access_token', ''),
+        'refresh_token': auth_tok.get('refresh_token', ''),
+        'app_id': current_app.config.get('app_id'),
+        'auth_redirect_uri': current_app.config.get('redirect_uri')
     }
     return jsonify(out)
 
