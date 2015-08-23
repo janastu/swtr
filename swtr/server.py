@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, session, request, make_response, url_for, redirect,\
-    render_template, jsonify, abort, current_app, request
+    render_template, jsonify, abort, current_app, request, Blueprint
 from logging import FileHandler
 from datetime import datetime, timedelta
 import lxml.html
@@ -10,15 +10,16 @@ import requests
 import json
 import StringIO
 import imghdr
-import config
 import logging
 import os
+import re
 from flask_cors import CORS
 
+bp = Blueprint('swtr', __name__)
 
-def create_app():
+def create_app(blueprint=bp):
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = config.secret_key
+    app.register_blueprint(blueprint)
     
     # Setup error logging for the application.
     if not os.path.exists(os.path.join(os.path.dirname(__file__),'logs/')):
@@ -42,7 +43,7 @@ def create_app():
 
 
 
-@app.route('/', methods=['GET'])
+@bp.route('/', methods=['GET'])
 def index():
 
     # if auth_tok is in session already..
@@ -86,7 +87,7 @@ def index():
                            bookmark=quote_plus(config.app_url), sweets=sweets)
 
 
-@app.route('/authenticate', methods=['GET'])
+@bp.route('/authenticate', methods=['GET'])
 def authenticateWithOAuth():
     auth_tok = None
     code = request.args.get('code')
@@ -115,7 +116,7 @@ def authenticateWithOAuth():
     return redirect(url_for('index'))
 
 
-@app.route('/bootstrap', methods=['GET'])
+@bp.route('/bootstrap', methods=['GET'])
 def bootstrap():
     """Return to the JS client the info it needs to access the API
     (which normally gets included in the HTML page)"""
@@ -143,7 +144,7 @@ def bootstrap():
 # endpoint to search the Open Cuultur Data APIs
 # takes in `query`, `size`, and `from` parameters in query string
 # returns a JSON response
-@app.route('/search/ocd', methods=['GET'])
+@bp.route('/search/ocd', methods=['GET'])
 def searchOCD():
     query = request.args.get('query')
     #collection = flask.request.args.get('collection')
@@ -176,7 +177,7 @@ def searchOCD():
 
 
 # resolve OCD Media URLs: http://docs.opencultuurdata.nl/user/api.html#resolver
-@app.route('/resolve-ocd-media', methods=['GET'])
+@bp.route('/resolve-ocd-media', methods=['GET'])
 def resolveOCDMediaURLs():
 
     media_hash = request.args.get('hash') or None
@@ -190,7 +191,7 @@ def resolveOCDMediaURLs():
     return jsonify(url=resp.url)
 
 
-@app.route('/media-type', methods=['GET'])
+@bp.route('/media-type', methods=['GET'])
 def getMediaType():
     """Contact the remote resource and find out its type"""
 
@@ -208,7 +209,7 @@ def getMediaType():
         return jsonify({'type': 'image'})
 
 
-@app.route('/webpage', methods=['GET'])
+@bp.route('/webpage', methods=['GET'])
 def annotate_webpage():
 
     where = request.args.get('where')
@@ -262,44 +263,48 @@ def annotate_webpage():
         response.data = lxml.html.tostring(root)
         return response
 
-base_re = re.compile('<\s*base[^>]*>')
-head_re = re.compile('<\s*base[^>]*>')
-firsttag_re = re.compile('<[^>]*>')
+base_re = re.compile('<\s*base[^>]*>', flags=re.IGNORECASE)
+head_re = re.compile('<\s*base[^>]*>', flags=re.IGNORECASE)
+firsttag_re = re.compile('<[^\\>]*?>', flags=re.IGNORECASE)
 
-@app.route('/annotate2', methods=['GET'])
-def annotate():
+@bp.route('/annotate2', methods=['GET'])
+def annotate2():
     """Load the page from a remote resource and modify it (inject
     js libraries). To save CPU we do simple string replacement
     """
     
     where = request.args.get('where')
+    
+    if not where:
+        abort(400, 'You need to supply "where" parameter')
+        
     response = requests.get(where)
     
-    if response.status != 200:
+    if response.status_code != 200:
         return make_response('The page you wanted to annotate has problems', response.status)
     
     content = response.text
     
     # insert base tag (if not present)
-    if not base_re.search(content, flags=re.IGNORECASE):
-        h = head_re.search(content, flags=re.IGNORECASE)
+    if not base_re.search(content):
+        h = head_re.search(content)
         if h:
-            c = [content[0:h.endpos]]
+            c = [content[0:h.span()[1]]]
             c.append('<base href="' + where + '" />')
-            c.append(content[h.endpos+1:])
+            c.append(content[h.span()[1]+1:])
             content = ''.join(c)
         else:
-            t = firsttag_re.search(content, flags=re.IGNORECASE)
+            t = firsttag_re.search(content)
             if t:
-                c = [content[0:t.endpos]]
+                c = [content[0:t.span()[1]]]
                 c.append('<base href="' + where + '" />')
-                c.append(content[t.endpos+1:])
+                c.append(content[t.span()[1]+1:])
                 content = ''.join(c)
             else:
                 return abort("Something went wrong", 400)
     
     # inject javascript into the page
-    b = base_re.search(content, flags=re.IGNORECASE)
+    b = base_re.search(content)
     
     if not b:
         return abort("Something went wrong", 400)
@@ -309,26 +314,26 @@ def annotate():
     # into a separate namespace (and the CSS should be modified too)
     inject_js = """
     <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="%(root)/js/annotator-full.min.js"></script>
-    <script type="text/javascript" src="%(root)/js/lib/backbone-1.0.0.min.js"></script>
-    <script type="text/javascript" src="%(root)/js/annotorious.okfn.0.3.js"></script>
-    <link href="%(root)/css/annotator.min.css" media="all" rel="stylesheet">
-    <link href="%(root)/css/swtmaker.css" media="all" rel="stylesheet">
-    <link href="%(root)/css/annotorious.css" media="all" rel="stylesheet">
-    """ % ({root: current_app.config.get('app_url')})
+    <script type="text/javascript" src="%(root)s/js/annotator-full.min.js"></script>
+    <script type="text/javascript" src="%(root)s/js/lib/backbone-1.0.0.min.js"></script>
+    <script type="text/javascript" src="%(root)s/js/annotorious.okfn.0.3.js"></script>
+    <link href="%(root)s/css/annotator.min.css" media="all" rel="stylesheet">
+    <link href="%(root)s/css/swtmaker.css" media="all" rel="stylesheet">
+    <link href="%(root)s/css/annotorious.css" media="all" rel="stylesheet">
+    """ % ({'root': current_app.config.get('app_url')})
     
-    c = [content[0:b.endpos]]
+    c = [content[0:b.span()[1]]]
     c.append(inject_js)
-    c.append(content[b.endpos+1:])
+    c.append(content[b.span()[1]+1:])
     content= ''.join(c)
 
     # TODO: modify content length    
-    response.data = content
-    return response
+    r = make_response(content)
+    return r
     
 
 
-@app.route('/annotate', methods=['GET'])
+@bp.route('/annotate', methods=['GET'])
 def annotate():
     # img = urllib2.urlopen(flask.request.args['where']).read()
     where = request.args.get('where')
@@ -336,24 +341,31 @@ def annotate():
     content = response.text
     if imghdr.what('ignore', content) is None:
         root = lxml.html.parse(StringIO.StringIO(content)).getroot()
-        root.make_links_absolute(where,
-                                 resolve_base_href=True)
+        
+        if root.find('.//base') is None:
+            head = root.find('.//head')
+            if head is None:
+                head = root.makeelement('head')
+                root.append(head)
+            base = root.makeelement('base')
+            head.append(base)
+            base.set("href", where)
 
         addScript("//code.jquery.com/jquery-1.11.0.min.js", root)
-        addScript(url_for('static', filename="js/annotator-full.min.js"),
+        addScript(current_app.config.get('app_url', '') + url_for('static', filename="js/annotator-full.min.js"),
                   root)
 
-        addCSS(url_for('static', filename='css/annotator.min.css'), root)
-        addCSS(url_for('static', filename='css/swtmaker.css'), root)
-        addCSS(url_for('static', filename='css/bootstrap.min.css'), root)
-        addScript(url_for('static',
+        addCSS(current_app.config.get('app_url', '') + url_for('static', filename='css/annotator.min.css'), root)
+        addCSS(current_app.config.get('app_url', '') + url_for('static', filename='css/swtmaker.css'), root)
+        addCSS(current_app.config.get('app_url', '') + url_for('static', filename='css/bootstrap.min.css'), root)
+        addScript(current_app.config.get('app_url', '') + url_for('static',
                           filename="js/lib/underscore-1.5.2.min.js"),
                   root)
-        addScript(url_for('static',
+        addScript(current_app.config.get('app_url', '') + url_for('static',
                           filename="js/lib/backbone-1.0.0.min.js"),
                   root)
-        addCSS(url_for('static', filename='css/annotorious.css'), root)
-        addScript(url_for('static',
+        addCSS(current_app.config.get('app_url', '') + url_for('static', filename='css/annotorious.css'), root)
+        addScript(current_app.config.get('app_url', '') + url_for('static',
                           filename="js/annotorious.okfn.0.3.js"),
                   root)
 
@@ -379,15 +391,15 @@ def annotate():
         swtr.app_id = '{}';swtr.app_secret = '{}';
         swtr.oauth_redirect_uri = '{}';""".format(
             '{}', 'function() {}return "{}"{}'.format('{',
-                                                      config.swtstoreURL, '};'),
+                                                      current_app.config.get('swtstoreURL'), '};'),
             '{', '}', auth_tok['access_token'], auth_tok['refresh_token'],
-            config.app_id, config.app_secret,
-            config.redirect_uri)
+            current_app.config.get('app_id'), current_app.config.get('app_secret'),
+            current_app.config.get('redirect_uri'))
         configScript.set("type", "text/javascript")
 
-        addScript(url_for('static', filename="js/oauth.js"), root)
+        addScript(current_app.config.get('app_url', '') + url_for('static', filename="js/oauth.js"), root)
 
-        addScript(url_for('static', filename="js/app.js"), root)
+        addScript(current_app.config.get('app_url', '') + url_for('static', filename="js/app.js"), root)
 
         response = make_response()
         response.data = lxml.html.tostring(root)
@@ -402,7 +414,7 @@ def annotate():
         return render_template('index.html',
                                access_token=auth_tok['access_token'],
                                refresh_token=auth_tok['refresh_token'],
-                               config=config,
+                               config=current_app.config,
                                url=request.args.get('where'))
 
 

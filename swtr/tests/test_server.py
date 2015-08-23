@@ -4,7 +4,6 @@ from flask import url_for
 import unittest
 import httpretty
 import json
-import app
 from werkzeug.security import gen_salt
 from werkzeug.datastructures import MultiDict
 from StringIO import StringIO
@@ -12,6 +11,9 @@ from StringIO import StringIO
 from swtr import server
 
 class TestServer(TestCase):
+    
+    def create_app(self):
+        return server.create_app()
 
     @httpretty.activate
     def test_annotate_well_formed(self):
@@ -26,10 +28,10 @@ class TestServer(TestCase):
             '''
         )
 
-        r = self.client.get(url_for('/annotate2'))
+        r = self.client.get(url_for('swtr.annotate'),  query_string={'where': 'http://foo.org/resource'})
         self.assertEqual(r.status_code, 200)
-        
-        assert r.text == '''
+        print r.data
+        assert r.data == '''
         '''
         
     @httpretty.activate
@@ -44,10 +46,10 @@ class TestServer(TestCase):
             '''
         )
 
-        r = self.client.get(url_for('/annotate2'))
+        r = self.client.get(url_for('swtr.annotate'),  query_string={'where': 'http://foo.org/resource'})
         self.assertEqual(r.status_code, 200)
-        
-        assert r.text == '''
+        print r.data
+        assert r.data == '''
         '''
 
     @httpretty.activate
@@ -63,10 +65,10 @@ class TestServer(TestCase):
             '''
         )
 
-        r = self.client.get(url_for('/annotate2'))
+        r = self.client.get(url_for('swtr.annotate'),  query_string={'where': 'http://foo.org/resource'})
         self.assertEqual(r.status_code, 200)
         
-        assert r.text == '''
+        assert r.data == '''
         '''
 
 

@@ -1,5 +1,5 @@
 # secret key for the application used in session
-secret_key = "a long random string; see python UUID"
+SECRET_KEY = "a long random string; see python UUID"
 
 # the URL pointing to the sweet store this application will sweet to
 swtstoreURL = 'http://sweet/store/url'
