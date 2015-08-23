@@ -51,7 +51,7 @@ def index():
         auth_tok = session['auth_tok']
 
         # check if it has expired
-        oauth_token_expires_in_endpoint = current_app.config.get('swtstoreURL') +\
+        oauth_token_expires_in_endpoint = current_app.config.get('SWTSTORE_URL') +\
             '/oauth/token-expires-in'
         resp = requests.get(oauth_token_expires_in_endpoint)
         expires_in = json.loads(resp.text)['expires_in']
@@ -79,12 +79,12 @@ def index():
     #print auth_tok
     payload = {'what': 'img-anno',
                'access_token': auth_tok['access_token']}
-    req = requests.get(current_app.config.get('swtstoreURL') + '/api/sweets/q', params=payload)
+    req = requests.get(current_app.config.get('SWTSTORE_URL', 'SWTSTORE_URL') + '/api/sweets/q', params=payload)
     sweets = req.json()
     return render_template('index.html', access_token=auth_tok['access_token'],
                            refresh_token=auth_tok['refresh_token'],
-                           config=config, url=request.args.get('where'),
-                           bookmark=quote_plus(config.app_url), sweets=sweets)
+                           config=current_app.config, url=request.args.get('where'),
+                           bookmark=quote_plus(current_app.config.APP_URL), sweets=sweets)
 
 
 @bp.route('/authenticate', methods=['GET'])
@@ -95,15 +95,15 @@ def authenticateWithOAuth():
     # prepare the payload
     payload = {
         'scopes': 'email sweet',
-        'client_secret': config.app_secret,
+        'client_secret': current_app.config.APP_SECRET,
         'code': code,
-        'redirect_uri': config.redirect_uri,
+        'redirect_uri': current_app.config.REDIRECT_URI,
         'grant_type': 'authorization_code',
-        'client_id': config.app_id
+        'client_id': current_app.config.APP_ID
     }
 
     # token exchange endpoint
-    oauth_token_x_endpoint = current_app.config.get('swtstoreURL') + '/oauth/token'
+    oauth_token_x_endpoint = current_app.config.get('SWTSTORE_URL', 'SWTSTORE_URL') + '/oauth/token'
     resp = requests.post(oauth_token_x_endpoint, data=payload)
     auth_tok = json.loads(resp.text)
 
@@ -123,7 +123,7 @@ def bootstrap():
     
     auth_tok = session.get('auth_tok', {})
     out = {
-        'swtstoreURL': current_app.config.get('swtstoreURL'),
+        'SWTSTORE_URL': current_app.config.get('SWTSTORE_URL', 'SWTSTORE_URL'),
         'endpoints': {
           'get': '/api/sweets/q',
           'post': '/api/sweets',
@@ -136,8 +136,8 @@ def bootstrap():
         'allowedContext': ['img-anno'],
         'access_token': auth_tok.get('access_token', ''),
         'refresh_token': auth_tok.get('refresh_token', ''),
-        'app_id': current_app.config.get('app_id'),
-        'auth_redirect_uri': current_app.config.get('redirect_uri')
+        'app_id': current_app.config.get('APP_ID', 'APP_ID'),
+        'auth_redirect_uri': current_app.config.get('REDIRECT_URI', '')
     }
     return jsonify(out)
 
@@ -167,7 +167,7 @@ def searchOCD():
         'size': size,
         'from': offset
     }
-    resp = requests.post(current_app.config.get('ocd_search_endpoint', 'http://api.opencultuurdata.nl/v0/search'),
+    resp = requests.post(current_app.config.get('OCD_SEARCH_ENDPOINT', 'http://api.opencultuurdata.nl/v0/search'),
                          data=json.dumps(payload))
 
     response = make_response()
@@ -185,7 +185,7 @@ def resolveOCDMediaURLs():
     if not media_hash:
         abort(400)
 
-    resp = requests.get(current_app.config.get('ocd_resolve_endpoint', 'http://api.opencultuurdata.nl/v0/resolve/') +
+    resp = requests.get(current_app.config.get('OCD_RESOLVE_ENDPOINT', 'http://api.opencultuurdata.nl/v0/resolve/') +
                         media_hash)
 
     return jsonify(url=resp.url)
@@ -245,7 +245,7 @@ def annotate_webpage():
                 # url encode the link; and encode it utf-8 anyway to handle
                 # links in other characters
                 target = quote_plus(link.encode('utf-8'))
-                new_link = '{0}/webpage?where={1}'.format(config.app_url,
+                new_link = '{0}/webpage?where={1}'.format(current_app.config.APP_URL,
                                                           target)
                 elem.set('href', new_link)
 
@@ -284,20 +284,20 @@ def annotate():
             base.set("href", where)
 
         addScript("//code.jquery.com/jquery-1.11.0.min.js", root)
-        addScript(current_app.config.get('app_url', '') + url_for('static', filename="js/annotator-full.min.js"),
+        addScript(current_app.config.get('APP_URL', '') + url_for('static', filename="js/annotator-full.min.js"),
                   root)
 
-        addCSS(current_app.config.get('app_url', '') + url_for('static', filename='css/annotator.min.css'), root)
-        addCSS(current_app.config.get('app_url', '') + url_for('static', filename='css/swtmaker.css'), root)
-        addCSS(current_app.config.get('app_url', '') + url_for('static', filename='css/bootstrap.min.css'), root)
-        addScript(current_app.config.get('app_url', '') + url_for('static',
+        addCSS(current_app.config.get('APP_URL', '') + url_for('static', filename='css/annotator.min.css'), root)
+        addCSS(current_app.config.get('APP_URL', '') + url_for('static', filename='css/swtmaker.css'), root)
+        addCSS(current_app.config.get('APP_URL', '') + url_for('static', filename='css/bootstrap.min.css'), root)
+        addScript(current_app.config.get('APP_URL', '') + url_for('static',
                           filename="js/lib/underscore-1.5.2.min.js"),
                   root)
-        addScript(current_app.config.get('app_url', '') + url_for('static',
+        addScript(current_app.config.get('APP_URL', '') + url_for('static',
                           filename="js/lib/backbone-1.0.0.min.js"),
                   root)
-        addCSS(current_app.config.get('app_url', '') + url_for('static', filename='css/annotorious.css'), root)
-        addScript(current_app.config.get('app_url', '') + url_for('static',
+        addCSS(current_app.config.get('APP_URL', '') + url_for('static', filename='css/annotorious.css'), root)
+        addScript(current_app.config.get('APP_URL', '') + url_for('static',
                           filename="js/annotorious.okfn.0.3.js"),
                   root)
 
@@ -309,7 +309,7 @@ def annotate():
         configScript = root.makeelement('script')
         root.body.append(configScript)
         configScript.text = """window.swtr = window.swtr || {};
-        swtr.swtstoreURL = {}
+        swtr.SWTSTORE_URL = {}
         swtr.endpoints = {}
         'get': '/api/sweets/q',
         'post': '/api/sweets',
@@ -323,15 +323,15 @@ def annotate():
         swtr.app_id = '{}';swtr.app_secret = '{}';
         swtr.oauth_redirect_uri = '{}';""".format(
             '{}', 'function() {}return "{}"{}'.format('{',
-                                                      current_app.config.get('swtstoreURL'), '};'),
+                                                      current_app.config.get('SWTSTORE_URL'), '};'),
             '{', '}', auth_tok['access_token'], auth_tok['refresh_token'],
-            current_app.config.get('app_id'), current_app.config.get('app_secret'),
-            current_app.config.get('redirect_uri'))
+            current_app.config.get('app_id'), current_app.config.get('APP_SECRET'),
+            current_app.config.get('REDIRECT_URI'))
         configScript.set("type", "text/javascript")
 
-        addScript(current_app.config.get('app_url', '') + url_for('static', filename="js/oauth.js"), root)
+        addScript(current_app.config.get('APP_URL', '') + url_for('static', filename="js/oauth.js"), root)
 
-        addScript(current_app.config.get('app_url', '') + url_for('static', filename="js/app.js"), root)
+        addScript(current_app.config.get('APP_URL', '') + url_for('static', filename="js/app.js"), root)
 
         response = make_response()
         response.data = lxml.html.tostring(root)
