@@ -20,7 +20,7 @@ bp = Blueprint('swtr', __name__)
 def create_app(blueprint=bp):
     app = Flask(__name__)
     app.register_blueprint(blueprint)
-    
+
     # Setup error logging for the application.
     if not os.path.exists(os.path.join(os.path.dirname(__file__),'logs/')):
         """ Create the directory if not exists"""
@@ -28,7 +28,7 @@ def create_app(blueprint=bp):
     fil = FileHandler(os.path.join(os.path.dirname(__file__), 'logs/', 'logme'), mode='a')
     fil.setLevel(logging.ERROR)
     app.logger.addHandler(fil)
-    
+
     for cfg_path in ['config.py', 'local_config.py']:
         if os.path.exists(cfg_path):
             try:
@@ -84,7 +84,7 @@ def index():
     return render_template('index.html', access_token=auth_tok['access_token'],
                            refresh_token=auth_tok['refresh_token'],
                            config=current_app.config, url=request.args.get('where'),
-                           bookmark=quote_plus(current_app.config.APP_URL), sweets=sweets)
+                           bookmark=quote_plus(current_app.config.get('APP_URL')), sweets=sweets)
 
 
 @bp.route('/authenticate', methods=['GET'])
@@ -120,7 +120,7 @@ def authenticateWithOAuth():
 def bootstrap():
     """Return to the JS client the info it needs to access the API
     (which normally gets included in the HTML page)"""
-    
+
     auth_tok = session.get('auth_tok', {})
     out = {
         'SWTSTORE_URL': current_app.config.get('SWTSTORE_URL', 'SWTSTORE_URL'),
@@ -273,7 +273,7 @@ def annotate():
     content = response.text
     if imghdr.what('ignore', content) is None:
         root = lxml.html.parse(StringIO.StringIO(content)).getroot()
-        
+
         if root.find('.//base') is None:
             head = root.find('.//head')
             if head is None:
