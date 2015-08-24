@@ -35,7 +35,8 @@ def create_app(blueprint=bp):
         if os.path.exists(os.path.abspath(os.path.join(
                 os.path.dirname(__file__), cfg_path))):
             try:
-                app.config.from_pyfile(cfg_path)
+                app.config.from_pyfile(os.path.abspath(
+                    os.path.join(os.path.dirname(__file__), cfg_path)))
             except IOError:
                 app.logger.warning("Could not load local_config.py")
     # this opens all endpoints for cross site requests, if we need to be more
