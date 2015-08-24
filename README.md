@@ -23,12 +23,12 @@ systems the packages are:
 * `libxml2-dev`
 * `libxslt1-dev`
 
-**NOTE**: The exact package names may vary. Please check your distribution's package
-name.
+**NOTE**: The exact package names may vary across distributions and OSes. 
+Please check your distribution's package name.
 
 ## To install
 
-In this directory, run
+Once you have all the requirements installed, in this directory, run
 
 `$ python setup.py install`
 
@@ -37,13 +37,13 @@ In this directory, run
 
 * Configure options in `config.py`, copy from `sample_config.py`
 
-`$ cp swtr/sample_config.py swtr/config.py`
+  `$ cp swtr/sample_config.py swtr/config.py`
 
 * Edit the `config.py` file to have appropriate and correct values.
 
 * To run the application:
 
-`$ python swtr/server.py`
+  `$ python swtr/server.py`
 
 then navigate to the URL in your browser
 
