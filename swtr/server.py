@@ -101,11 +101,11 @@ def authenticateWithOAuth():
     # prepare the payload
     payload = {
         'scopes': 'email sweet',
-        'client_secret': current_app.config.APP_SECRET,
+        'client_secret': current_app.config.get('APP_SECRET'),
         'code': code,
-        'redirect_uri': current_app.config.REDIRECT_URI,
+        'redirect_uri': current_app.config.get('REDIRECT_URI'),
         'grant_type': 'authorization_code',
-        'client_id': current_app.config.APP_ID
+        'client_id': current_app.config.get('APP_ID')
     }
 
     # token exchange endpoint
@@ -120,7 +120,7 @@ def authenticateWithOAuth():
     # set sessions etc
     session['auth_tok'] = auth_tok
     session['auth_tok']['issued'] = datetime.utcnow()
-    return redirect(url_for('index'))
+    return redirect(url_for('swtr.index'))
 
 
 @bp.route('/bootstrap', methods=['GET'])
