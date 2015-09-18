@@ -1,4 +1,4 @@
-== High-level components and data flow of the swtr application ==
+# High-level components and data flow of the swtr application
 
 >  The document is written in an informal way.
 
@@ -68,16 +68,20 @@ images/maps. OpenSeaDragon works as a plugin to annotorious.
       the annotorious' API and stores them in the local data store.
 
 iv) controller
+
 v) swt maker
+
 vi) swt swagger
 
 3. Configuration
+
 The application has to be registered with swtstore for performing authenticated
 requests on the APIs. This configuration details go in a file named
-==config.py==.  The file would also contain the URL of the swtstore with which
+**config.py**.  The file would also contain the URL of the swtstore with which
 the app has been registered. A sample configuration file has been included in
 the repository.
 
 4. Deployment
+
 Swtr has been built with flask, a python micro web framework. To deploy a flask
 application look at [this link](http://flask.pocoo.org/docs/0.10/deploying/).
