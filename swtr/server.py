@@ -136,8 +136,8 @@ def bootstrap():
           'post': '/api/sweets',
           'context': '/api/contexts',
           'auth': '/oauth/authorize',
-          'login': '/auth/login',
-          'logout': '/auth/logout',
+          'login': '/users/login',
+          'logout': '/users/logout',
           'annotate_webpage': url_for("swtr.annotate_webpage")
         },
         'allowedContext': ['img-anno'],
@@ -324,8 +324,8 @@ def annotate():
         'get': '/api/sweets/q',
         'post': '/api/sweets',
         'auth': '/oauth/authorize',
-        'login': '/auth/login',
-        'logout': '/auth/logout'
+        'login': '/users/login',
+        'logout': '/users/logout'
         {};
 
         swtr.access_token = '{}';
